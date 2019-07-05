@@ -12,6 +12,8 @@ class LevelObject implements Renderable2D {
     double rot_angle = 0;
     double scale = 1;
 
+    LevelObject() : rot_angle = 0;
+
     @override
     void drawToCanvas(CanvasRenderingContext2D ctx) {
         ctx.save();

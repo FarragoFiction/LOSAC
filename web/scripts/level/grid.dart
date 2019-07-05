@@ -9,19 +9,12 @@ enum GridCellState {
     empty
 }
 
-class Grid extends LevelObject {
+class Grid extends LevelObject with HasMatrix {
     static const num cellSize = 50;
 
     final int xSize;
     final int ySize;
     final List<GridCellState> states;
-    RotationMatrix matrix;
-
-    @override
-    set rot_angle(double value) {
-        super.rot_angle = value;
-        this.matrix = new RotationMatrix(this.rot_angle);
-    }
 
     Grid(int this.xSize, int this.ySize) : states = new List<GridCellState>.filled(xSize*ySize, GridCellState.empty);
 

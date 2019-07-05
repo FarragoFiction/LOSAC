@@ -4,7 +4,14 @@ import "matrix.dart";
 
 class Vector extends Math.Point<num> {
 
-    const Vector(num x, num y) : super(x,y);
+    double _length;
+
+    double get length {
+        _length ??= Math.sqrt(x*x + y*y);
+        return _length;
+    }
+
+    Vector(num x, num y) : super(x,y);
 
     Vector applyMatrix(RotationMatrix matrix) {
         final num x = matrix.cos * this.x - matrix.sin * this.y;
@@ -53,4 +60,6 @@ class Vector extends Math.Point<num> {
         }
         throw ArgumentError("Invalid vector division: $this / $other");
     }
+
+    Vector norm() => this / this.length;
 }
