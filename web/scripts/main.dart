@@ -32,12 +32,16 @@ void main() {
     }
 
     final Path testPath = new Path()
-    //    ..renderVertices=true
+        //..renderVertices=true
+        //..renderSegments = true
     ;
 
     testPath.vertices.add(new PathVertex()..pos_x = 50..pos_y=30..rot_angle = 1.2..handle2 = 60);
     testPath.vertices.add(new PathVertex()..pos_x = 220..pos_y=40..rot_angle = 2.4..handle1 = 60..handle2 = 60);
     testPath.vertices.add(new PathVertex()..pos_x = 280..pos_y=180..rot_angle = 2.0..handle1 = 50);
+
+    testPath.rebuildSegments();
+    print(testPath.segments.length);
 
     testLevel.objects.add(testPath);
 

@@ -8,8 +8,10 @@ import "levelobject.dart";
 class Path extends LevelObject {
     final List<PathVertex> vertices = <PathVertex>[];
     bool renderVertices = false;
+    bool renderSegments = false;
+    double width = 10.0;
 
-    final List<Vector> subDivisions = <Vector>[];
+    final List<PathSegment> segments = <PathSegment>[];
 
     @override
     void draw2D(CanvasRenderingContext2D ctx) {
@@ -26,8 +28,8 @@ class Path extends LevelObject {
             for (int i=1; i<vertices.length; i++) {
                 v2 = vertices[i];
 
-                final Vector o1 = new Vector(0,-v1.handle2).applyMatrix(v1.matrix) + new Vector(v1.pos_x, v1.pos_y);
-                final Vector o2 = new Vector(0,v2.handle1).applyMatrix(v2.matrix) + new Vector(v2.pos_x, v2.pos_y);
+                final Vector o1 = v1.handle2pos + new Vector(v1.pos_x, v1.pos_y);
+                final Vector o2 = v2.handle1pos + new Vector(v2.pos_x, v2.pos_y);
 
                 ctx.bezierCurveTo(o1.x, o1.y, o2.x, o2.y, v2.pos_x, v2.pos_y);
 
@@ -37,17 +39,185 @@ class Path extends LevelObject {
             ctx.stroke();
         }
 
+        if (!segments.isEmpty) {
+            ctx.strokeStyle="#FF0000";
+
+            final List<Vector> left = <Vector>[];
+            final List<Vector> right = <Vector>[];
+
+            for(int i=0; i<segments.length; i++) {
+                final PathSegment seg = segments[i];
+                final Vector pos = seg.posVector;
+                double mult = 1.0;
+
+                if (i != 0 && i != segments.length-1) {
+                    final Vector v1 = (pos - segments[i - 1].posVector).norm();
+                    final Vector v2 = (segments[i + 1].posVector - pos).norm();
+                    final double dot = v1.dot(v2);
+                    mult = Math.sqrt(2 / (dot + 1));
+                }
+
+                mult *= width;
+
+                final Vector offset = seg.norm * mult;
+
+                left.add(pos + offset);
+                right.add(pos - offset);
+
+                ctx
+                    ..beginPath()
+                    ..moveTo(pos.x + offset.x, pos.y + offset.y)
+                    ..lineTo(pos.x - offset.x, pos.y - offset.y)
+                    ..stroke();
+            }
+
+            ctx
+                ..beginPath()
+                ..moveTo(left.first.x, left.first.y);
+            for (final Vector v in left) {
+                ctx.lineTo(v.x, v.y);
+            }
+            ctx.stroke();
+            ctx
+                ..beginPath()
+                ..moveTo(right.first.x, right.first.y);
+            for (final Vector v in right) {
+                ctx.lineTo(v.x, v.y);
+            }
+            ctx.stroke();
+        }
+
+        if (renderSegments) {
+            for (final PathSegment segment in segments) {
+                segment.drawToCanvas(ctx);
+            }
+        }
+
         if (renderVertices) {
             for (final PathVertex vertex in vertices) {
                 vertex.drawToCanvas(ctx);
             }
         }
     }
+
+    void rebuildSegments() {
+        segments.clear();
+
+        if (vertices.length > 1) {
+            PathVertex v1 = vertices.first;
+            PathVertex v2;
+
+            for (int i = 1; i < vertices.length; i++) {
+                v2 = vertices[i];
+
+                final Vector v1pos = new Vector(v1.pos_x, v1.pos_y);
+                final Vector v2pos = new Vector(v2.pos_x, v2.pos_y);
+                final Vector o1 = v1.handle2pos + v1pos;
+                final Vector o2 = v2.handle1pos + v2pos;
+
+                final double maxlength = v1.handle2pos.length + v2.handle1pos.length + (o2-o1).length;
+
+                final int segmentCount = getSegmentCountForLength(maxlength);
+
+                final int skip = i > 1 ? 1 : 0;
+                for (int j=skip; j<segmentCount; j++) {
+                    final double fraction = j / (segmentCount - 1);
+
+                    segments.add(bezier(fraction, v1pos, o1, v2pos, o2));
+                }
+
+                v1 = v2;
+            }
+        }
+    }
+
+    static const int minSegments = 10;
+    static const double baseSegmentLength = 30.0;
+    int getSegmentCountForLength(double length) {
+        final double segs = length/(width*2);
+
+        return Math.sqrt(segs * segs * 0.6 + minSegments * minSegments).ceil();
+    }
+
+    PathSegment bezier(double fraction, Vector v1, Vector v1handle, Vector v2, Vector v2handle) {
+        final double t = fraction;
+        final double nt = 1 - t;
+
+        final Vector b1 = v1 * nt*nt*nt;
+        final Vector b2 = v1handle * 3*nt*nt*t;
+        final Vector b3 = v2handle * 3*nt*t*t;
+        final Vector b4 = v2 * t*t*t;
+
+        final Vector point = b1+b2+b3+b4;
+
+        final Vector p1 = v1 * -3*nt*nt;
+        final Vector p2 = v1handle * 3 * (1 - 4*t + 3*t*t);
+        final Vector p3 = v2handle * 3 * (2*t - 3*t*t);
+        final Vector p4 = v2 * 3*t*t;
+
+        Vector norm = (p1 + p2 + p3 + p4).norm();
+        norm = new Vector(-norm.y, norm.x);
+
+        return new PathSegment()..pos_x = point.x..pos_y = point.y..norm = norm;
+    }
+}
+
+class PathSegment extends LevelObject {
+    Vector norm;
+
+    @override
+    void draw2D(CanvasRenderingContext2D ctx) {
+        ctx.fillStyle="#40CC40";
+        ctx.fillRect(-1, -1, 3, 3);
+
+        Vector p = new Vector(pos_x,pos_y);
+        Vector o = (this.norm) * 15;
+
+        ctx
+            ..strokeStyle = "#40CC40"
+            ..beginPath()
+            //..moveTo(pos_x + o.x, pos_y+o.y)
+            //..lineTo(pos_x - o.x, pos_y-o.y)
+            ..moveTo(o.x, o.y)
+            ..lineTo(- o.x, -o.y)
+            ..stroke();
+    }
 }
 
 class PathVertex extends LevelObject with HasMatrix {
-    double handle1 = 10.0;
-    double handle2 = 10.0;
+    double _handle1 = 10.0;
+    double _handle2 = 10.0;
+    Vector _handle1pos;
+    Vector _handle2pos;
+
+    double get handle1 => _handle1;
+    set handle1(double val) {
+        _handle1 = val;
+        _handle1pos = null;
+        _handle2pos = null;
+    }
+    double get handle2 => _handle2;
+    set handle2(double val) {
+        _handle2 = val;
+        _handle1pos = null;
+        _handle2pos = null;
+    }
+
+    @override
+    set rot_angle(num val) {
+        super.rot_angle = val;
+        _handle1pos = null;
+        _handle2pos = null;
+    }
+
+    Vector get handle1pos {
+        _handle1pos ??= new Vector(0,handle1).applyMatrix(matrix);
+        return _handle1pos;
+    }
+    Vector get handle2pos {
+        _handle2pos ??= new Vector(0,-handle2).applyMatrix(matrix);
+        return _handle2pos;
+    }
 
     @override
     void draw2D(CanvasRenderingContext2D ctx) {

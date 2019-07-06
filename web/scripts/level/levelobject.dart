@@ -1,7 +1,7 @@
 import "dart:html";
 
 import "../renderer/2d/renderable2d.dart";
-
+import "../renderer/2d/vector.dart";
 
 class LevelObject implements Renderable2D {
 
@@ -11,6 +11,8 @@ class LevelObject implements Renderable2D {
     double pos_y = 0;
     double rot_angle = 0;
     double scale = 1;
+
+    Vector get posVector => new Vector(pos_x, pos_y);
 
     LevelObject() : rot_angle = 0;
 
