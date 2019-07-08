@@ -1,9 +1,9 @@
 import 'dart:html';
 
+import "level/curve.dart";
 import "level/grid.dart";
 import "level/level.dart";
 import "level/levelobject.dart";
-import "level/path.dart";
 import "renderer/2d/renderer2d.dart";
 
 void main() {
@@ -26,19 +26,19 @@ void main() {
 
     testLevel.objects.add(testGrid);
 
-    for (int i=0; i<testGrid.states.length; i++) {
+    for (int i=0; i<testGrid.cells.length; i++) {
         final Point<num> coord = testGrid.cellCoordsById(i);
         testLevel.objects.add(new LevelObject()..pos_x = coord.x + testGrid.pos_x..pos_y = coord.y + testGrid.pos_y);
     }
 
-    final Path testPath = new Path()
+    final Curve testPath = new Curve()
         //..renderVertices=true
         //..renderSegments = true
     ;
 
-    testPath.vertices.add(new PathVertex()..pos_x = 50..pos_y=30..rot_angle = 1.2..handle2 = 60);
-    testPath.vertices.add(new PathVertex()..pos_x = 220..pos_y=40..rot_angle = 2.4..handle1 = 60..handle2 = 60);
-    testPath.vertices.add(new PathVertex()..pos_x = 280..pos_y=180..rot_angle = 2.0..handle1 = 50);
+    testPath.vertices.add(new CurveVertex()..pos_x = 50..pos_y=30..rot_angle = 1.2..handle2 = 60);
+    testPath.vertices.add(new CurveVertex()..pos_x = 220..pos_y=40..rot_angle = 2.4..handle1 = 60..handle2 = 60);
+    testPath.vertices.add(new CurveVertex()..pos_x = 280..pos_y=180..rot_angle = 2.0..handle1 = 50);
 
     testPath.rebuildSegments();
     print(testPath.segments.length);

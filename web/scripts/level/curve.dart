@@ -3,22 +3,24 @@ import "dart:math" as Math;
 
 import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
+import "connectable.dart";
 import "levelobject.dart";
+import "pathnode.dart";
 
-class Path extends LevelObject {
-    final List<PathVertex> vertices = <PathVertex>[];
+class Curve extends LevelObject with Connectable {
+    final List<CurveVertex> vertices = <CurveVertex>[];
     bool renderVertices = false;
     bool renderSegments = false;
     double width = 10.0;
 
-    final List<PathSegment> segments = <PathSegment>[];
+    final List<CurveSegment> segments = <CurveSegment>[];
 
     @override
     void draw2D(CanvasRenderingContext2D ctx) {
 
         if (vertices.length > 1) {
-            PathVertex v1 = vertices.first;
-            PathVertex v2;
+            CurveVertex v1 = vertices.first;
+            CurveVertex v2;
 
             ctx
                 ..strokeStyle = "#BBBBBB"
@@ -46,7 +48,7 @@ class Path extends LevelObject {
             final List<Vector> right = <Vector>[];
 
             for(int i=0; i<segments.length; i++) {
-                final PathSegment seg = segments[i];
+                final CurveSegment seg = segments[i];
                 final Vector pos = seg.posVector;
                 double mult = 1.0;
 
@@ -88,13 +90,13 @@ class Path extends LevelObject {
         }
 
         if (renderSegments) {
-            for (final PathSegment segment in segments) {
+            for (final CurveSegment segment in segments) {
                 segment.drawToCanvas(ctx);
             }
         }
 
         if (renderVertices) {
-            for (final PathVertex vertex in vertices) {
+            for (final CurveVertex vertex in vertices) {
                 vertex.drawToCanvas(ctx);
             }
         }
@@ -104,8 +106,8 @@ class Path extends LevelObject {
         segments.clear();
 
         if (vertices.length > 1) {
-            PathVertex v1 = vertices.first;
-            PathVertex v2;
+            CurveVertex v1 = vertices.first;
+            CurveVertex v2;
 
             for (int i = 1; i < vertices.length; i++) {
                 v2 = vertices[i];
@@ -139,7 +141,7 @@ class Path extends LevelObject {
         return Math.sqrt(segs * segs * 0.6 + minSegments * minSegments).ceil();
     }
 
-    PathSegment bezier(double fraction, Vector v1, Vector v1handle, Vector v2, Vector v2handle) {
+    CurveSegment bezier(double fraction, Vector v1, Vector v1handle, Vector v2, Vector v2handle) {
         final double t = fraction;
         final double nt = 1 - t;
 
@@ -158,11 +160,14 @@ class Path extends LevelObject {
         Vector norm = (p1 + p2 + p3 + p4).norm();
         norm = new Vector(-norm.y, norm.x);
 
-        return new PathSegment()..pos_x = point.x..pos_y = point.y..norm = norm;
+        return new CurveSegment()..pos_x = point.x..pos_y = point.y..norm = norm;
     }
+
+    @override
+    Iterable<PathNode> getPathNodes() => null;
 }
 
-class PathSegment extends LevelObject {
+class CurveSegment extends LevelObject {
     Vector norm;
 
     @override
@@ -170,21 +175,18 @@ class PathSegment extends LevelObject {
         ctx.fillStyle="#40CC40";
         ctx.fillRect(-1, -1, 3, 3);
 
-        Vector p = new Vector(pos_x,pos_y);
-        Vector o = (this.norm) * 15;
+        final Vector o = (this.norm) * 15;
 
         ctx
             ..strokeStyle = "#40CC40"
             ..beginPath()
-            //..moveTo(pos_x + o.x, pos_y+o.y)
-            //..lineTo(pos_x - o.x, pos_y-o.y)
             ..moveTo(o.x, o.y)
             ..lineTo(- o.x, -o.y)
             ..stroke();
     }
 }
 
-class PathVertex extends LevelObject with HasMatrix {
+class CurveVertex extends LevelObject with HasMatrix {
     double _handle1 = 10.0;
     double _handle2 = 10.0;
     Vector _handle1pos;
