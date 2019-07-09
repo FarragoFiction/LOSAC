@@ -1,6 +1,8 @@
 import "dart:html";
 import "dart:math" as Math;
 
+import "package:collection/collection.dart";
+
 import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
 import "connectable.dart";
@@ -8,12 +10,21 @@ import "levelobject.dart";
 import "pathnode.dart";
 
 class Curve extends LevelObject with Connectable {
-    final List<CurveVertex> vertices = <CurveVertex>[];
-    bool renderVertices = false;
+    final List<CurveVertex> _vertices = <CurveVertex>[];
+    List<CurveVertex> vertices;
+    bool renderVertices = true;
     bool renderSegments = false;
-    double width = 10.0;
+    double width = 25.0;
+
+    Connector startConnector;
+    Connector endConnector;
 
     final List<CurveSegment> segments = <CurveSegment>[];
+
+    Curve() : super() {
+        this.vertices = new UnmodifiableListView<CurveVertex>(_vertices);
+        this.drawUI = false;
+    }
 
     @override
     void draw2D(CanvasRenderingContext2D ctx) {
@@ -42,7 +53,7 @@ class Curve extends LevelObject with Connectable {
         }
 
         if (!segments.isEmpty) {
-            ctx.strokeStyle="#FF0000";
+            ctx.strokeStyle="#000000";
 
             final List<Vector> left = <Vector>[];
             final List<Vector> right = <Vector>[];
@@ -89,7 +100,7 @@ class Curve extends LevelObject with Connectable {
             ctx.stroke();
         }
 
-        if (renderSegments) {
+        /*if (renderSegments) {
             for (final CurveSegment segment in segments) {
                 segment.drawToCanvas(ctx);
             }
@@ -99,7 +110,13 @@ class Curve extends LevelObject with Connectable {
             for (final CurveVertex vertex in vertices) {
                 vertex.drawToCanvas(ctx);
             }
-        }
+        }*/
+    }
+
+    void addVertex(CurveVertex vert) {
+        this._vertices.add(vert);
+        this.addSubObject(vert);
+        vert.parentObject = this;
     }
 
     void rebuildSegments() {
@@ -133,10 +150,9 @@ class Curve extends LevelObject with Connectable {
         }
     }
 
-    static const int minSegments = 10;
-    static const double baseSegmentLength = 30.0;
+    static const int minSegments = 8;
     int getSegmentCountForLength(double length) {
-        final double segs = length/(width*2);
+        final double segs = length/(width*4);
 
         return Math.sqrt(segs * segs * 0.6 + minSegments * minSegments).ceil();
     }
@@ -165,6 +181,39 @@ class Curve extends LevelObject with Connectable {
 
     @override
     Iterable<PathNode> getPathNodes() => null;
+
+    void updateConnectors() {
+        this.clearConnectors();
+
+        if (vertices.length < 2) { return; }
+
+        {
+            final CurveVertex vertex = this.vertices.first;
+            final Connector connector = new ConnectorNegative()
+                //..pos_x = vertex.pos_x
+                //..pos_y = vertex.pos_y
+                //..rot_angle = vertex.rot_angle + Math.pi
+                ..rot_angle = Math.pi
+            ;
+            //this.addSubObject(connector);
+            vertex.addSubObject(connector);
+            startConnector = connector;
+            connector.parentObject = vertex;//this;
+        }
+
+        {
+            final CurveVertex vertex = this.vertices.last;
+            final Connector connector = new ConnectorNegative()
+                //..pos_x = vertex.pos_x
+                //..pos_y = vertex.pos_y
+                //..rot_angle = vertex.rot_angle
+            ;
+            //this.addSubObject(connector);
+            vertex.addSubObject(connector);
+            endConnector = connector;
+            connector.parentObject = vertex;//this;
+        }
+    }
 }
 
 class CurveSegment extends LevelObject {
@@ -222,22 +271,26 @@ class CurveVertex extends LevelObject with HasMatrix {
     }
 
     @override
-    void draw2D(CanvasRenderingContext2D ctx) {
+    void draw2D(CanvasRenderingContext2D ctx) {}
+
+    @override
+    void drawUI2D(CanvasRenderingContext2D ctx) {
+        final Vector v = new Vector(0,1).applyMatrix(matrix);
 
         ctx
             ..strokeStyle = "#3333FF"
             ..beginPath()
-            ..moveTo(0, handle1-3)
-            ..lineTo(0, -(handle2-3))
+            ..moveTo(handle1 * v.x, handle1 * v.y)
+            ..lineTo(handle2 * -v.x, handle2 * -v.y)
             ..stroke();
 
         ctx
             ..strokeStyle = "#AAAAAA"
             ..beginPath()
-            ..arc(0,handle1, 3, 0, Math.pi * 2)
+            ..arc(handle1 * v.x, handle1 * v.y, 3, 0, Math.pi * 2)
             ..stroke()
             ..beginPath()
-            ..arc(0,-handle2, 3, 0, Math.pi * 2)
+            ..arc(handle2 * -v.x, handle2 * -v.y, 3, 0, Math.pi * 2)
             ..stroke();
 
         ctx

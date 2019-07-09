@@ -29,25 +29,53 @@ mixin Connectable on LevelObject implements PathNodeObject {
             connector.drawToCanvas(ctx);
         }
     }
+
+    void clearConnectors() {
+        final List<Connector> conlist = connectors.toList();
+        for (final Connector connector in conlist) {
+            connector.disconnect();
+            this.removeSubObject(connector);
+        }
+    }
 }
 
-class Connector extends LevelObject {
-    static const num displaySize = 6;
+abstract class Connector extends LevelObject {
+    static const num displaySize = 8;
+    final String fillStyle;
 
     Connector other;
 
     PathNode node;
 
+    Connector(String this.fillStyle);
+
+    void disconnect() {
+        if (other != null) {
+            this.other = null;
+            other.disconnect();
+        }
+    }
+
     @override
     void draw2D(CanvasRenderingContext2D ctx) {
-        ctx.fillStyle = "#FF8000";
+        ctx.fillStyle = fillStyle;
 
         ctx
             ..beginPath()
             ..moveTo(-displaySize, 0)
-            ..lineTo(0, displaySize)
+            ..lineTo(0, -displaySize)
             ..lineTo(displaySize, 0)
             ..closePath()
             ..fill();
     }
+}
+
+class ConnectorPositive extends Connector {
+
+    ConnectorPositive() : super("#40C0FF");
+}
+
+class ConnectorNegative extends Connector {
+
+    ConnectorNegative() : super("#FF8000");
 }

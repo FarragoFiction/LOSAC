@@ -82,6 +82,13 @@ class Renderer2D {
         level.drawToCanvas(ctx);
 
         ctx.restore();
+
+        ctx.save();
+        ctx.translate(offset.x, offset.y);
+
+        level.drawUIToCanvas(ctx, zoomFactor);
+
+        ctx.restore();
     }
 
     void recalculateZoomFactor() {

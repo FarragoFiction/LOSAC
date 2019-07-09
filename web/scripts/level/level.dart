@@ -5,7 +5,7 @@ import "connectable.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
-class Level implements Renderable2D {
+class Level with Renderable2D {
 
     Set<LevelObject> objects = <LevelObject>{};
 
@@ -17,6 +17,13 @@ class Level implements Renderable2D {
     void drawToCanvas(CanvasRenderingContext2D ctx) {
         for (final LevelObject o in objects) {
             o.drawToCanvas(ctx);
+        }
+    }
+
+    @override
+    void drawUIToCanvas(CanvasRenderingContext2D ctx, double scaleFactor) {
+        for (final LevelObject o in objects) {
+            o.drawUIToCanvas(ctx, scaleFactor);
         }
     }
 
