@@ -9,7 +9,7 @@ import "connectable.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
-class Curve extends LevelObject with Connectable {
+class Curve extends LevelObject with Connectible {
     final List<CurveVertex> _vertices = <CurveVertex>[];
     List<CurveVertex> vertices;
     bool renderVertices = true;
@@ -180,7 +180,40 @@ class Curve extends LevelObject with Connectable {
     }
 
     @override
-    Iterable<PathNode> getPathNodes() => null;
+    Iterable<PathNode> generatePathNodes() {
+        final List<PathNode> nodes = <PathNode>[];
+
+        CurveSegment seg;
+        CurveSegment prev;
+
+        for(int i=0; i<segments.length; i++) {
+            seg = segments[i];
+
+            final PathNode node = new PathNode()..posVector = seg.getWorldPosition();
+            seg.node = node;
+            nodes.add(node);
+
+            if (prev != null) {
+                node.connectTo(prev.node);
+            }
+
+            prev = seg;
+        }
+
+        this.startConnector.node = nodes.first;
+        this.endConnector.node = nodes.last;
+
+        return nodes;
+    }
+
+    @override
+    void clearPathNodes() {
+        for (final CurveSegment segment in segments) {
+            segment.node = null;
+        }
+
+        super.clearPathNodes();
+    }
 
     void updateConnectors() {
         this.clearConnectors();
@@ -218,6 +251,8 @@ class Curve extends LevelObject with Connectable {
 
 class CurveSegment extends LevelObject {
     Vector norm;
+
+    PathNode node;
 
     @override
     void draw2D(CanvasRenderingContext2D ctx) {

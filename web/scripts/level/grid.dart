@@ -13,7 +13,7 @@ enum GridCellState {
     blocked
 }
 
-class Grid extends LevelObject with HasMatrix, Connectable {
+class Grid extends LevelObject with HasMatrix, Connectible {
     static const num cellSize = 50;
 
     final int xSize;
@@ -65,6 +65,7 @@ class Grid extends LevelObject with HasMatrix, Connectable {
                         ..pos_x = cell.pos_x
                         ..pos_y = cell.pos_y + cellSize*0.5
                         ..rot_angle = Math.pi;
+                    cell.down = c;
                     addSubObject(c);
                 }
 
@@ -74,6 +75,7 @@ class Grid extends LevelObject with HasMatrix, Connectable {
                         ..pos_x = cell.pos_x - cellSize*0.5
                         ..pos_y = cell.pos_y
                         ..rot_angle = -Math.pi * 0.5;
+                    cell.left = c;
                     addSubObject(c);
                 }
 
@@ -83,6 +85,7 @@ class Grid extends LevelObject with HasMatrix, Connectable {
                         ..pos_x = cell.pos_x + cellSize*0.5
                         ..pos_y = cell.pos_y
                         ..rot_angle = Math.pi * 0.5;
+                    cell.right = c;
                     addSubObject(c);
                 }
             }
@@ -125,7 +128,48 @@ class Grid extends LevelObject with HasMatrix, Connectable {
     }
 
     @override
-    Iterable<PathNode> getPathNodes() => null;
+    Iterable<PathNode> generatePathNodes() {
+        final List<PathNode> nodes = <PathNode>[];
+
+        for(int y = 0; y<ySize; y++) {
+            for(int x = 0; x<xSize; x++) {
+                final GridCell cell = getCell(x, y);
+                if (cell.state == GridCellState.hole) { continue; }
+
+                final PathNode node = new PathNode()
+                    ..posVector = cell.getWorldPosition()
+                    ..blocked = cell.state == GridCellState.blocked;
+
+                cell.setNode(node);
+
+                if (x > 0) {
+                    final GridCell left = getCell(x-1, y);
+                    if (left.node != null) {
+                        cell.node.connectTo(left.node);
+                    }
+                }
+                if (y > 0) {
+                    final GridCell up = getCell(x, y-1);
+                    if (up.node != null) {
+                        cell.node.connectTo(up.node);
+                    }
+                }
+
+                nodes.add(node);
+            }
+        }
+
+        return nodes;
+    }
+
+    @override
+    void clearPathNodes() {
+        for (final GridCell cell in cells) {
+            cell.node = null;
+        }
+
+        super.clearPathNodes();
+    }
 
     GridCell getCell(int x, int y) {
         if (x < 0 || x >= xSize || y < 0 || y >= ySize) { return null; }
@@ -169,6 +213,15 @@ class GridCell extends LevelObject {
 
     GridCell(Grid this.grid) {
         this.parentObject = grid;
+    }
+
+    void setNode(PathNode n) {
+        this.node = n;
+        if (this.up != null) { up.node = n; }
+        if (this.down != null) { down.node = n; }
+        if (this.left != null) { left.node = n; }
+        if (this.right != null) { right.node = n; }
+
     }
 
     @override

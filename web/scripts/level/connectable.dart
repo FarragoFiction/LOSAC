@@ -1,9 +1,11 @@
 import "dart:html";
+import "dart:math" as Math;
 
+import "../renderer/2d/vector.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
-mixin Connectable on LevelObject implements PathNodeObject {
+mixin Connectible on LevelObject implements PathNodeObject {
     Iterable<Connector> connectors;
     bool drawConnectors = false;
 
@@ -13,11 +15,19 @@ mixin Connectable on LevelObject implements PathNodeObject {
         connectors = this.subObjects.whereType();
     }
 
+    @override
     void connectPathNodes() {
         for (final Connector c in connectors) {
             if (c.node != null && c.other != null && c.other.node != null) {
                 c.node.connectTo(c.other.node);
             }
+        }
+    }
+
+    @override
+    void clearPathNodes() {
+        for (final Connector c in connectors) {
+            c.node = null;
         }
     }
 
@@ -44,20 +54,30 @@ abstract class Connector extends LevelObject {
     final String fillStyle;
 
     Connector other;
+    bool get connected => this.other != null;
 
     PathNode node;
 
     Connector(String this.fillStyle);
 
+    void connect(Connector connector) {
+        if (!this.connected && !connector.connected) {
+            this.other = connector;
+            connector.other = this;
+        }
+    }
+
     void disconnect() {
-        if (other != null) {
+        if (connected) {
+            other.other = null;
             this.other = null;
-            other.disconnect();
         }
     }
 
     @override
     void draw2D(CanvasRenderingContext2D ctx) {
+        if(connected) { return; }
+
         ctx.fillStyle = fillStyle;
 
         ctx
@@ -67,6 +87,31 @@ abstract class Connector extends LevelObject {
             ..lineTo(displaySize, 0)
             ..closePath()
             ..fill();
+    }
+
+    void connectAndOrient(Connector target) {
+        if (target == null || this.connected || target.connected) {
+            print("invalid connection: $target");
+            return;
+        }
+
+        this.connect(target);
+
+        final Vector targetPos = target.getWorldPosition();
+        final num targetAngle = target.getWorldRotation() + Math.pi;
+        final num thisAngle = this.getWorldRotation();
+
+        final double angleOffset = targetAngle - thisAngle;
+
+        final Vector rotatedPos = this.posVector.rotate(angleOffset);
+        final Vector movePos = targetPos - rotatedPos;
+
+
+        final Vector finalPos = this.getLocalPositionFromWorld(movePos) + this.parentObject.posVector;
+        final double finalAngle = this.parentObject.rot_angle + angleOffset;
+
+        this.parentObject.rot_angle = finalAngle;
+        this.parentObject.posVector = finalPos;
     }
 }
 

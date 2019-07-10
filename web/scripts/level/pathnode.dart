@@ -4,7 +4,9 @@ import "levelobject.dart";
 
 /// Interface for LevelObjects which provide PathNodes
 abstract class PathNodeObject {
-    Iterable<PathNode> getPathNodes();
+    Iterable<PathNode> generatePathNodes();
+    void connectPathNodes();
+    void clearPathNodes();
 }
 
 class PathNode extends SimpleLevelObject {

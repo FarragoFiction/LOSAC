@@ -11,6 +11,10 @@ class SimpleLevelObject with Renderable2D {
     double pos_y = 0;
 
     Vector get posVector => new Vector(pos_x, pos_y);
+    set posVector(Vector pos) {
+        this.pos_x = pos.x;
+        this.pos_y = pos.y;
+    }
 
     @override
     void drawToCanvas(CanvasRenderingContext2D ctx) {
@@ -127,5 +131,31 @@ class LevelObject extends SimpleLevelObject {
         }
 
         return pos;
+    }
+
+    Point<num> getLocalPositionFromWorld(Point<num> pos) {
+        final Vector worldpos = this.getWorldPosition();
+        final Vector parentpos = worldpos - this.posVector;
+
+        print("pos: $pos, worldpos: $worldpos, parentpos: $parentpos");
+        return pos - parentpos;
+    }
+
+    num getWorldRotation() {
+        num rot = this.rot_angle;
+        LevelObject o = this;
+
+        while( o.parentObject != null) {
+            o = o.parentObject;
+            rot += o.rot_angle;
+        }
+
+        return rot;
+    }
+
+    num getLocalRotationFromWorld(num angle) {
+        final num parentrot = getWorldRotation() - this.rot_angle;
+
+        return angle - parentrot;
     }
 }
