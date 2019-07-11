@@ -1,6 +1,7 @@
 import 'dart:html';
 
 import "level/curve.dart";
+import "level/endcap.dart";
 import "level/grid.dart";
 import "level/level.dart";
 import "level/levelobject.dart";
@@ -17,12 +18,16 @@ void main() {
 
     final Level testLevel = new Level();
 
-    final LevelObject testObject = new LevelObject()..pos_x = 250..pos_y = 250..rot_angle = 0.5..scale=8.0;
+    // basic object test
+
+    /*final LevelObject testObject = new LevelObject()..pos_x = 250..pos_y = 250..rot_angle = 0.5..scale=8.0;
 
     testObject.addSubObject(new LevelObject()..pos_x = -10..rot_angle=-0.6..scale=0.5);
     testObject.addSubObject(new LevelObject()..pos_x = 10..rot_angle=0.6..scale=0.5);
 
-    testLevel.objects.add(testObject);
+    testLevel.objects.add(testObject);*/
+
+    // grid
 
     final Grid testGrid = new Grid(6, 10)..pos_x = 500..pos_y = 400..rot_angle = 0.1;
 
@@ -37,6 +42,8 @@ void main() {
     }
 
     testGrid.updateConnectors();
+
+    // curve
 
     testLevel.objects.add(testGrid);
 
@@ -54,9 +61,21 @@ void main() {
 
     testPath.rebuildSegments();
 
-    print(testPath.segments.length);
-
     testLevel.objects.add(testPath);
+
+    // entrances and exit
+
+    final ExitObject testExit = new ExitObject();//..pos_x=500..pos_y=500;
+
+    testExit.connector.connectAndOrient(testPath.startConnector);
+
+    testLevel.objects.add(testExit);
+
+    final SpawnerObject testSpawner1 = new SpawnerObject();
+    testSpawner1.connector.connectAndOrient(testGrid.getCell(0, 9).down);
+    testLevel.objects.add(testSpawner1);
+
+    // build path nodes
 
     testLevel.derivePathNodes();
 

@@ -5,7 +5,7 @@ import "package:collection/collection.dart";
 
 import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
-import "connectable.dart";
+import "connectible.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 

@@ -3,7 +3,7 @@ import "dart:math" as Math;
 
 import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
-import "connectable.dart";
+import "connectible.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
@@ -137,6 +137,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 if (cell.state == GridCellState.hole) { continue; }
 
                 final PathNode node = new PathNode()
+                    ..validShortcut = true
                     ..posVector = cell.getWorldPosition()
                     ..blocked = cell.state == GridCellState.blocked;
 

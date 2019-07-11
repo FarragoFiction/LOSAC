@@ -12,6 +12,7 @@ abstract class PathNodeObject {
 class PathNode extends SimpleLevelObject {
     int id;
     bool blocked = false;
+    bool validShortcut = false;
 
     double distanceToExit = double.infinity;
     PathNode targetNode;

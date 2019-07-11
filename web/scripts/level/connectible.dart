@@ -60,6 +60,8 @@ abstract class Connector extends LevelObject {
 
     Connector(String this.fillStyle);
 
+    bool canConnectToType(Connector other);
+
     void connect(Connector connector) {
         if (!this.connected && !connector.connected) {
             this.other = connector;
@@ -118,9 +120,23 @@ abstract class Connector extends LevelObject {
 class ConnectorPositive extends Connector {
 
     ConnectorPositive() : super("#40C0FF");
+
+    @override
+    bool canConnectToType(Connector other) => !(other is ConnectorPositive);
 }
 
 class ConnectorNegative extends Connector {
 
     ConnectorNegative() : super("#FF8000");
+
+    @override
+    bool canConnectToType(Connector other) => !(other is ConnectorNegative);
+}
+
+class ConnectorNeutral extends Connector {
+
+    ConnectorNeutral() : super("#90FF60");
+
+    @override
+    bool canConnectToType(Connector other) => true;
 }

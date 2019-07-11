@@ -13,6 +13,12 @@ mixin HasMatrix on LevelObject {
     RotationMatrix matrix;
 
     @override
+    void initMixins() {
+        super.initMixins();
+        updateMatrix();
+    }
+
+    @override
     set rot_angle(double value) {
         super.rot_angle = value;
         updateMatrix();
