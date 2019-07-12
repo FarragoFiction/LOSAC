@@ -2,6 +2,7 @@ import "dart:html";
 
 import "package:collection/collection.dart";
 
+import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import "../renderer/2d/renderable2d.dart";
 import "../renderer/2d/vector.dart";
@@ -41,6 +42,29 @@ class LevelObject extends SimpleLevelObject {
 
     double rot_angle = 0;
     double scale = 1;
+
+    @override
+    set pos_x(num val) {
+        super.pos_x = val;
+        makeBoundsDirty();
+    }
+
+    @override
+    set pos_y(num val) {
+        super.pos_y = val;
+        makeBoundsDirty();
+    }
+
+    Rectangle<num> _bounds;
+    bool dirtyBounds = true;
+
+    Rectangle<num> get bounds {
+        if (dirtyBounds) {
+            recalculateBounds();
+        }
+        return _bounds;
+    }
+
 
     LevelObject() : rot_angle = 0 {
         subObjects = new UnmodifiableSetView<LevelObject>(_subObjects);
@@ -108,8 +132,12 @@ class LevelObject extends SimpleLevelObject {
         sub.parentObject = null;
     }
 
-    Point<num> getWorldPosition() {
+    Point<num> getWorldPosition([Point<num> offset]) {
         Vector pos = this.posVector;
+
+        if (offset != null) {
+            pos += new Vector.fromPoint(offset).rotate(this.rot_angle);
+        }
 
         if (this.parentObject == null) { return pos; }
 
@@ -137,7 +165,7 @@ class LevelObject extends SimpleLevelObject {
         final Vector worldpos = this.getWorldPosition();
         final Vector parentpos = worldpos - this.posVector;
 
-        print("pos: $pos, worldpos: $worldpos, parentpos: $parentpos");
+        //print("pos: $pos, worldpos: $worldpos, parentpos: $parentpos");
         return pos - parentpos;
     }
 
@@ -158,4 +186,23 @@ class LevelObject extends SimpleLevelObject {
 
         return angle - parentrot;
     }
+
+    void makeBoundsDirty() {
+        this.dirtyBounds = true;
+        if (parentObject != null) {
+            parentObject.makeBoundsDirty();
+        }
+    }
+
+    void recalculateBounds() {
+        if (dirtyBounds) {
+            for (final LevelObject o in this.subObjects) {
+                o.recalculateBounds();
+            }
+            _bounds = calculateBounds();
+            dirtyBounds = false;
+        }
+    }
+
+    Rectangle<num> calculateBounds() => rectBounds(this, 10,10);
 }

@@ -13,6 +13,13 @@ class Vector extends Math.Point<num> {
 
     Vector(num x, num y) : super(x,y);
 
+    factory Vector.fromPoint(Math.Point<num> point) {
+        if (point is Vector) {
+            return point;
+        }
+        return new Vector(point.x, point.y);
+    }
+
     Vector applyMatrix(RotationMatrix matrix) {
         final num x = matrix.cos * this.x - matrix.sin * this.y;
         final num y = matrix.sin * this.x + matrix.cos * this.y;

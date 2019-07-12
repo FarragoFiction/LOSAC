@@ -61,6 +61,8 @@ void main() {
 
     testPath.rebuildSegments();
 
+    testPath.recentreOrigin();
+
     testLevel.objects.add(testPath);
 
     // entrances and exit
@@ -78,6 +80,8 @@ void main() {
     // build path nodes
 
     testLevel.derivePathNodes();
+
+    testLevel.buildDomainMap();
 
     Renderer2D renderer = new Renderer2D(testCanvas, testLevel);
 }

@@ -1,6 +1,7 @@
 import "dart:html";
 import "dart:math" as Math;
 
+import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
 import "connectible.dart";
@@ -29,6 +30,9 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
     }
 
     void drawSymbol(CanvasRenderingContext2D ctx, double size);
+
+    @override
+    Rectangle<num> calculateBounds() => rectBounds(this, Grid.cellSize, Grid.cellSize);
 }
 
 class SpawnerObject extends EndCap<SpawnNode> {
@@ -40,6 +44,7 @@ class SpawnerObject extends EndCap<SpawnNode> {
         n.posVector = this.getWorldPosition();
 
         this.node = n;
+        n.pathObject = this;
         this.connector.node = n;
 
         return <PathNode>[n];
@@ -68,6 +73,7 @@ class ExitObject extends EndCap<ExitNode> {
         n.posVector = this.getWorldPosition();
 
         this.node = n;
+        n.pathObject = this;
         this.connector.node = n;
 
         return <PathNode>[n];

@@ -11,6 +11,8 @@ abstract class PathNodeObject {
 
 class PathNode extends SimpleLevelObject {
     int id;
+    PathNodeObject pathObject;
+
     bool blocked = false;
     bool validShortcut = false;
 

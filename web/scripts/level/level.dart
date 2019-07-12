@@ -1,17 +1,27 @@
 import "dart:html";
 
+import "../renderer/2d/bounds.dart";
 import "../renderer/2d/renderable2d.dart";
+import "../renderer/2d/vector.dart";
 import "connectible.dart";
+import "domainmap.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
 class Level with Renderable2D {
 
     Set<LevelObject> objects = <LevelObject>{};
+    Iterable<Connectible> connectibles;
 
     final List<PathNode> pathNodes = <PathNode>[];
     final List<SpawnNode> spawners = <SpawnNode>[];
     ExitNode exit;
+
+    DomainMap domainMap;
+
+    Level() {
+        connectibles = objects.whereType();
+    }
 
     @override
     void drawToCanvas(CanvasRenderingContext2D ctx) {
@@ -27,6 +37,29 @@ class Level with Renderable2D {
         }
 
         drawPathNodes(ctx, scaleFactor);
+
+        drawBoundingBoxes(ctx, scaleFactor);
+    }
+
+    void drawBoundingBoxes(CanvasRenderingContext2D ctx, double scaleFactor) {
+        const double cross = 10;
+        ctx.strokeStyle = "rgba(255,200,20)";
+        for (final LevelObject o in objects) {
+            final Rectangle<num> bounds = o.bounds;
+            ctx.strokeRect(bounds.left * scaleFactor, bounds.top * scaleFactor, bounds.width * scaleFactor, bounds.height * scaleFactor);
+
+            final Vector v = o.getWorldPosition() * scaleFactor;
+
+            ctx
+                ..beginPath()
+                ..moveTo(v.x - cross, v.y)
+                ..lineTo(v.x + cross, v.y)
+                ..stroke()
+                ..beginPath()
+                ..moveTo(v.x, v.y - cross)
+                ..lineTo(v.x, v.y + cross)
+                ..stroke();
+        }
     }
 
     void drawPathNodes(CanvasRenderingContext2D ctx, double scaleFactor) {
@@ -71,29 +104,49 @@ class Level with Renderable2D {
         this.spawners.clear();
         this.exit = null;
 
-        final Iterable<Connectible> connectibles = objects.whereType();
+        // starts at 1 because 0 is "no node"
+        int id = 1;
 
         for (final Connectible object in connectibles) {
             object.clearPathNodes();
         }
 
         for (final Connectible object in connectibles) {
-            pathNodes.addAll(object.generatePathNodes());
+            final Iterable<PathNode> nodes = object.generatePathNodes();
+
+            for(final PathNode node in nodes) {
+                node.id = id;
+                id++;
+                if (id >= 65536) {
+                    throw Exception("WHAT ARE YOU DOING?! THIS IS FAR TOO MANY NODES!");
+                }
+                pathNodes.add(node);
+
+                if (node is SpawnNode) {
+                    this.spawners.add(node);
+                } else if (node is ExitNode) {
+                    if (this.exit != null) {
+                        throw Exception("ONLY ONE EXIT, DUNKASS");
+                    }
+                    this.exit = node;
+                }
+            }
         }
 
         for (final Connectible object in connectibles) {
             object.connectPathNodes();
         }
+    }
 
-        for (final PathNode node in pathNodes) {
-            if (node is SpawnNode) {
-                this.spawners.add(node);
-            } else if (node is ExitNode) {
-                if (this.exit != null) {
-                    throw Exception("ONLY ONE EXIT, DUNKASS");
-                }
-                this.exit= node;
-            }
+    void buildDomainMap() {
+        final Rectangle<num> bounds = outerBounds(objects.map((LevelObject o) => o.bounds));
+
+        print(bounds);
+
+        domainMap = new DomainMap(bounds.left, bounds.top, bounds.width, bounds.height);
+
+        for (final Connectible object in connectibles) {
+
         }
     }
 }

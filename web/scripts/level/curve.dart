@@ -3,6 +3,7 @@ import "dart:math" as Math;
 
 import "package:collection/collection.dart";
 
+import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
 import "connectible.dart";
@@ -99,18 +100,6 @@ class Curve extends LevelObject with Connectible {
             }
             ctx.stroke();
         }
-
-        /*if (renderSegments) {
-            for (final CurveSegment segment in segments) {
-                segment.drawToCanvas(ctx);
-            }
-        }
-
-        if (renderVertices) {
-            for (final CurveVertex vertex in vertices) {
-                vertex.drawToCanvas(ctx);
-            }
-        }*/
     }
 
     void addVertex(CurveVertex vert) {
@@ -176,7 +165,7 @@ class Curve extends LevelObject with Connectible {
         Vector norm = (p1 + p2 + p3 + p4).norm();
         norm = new Vector(-norm.y, norm.x);
 
-        return new CurveSegment()..pos_x = point.x..pos_y = point.y..norm = norm;
+        return new CurveSegment()..pos_x = point.x..pos_y = point.y..norm = norm..parentObject=this;
     }
 
     @override
@@ -189,7 +178,9 @@ class Curve extends LevelObject with Connectible {
         for(int i=0; i<segments.length; i++) {
             seg = segments[i];
 
-            final PathNode node = new PathNode()..posVector = seg.getWorldPosition();
+            final PathNode node = new PathNode()
+                ..posVector = seg.getWorldPosition()
+                ..pathObject = this;
             seg.node = node;
             nodes.add(node);
 
@@ -223,12 +214,7 @@ class Curve extends LevelObject with Connectible {
         {
             final CurveVertex vertex = this.vertices.first;
             final Connector connector = new ConnectorNegative()
-                //..pos_x = vertex.pos_x
-                //..pos_y = vertex.pos_y
-                //..rot_angle = vertex.rot_angle + Math.pi
-                ..rot_angle = Math.pi
-            ;
-            //this.addSubObject(connector);
+                ..rot_angle = Math.pi;
             vertex.addSubObject(connector);
             startConnector = connector;
             connector.parentObject = vertex;//this;
@@ -236,16 +222,37 @@ class Curve extends LevelObject with Connectible {
 
         {
             final CurveVertex vertex = this.vertices.last;
-            final Connector connector = new ConnectorNegative()
-                //..pos_x = vertex.pos_x
-                //..pos_y = vertex.pos_y
-                //..rot_angle = vertex.rot_angle
-            ;
-            //this.addSubObject(connector);
+            final Connector connector = new ConnectorNegative();
             vertex.addSubObject(connector);
             endConnector = connector;
             connector.parentObject = vertex;//this;
         }
+    }
+
+    void recentreOrigin() {
+        final Vector newCentreWorld = new Vector(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+        final Vector offset = getLocalPositionFromWorld(newCentreWorld);
+
+        this.posVector += offset;
+        for (final LevelObject obj in subObjects) {
+            obj.posVector -= offset;
+        }
+        for (final CurveSegment segment in segments) {
+            segment.posVector -= offset;
+        }
+    }
+
+    @override
+    Rectangle<num> calculateBounds() {
+        final List<Vector> points = <Vector>[];
+
+        for (final CurveSegment segment in segments) {
+            final Vector vpos = segment.posVector;
+            points.add(vpos + segment.norm * width);
+            points.add(vpos - segment.norm * width);
+        }
+
+        return polyBoundsLocal(this, points);
     }
 }
 
