@@ -1,5 +1,6 @@
 import "dart:math" as Math;
 
+import "domainmap.dart";
 import "levelobject.dart";
 
 /// Interface for LevelObjects which provide PathNodes
@@ -7,6 +8,7 @@ abstract class PathNodeObject {
     Iterable<PathNode> generatePathNodes();
     void connectPathNodes();
     void clearPathNodes();
+    void fillDomainMap(DomainMapRegion map);
 }
 
 class PathNode extends SimpleLevelObject {

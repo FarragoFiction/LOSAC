@@ -109,7 +109,7 @@ abstract class Connector extends LevelObject {
         final Vector movePos = targetPos - rotatedPos;
 
 
-        final Vector finalPos = this.getLocalPositionFromWorld(movePos) + this.parentObject.posVector;
+        final Vector finalPos = this.getLocalPositionFromWorld(movePos) + this.parentObject.posVector + this.posVector;
         final double finalAngle = this.parentObject.rot_angle + angleOffset;
 
         this.parentObject.rot_angle = finalAngle;

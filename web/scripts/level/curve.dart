@@ -7,6 +7,7 @@ import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
 import "connectible.dart";
+import "domainmap.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
@@ -253,6 +254,11 @@ class Curve extends LevelObject with Connectible {
         }
 
         return polyBoundsLocal(this, points);
+    }
+
+    @override
+    void fillDomainMap(DomainMapRegion map) {
+
     }
 }
 

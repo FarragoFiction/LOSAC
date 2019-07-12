@@ -2,7 +2,6 @@ import "dart:html";
 import "dart:math" as Math;
 
 import "../../level/levelobject.dart";
-import "matrix.dart";
 import "vector.dart";
 
 Rectangle<num> polyBounds(List<Vector> vertices) {

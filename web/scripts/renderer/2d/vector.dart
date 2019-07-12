@@ -27,6 +27,13 @@ class Vector extends Math.Point<num> {
         return new Vector(x,y);
     }
 
+    Vector applyMatrixInverse(RotationMatrix matrix) {
+        final num x = matrix.cos * this.y - matrix.sin * this.x;
+        final num y = matrix.sin * this.y + matrix.cos * this.x;
+
+        return new Vector(x,y);
+    }
+
     Vector rotate(num angle) => applyMatrix(new RotationMatrix(angle));
 
     @override

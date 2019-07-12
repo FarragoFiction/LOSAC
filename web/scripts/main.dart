@@ -82,6 +82,7 @@ void main() {
     testLevel.derivePathNodes();
 
     testLevel.buildDomainMap();
+    testLevel.domainMap.updateDebugCanvas();
 
     Renderer2D renderer = new Renderer2D(testCanvas, testLevel);
 }

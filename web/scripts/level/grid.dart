@@ -6,6 +6,7 @@ import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
 
 import "connectible.dart";
+import "domainmap.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
@@ -203,9 +204,34 @@ class Grid extends LevelObject with HasMatrix, Connectible {
         return c;
     }
 
+    GridCell getCellFromCoords(num x, num y) {
+        final double ox = this.xSize * 0.5 * cellSize;
+        final double oy = this.ySize * 0.5 * cellSize;
+
+        final int cx = ((x + ox) / cellSize).floor();
+        final int cy = ((y + oy) / cellSize).floor();
+
+        return getCell(cx, cy);
+    }
+
     @override
     Rectangle<num> calculateBounds() {
         return rectBounds(this, xSize * cellSize, ySize * cellSize);
+    }
+
+    @override
+    void fillDomainMap(DomainMapRegion map) {
+        Vector mWorld, local;
+        for (int my = 0; my < map.height; my++) {
+            for (int mx = 0; mx < map.width; mx++) {
+                mWorld = map.getWorldCoords(mx, my);
+                local = this.getLocalPositionFromWorld(mWorld);
+                final GridCell cell = getCellFromCoords(local.x, local.y);
+                if (cell != null && cell.node != null) {
+                    map.setVal(mx, my, cell.node.id);
+                }
+            }
+        }
     }
 }
 

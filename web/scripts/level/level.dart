@@ -146,7 +146,11 @@ class Level with Renderable2D {
         domainMap = new DomainMap(bounds.left, bounds.top, bounds.width, bounds.height);
 
         for (final Connectible object in connectibles) {
+            final Rectangle<num> bounds = object.bounds;
 
+            final DomainMapRegion boundsRegion = domainMap.subRegionForBounds(bounds);
+
+            object.fillDomainMap(boundsRegion);
         }
     }
 }
