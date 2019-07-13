@@ -81,10 +81,6 @@ class Renderer2D {
 
         level.drawToCanvas(ctx);
 
-        if (level.domainMap != null && level.domainMap.debugCanvas != null) {
-            ctx.drawImage(level.domainMap.debugCanvas, level.domainMap.pos_x, level.domainMap.pos_y);
-        }
-
         ctx.restore();
 
         ctx.save();

@@ -28,6 +28,10 @@ class Level with Renderable2D {
         for (final LevelObject o in objects) {
             o.drawToCanvas(ctx);
         }
+
+        if (domainMap != null && domainMap.debugCanvas != null) {
+            ctx.drawImage(domainMap.debugCanvas, domainMap.pos_x, domainMap.pos_y);
+        }
     }
 
     @override

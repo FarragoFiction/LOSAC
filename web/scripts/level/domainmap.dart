@@ -59,7 +59,7 @@ class DomainMap {
         return new Vector((x + 0.5) * cellSize + pos_x, (y + 0.5) * cellSize + pos_y);
     }
 
-    Vector getLocalCoords(double x, double y) => new Vector((x - pos_x) ~/ cellSize, (y - pos_y) ~/ cellSize);
+    Vector getLocalCoords(double x, double y) => new Vector(((x - pos_x) / cellSize).floor(), ((y - pos_y) / cellSize).floor());
 
     DomainMapRegion subRegion(int x, int y, int w, int h) => new DomainMapRegion(this, x, y, w, h);
     DomainMapRegion subRegionForBounds(Rectangle<num> bounds) {
@@ -141,5 +141,10 @@ class DomainMapRegion {
         }
 
         return new Vector((x + ox + 0.5) * DomainMap.cellSize + map.pos_x, (y + oy + 0.5) * DomainMap.cellSize + map.pos_y);
+    }
+
+    Vector getLocalCoords(double x, double y) {
+        final Vector mapLocal = map.getLocalCoords(x, y);
+        return new Vector(mapLocal.x - ox, mapLocal.y - oy);
     }
 }

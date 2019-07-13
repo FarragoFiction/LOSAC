@@ -63,18 +63,8 @@ class Curve extends LevelObject with Connectible {
             for(int i=0; i<segments.length; i++) {
                 final CurveSegment seg = segments[i];
                 final Vector pos = seg.posVector;
-                double mult = 1.0;
 
-                if (i != 0 && i != segments.length-1) {
-                    final Vector v1 = (pos - segments[i - 1].posVector).norm();
-                    final Vector v2 = (segments[i + 1].posVector - pos).norm();
-                    final double dot = v1.dot(v2);
-                    mult = Math.sqrt(2 / (dot + 1));
-                }
-
-                mult *= width;
-
-                final Vector offset = seg.norm * mult;
+                final Vector offset = seg.norm * width * seg.cornerMultiplier;
 
                 left.add(pos + offset);
                 right.add(pos - offset);
@@ -136,6 +126,21 @@ class Curve extends LevelObject with Connectible {
                 }
 
                 v1 = v2;
+            }
+
+            for(int i=0; i<segments.length; i++) {
+                final CurveSegment seg = segments[i];
+                final Vector pos = seg.posVector;
+                double mult = 1.0;
+
+                if (i != 0 && i != segments.length - 1) {
+                    final Vector v1 = (pos - segments[i - 1].posVector).norm();
+                    final Vector v2 = (segments[i + 1].posVector - pos).norm();
+                    final double dot = v1.dot(v2);
+                    mult = Math.sqrt(2 / (dot + 1));
+                }
+
+                seg.cornerMultiplier = mult;
             }
         }
     }
@@ -249,8 +254,8 @@ class Curve extends LevelObject with Connectible {
 
         for (final CurveSegment segment in segments) {
             final Vector vpos = segment.posVector;
-            points.add(vpos + segment.norm * width);
-            points.add(vpos - segment.norm * width);
+            points.add(vpos + segment.norm * width * segment.cornerMultiplier);
+            points.add(vpos - segment.norm * width * segment.cornerMultiplier);
         }
 
         return polyBoundsLocal(this, points);
@@ -259,11 +264,99 @@ class Curve extends LevelObject with Connectible {
     @override
     void fillDomainMap(DomainMapRegion map) {
 
+        final List<List<Vector>> polys = new List<List<Vector>>.generate(segments.length, (int i) => new List<Vector>(4));
+
+        for(int i=0; i<segments.length; i++) {
+            final CurveSegment seg = segments[i];
+            final Vector pos = seg.getWorldPosition();
+
+            final List<Vector> poly = polys[i];
+
+            final Vector left = pos - seg.norm * width * seg.cornerMultiplier * 1.1;
+            final Vector right = pos + seg.norm * width * seg.cornerMultiplier * 1.1;
+
+            // not first, do previous side
+            if (i != 0) {
+                // shouldn't need to do anything here
+                // the loop fills the first two verts of later polys when it does the second two of the previous one
+            } else {
+                poly[0] = left;
+                poly[1] = right;
+            }
+            // not last, do next side
+            if(i != segments.length - 1) {
+                final CurveSegment next = segments[i+1];
+                final List<Vector> nextPoly = polys[i+1];
+                final Vector nextPos = next.getWorldPosition();
+
+                final Vector nextLeft = nextPos - next.norm * width * next.cornerMultiplier;
+                final Vector nextRight = nextPos + next.norm * width * next.cornerMultiplier;
+
+                final Vector aveLeft = (left + nextLeft) / 2;
+                final Vector aveRight = (right + nextRight) / 2;
+
+                poly[2] = aveRight;
+                poly[3] = aveLeft;
+
+                nextPoly[0] = aveLeft;
+                nextPoly[1] = aveRight;
+            } else {
+                poly[2] = right;
+                poly[3] = left;
+            }
+        }
+
+        for (int i=0; i<segments.length; i++) {
+            final CurveSegment seg = segments[i];
+            final List<Vector> worldPoly = polys[i];
+            final List<Vector> poly = worldPoly.map((Vector v) => map.getLocalCoords(v.x, v.y)).toList();
+
+            final int top = Math.min(Math.min(poly[0].y, poly[1].y), Math.min(poly[2].y, poly[3].y)).floor();
+            final int bottom = Math.max(Math.max(poly[0].y, poly[1].y), Math.max(poly[2].y, poly[3].y)).ceil();
+
+            { // quad fill
+                const int polyCorners = 4;
+
+                for (int y = top; y <= bottom; y++) {
+                    int nodes = 0;
+                    final List<int> nodeX = new List<int>(polyCorners);
+
+                    int j = polyCorners-1;
+                    for (int i=0; i<polyCorners; i++) {
+                        if (poly[i].y < y && poly[j].y >= y || poly[j].y < y && poly[i].y >= y) {
+                            nodeX[nodes++] = (poly[i].x + (y - poly[i].y) / (poly[j].y-poly[i].y) * (poly[j].x-poly[i].x)).round();
+                        }
+                        j = i;
+                    }
+
+                    int i=0;
+                    while (i < nodes-1) {
+                        if (nodeX[i] > nodeX[i+1]) {
+                            final int swap = nodeX[i];
+                            nodeX[i] = nodeX[i+1];
+                            nodeX[i+1] = swap;
+                            if(i != 0) {
+                                i--;
+                            }
+                        } else {
+                            i++;
+                        }
+                    }
+
+                    for (int i=0; i<nodes; i+=2) {
+                        for (int pixelX = nodeX[i]; pixelX<=nodeX[i+1]; pixelX++) {
+                            map.setVal(pixelX, y, seg.node.id);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 class CurveSegment extends LevelObject {
     Vector norm;
+    double cornerMultiplier = 1.0;
 
     PathNode node;
 
