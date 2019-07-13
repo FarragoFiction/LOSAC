@@ -8,3 +8,5 @@ targets:
         release_options:
           dart2js_args:
             - -O3
+      CommonLib|worker_builder:
+        enabled: true

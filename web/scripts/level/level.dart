@@ -145,8 +145,6 @@ class Level with Renderable2D {
     void buildDomainMap() {
         final Rectangle<num> bounds = outerBounds(objects.map((LevelObject o) => o.bounds));
 
-        print(bounds);
-
         domainMap = new DomainMap(bounds.left, bounds.top, bounds.width, bounds.height);
 
         for (final Connectible object in connectibles) {

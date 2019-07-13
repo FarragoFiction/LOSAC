@@ -1,14 +1,14 @@
+import "dart:async";
 import 'dart:html';
 
 import "level/curve.dart";
 import "level/endcap.dart";
 import "level/grid.dart";
 import "level/level.dart";
-import "level/levelobject.dart";
+import "pathfinder/pathfinder.dart";
 import "renderer/2d/renderer2d.dart";
-import "renderer/2d/vector.dart";
 
-void main() {
+Future<void> main() async {
     print("LOSAC yo");
 
     final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600)..style.border="1px solid black";
@@ -16,6 +16,7 @@ void main() {
 
     document.body.append(testCanvas);
 
+    final Pathfinder pathfinder = new Pathfinder();
     final Level testLevel = new Level();
 
     // basic object test
@@ -42,10 +43,15 @@ void main() {
     }
 
     testGrid.updateConnectors();
+    testLevel.objects.add(testGrid);
+
+    // side grid
+
+    final Grid sideGrid = new Grid(4,1)..pos_x = 200..pos_y = 160..rot_angle = 0.75;
+    sideGrid.updateConnectors();
+    testLevel.objects.add(sideGrid);
 
     // curve
-
-    testLevel.objects.add(testGrid);
 
     final Curve testPath = new Curve()
         //..renderVertices=true
@@ -81,8 +87,17 @@ void main() {
 
     testLevel.derivePathNodes();
 
+    // send node data, evaluate connectivity
+    await pathfinder.transferNodeData(testLevel);
+
     testLevel.buildDomainMap();
     //testLevel.domainMap.updateDebugCanvas();
 
+    await pathfinder.transferDomainMap(testLevel);
+
     Renderer2D renderer = new Renderer2D(testCanvas, testLevel);
+
+
+
+
 }

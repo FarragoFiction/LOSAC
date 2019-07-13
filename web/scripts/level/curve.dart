@@ -314,7 +314,9 @@ class Curve extends LevelObject with Connectible {
             final int top = Math.min(Math.min(poly[0].y, poly[1].y), Math.min(poly[2].y, poly[3].y)).floor();
             final int bottom = Math.max(Math.max(poly[0].y, poly[1].y), Math.max(poly[2].y, poly[3].y)).ceil();
 
-            { // quad fill
+            // polygon fill
+            // http://alienryderflex.com/polygon_fill/
+            {
                 const int polyCorners = 4;
 
                 for (int y = top; y <= bottom; y++) {

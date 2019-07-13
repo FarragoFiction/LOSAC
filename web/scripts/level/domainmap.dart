@@ -27,7 +27,11 @@ class DomainMap {
         height = (levelHeight/cellSize).ceil() + cellBuffer * 2
     {
         _array = new Uint16List(width*height);
-        print("DomainMap size: ${array.length}");
+    }
+
+    int getVal(num x, num y) {
+        final Vector local = getLocalCoords(x, y);
+        return getValLocal(local.x, local.y);
     }
 
     int getID(int x, int y) {
@@ -36,14 +40,14 @@ class DomainMap {
         }
         return y * width + x;
     }
-    int getVal(int x, int y) {
+    int getValLocal(int x, int y) {
         final int id = getID(x,y);
         if (id == -1) {
             return 0;
         }
         return array[id];
     }
-    void setVal(int x, int y, int val) {
+    void setValLocal(int x, int y, int val) {
         final int id = getID(x,y);
         if (id == -1) {
             return;
@@ -59,7 +63,7 @@ class DomainMap {
         return new Vector((x + 0.5) * cellSize + pos_x, (y + 0.5) * cellSize + pos_y);
     }
 
-    Vector getLocalCoords(double x, double y) => new Vector(((x - pos_x) / cellSize).floor(), ((y - pos_y) / cellSize).floor());
+    Vector getLocalCoords(num x, num y) => new Vector(((x - pos_x) / cellSize).floor(), ((y - pos_y) / cellSize).floor());
 
     DomainMapRegion subRegion(int x, int y, int w, int h) => new DomainMapRegion(this, x, y, w, h);
     DomainMapRegion subRegionForBounds(Rectangle<num> bounds) {
