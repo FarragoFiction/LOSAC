@@ -6,6 +6,7 @@ import "package:CommonLib/Workers.dart";
 
 import "../level/domainmap.dart";
 import "../level/pathnode.dart";
+import "../renderer/2d/vector.dart";
 import "../utility/levelutils.dart";
 import "commands.dart";
 
@@ -84,9 +85,11 @@ class PathWorker extends WorkerBase {
         // ignore blocked, because we care about disconnected cells, not blocked ones here
         final List<PathNode> unconnected = await connectivityTest(ignoreBlockedStatus: true);
 
+        final List<int> returnIds = unconnected.map((PathNode node) => node.id).toList();
+
         LevelUtils.prunePathNodeList(pathNodes, unconnected);
 
-        return unconnected.map((PathNode node) => node.id).toList();
+        return returnIds;
     }
 
     Future<void> processDomainMap(dynamic domainMapPayload) async {
@@ -156,6 +159,7 @@ class PathWorker extends WorkerBase {
             final PathNode u = open.removeFirst();
 
             for (final PathNode neighbour in u.connections.keys) {
+                if (neighbour.blocked) { continue; }
                 final double alt = distance[u] + u.connections[neighbour];
                 if (alt < distance[neighbour]) {
                     distance[neighbour] = alt;
@@ -172,7 +176,7 @@ class PathWorker extends WorkerBase {
             }
         }
 
-        //calculateShortcuts();
+        calculateShortcuts();
 
         return pathNodes.map((PathNode node) => node.targetNode == null ? -1 : node.targetNode.id).toList();
     }

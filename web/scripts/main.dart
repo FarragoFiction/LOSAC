@@ -5,8 +5,11 @@ import "level/curve.dart";
 import "level/endcap.dart";
 import "level/grid.dart";
 import "level/level.dart";
+import "level/pathnode.dart";
 import "pathfinder/pathfinder.dart";
 import "renderer/2d/renderer2d.dart";
+import "renderer/2d/vector.dart";
+import "utility/levelutils.dart";
 
 Future<void> main() async {
     print("LOSAC yo");
@@ -40,6 +43,11 @@ Future<void> main() async {
     cells = testGrid.getCells(4, 4, 5, 5);
     for (final GridCell c in cells) {
         c.state = GridCellState.hole;
+    }
+
+    cells = testGrid.getCells(0, 8, 4, 8);
+    for (final GridCell c in cells) {
+        c.state = GridCellState.blocked;
     }
 
     testGrid.updateConnectors();
@@ -92,6 +100,22 @@ Future<void> main() async {
 
     testLevel.buildDomainMap();
     //testLevel.domainMap.updateDebugCanvas();
+
+    /*final List<Vector> highlightTest = <Vector>[];
+    for (int y=0; y<5; y++) {
+        for (int x=0; x<5; x++) {
+            highlightTest.add(new Vector(x,y));
+        }
+    }*/
+    /*PathNode c1 = testGrid.getCell(1, 9).node;
+    PathNode c2 = testGrid.getCell(2, 3).node;
+    final Set<Vector> highlightTest = testLevel.domainMap.selectCellsAlongLine(c1.pos_x, c1.pos_y, c2.pos_x, c2.pos_y, 50);
+    bool check = LevelUtils.isLineClear(testLevel.domainMap, testLevel.pathNodes, c1, c2);
+    print("route: ${c1.id} -> ${c2.id}, clear: $check");
+    print(highlightTest);
+
+    testLevel.domainMap.debugHighlight(highlightTest);*/
+
 
     await pathfinder.transferDomainMap(testLevel);
     await pathfinder.recalculatePathData(testLevel);

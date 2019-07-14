@@ -22,13 +22,15 @@ class DomainMap {
     CanvasElement debugCanvas;
 
     factory DomainMap(num x, num y, num levelWidth, num levelHeight) {
+        final int pos_x = (x - cellSize * cellBuffer).floor();
+        final int pos_y = (y - cellSize * cellBuffer).floor();
         final int width = (levelWidth/cellSize).ceil() + cellBuffer * 2;
         final int height = (levelHeight/cellSize).ceil() + cellBuffer * 2;
         final Uint16List array = new Uint16List(width*height);
-        return new DomainMap.fromData(x, y, width, height, array);
+        return new DomainMap.fromData(pos_x, pos_y, width, height, array);
     }
 
-    DomainMap.fromData(num x, num y, int this.width, int this.height, Uint16List array) : pos_x = x - cellSize * cellBuffer, pos_y = y - cellSize * cellBuffer {
+    DomainMap.fromData(int this.pos_x, int this.pos_y, int this.width, int this.height, Uint16List array) {
         _array = array;
         if (array.length != width * height) {
             throw Exception("DomainMap array length does not match dimensions! $width*$height = ${width*height} vs ${array.length}");
@@ -105,13 +107,28 @@ class DomainMap {
         }
     }
 
+    void debugHighlight(Iterable<Vector> cells) {
+        if (this.debugCanvas == null) { return; }
+
+        final CanvasRenderingContext2D ctx = debugCanvas.context2D;
+        ctx.save();
+
+        ctx.globalAlpha = 0.75;
+        ctx.fillStyle = "#FF0000";
+
+        for (final Vector c in cells) {
+            ctx.fillRect(c.x * cellSize, c.y * cellSize, cellSize, cellSize);
+        }
+
+        ctx.restore();
+    }
+
     Set<int> nodesAlongLine(double x1, double y1, double x2, double y2, double thickness) {
         final Set<int> nodes = <int>{};
         final Vector p1 = getLocalCoords(x1, y1);
         final Vector p2 = getLocalCoords(x2, y2);
-        final double distTest = (thickness * 0.25) / cellSize;
-        final int buffer = (distTest * 0.75).floor();
-        print(buffer);
+        final double distTest = (thickness * 0.5) / (cellSize * Math.sqrt2);
+        final int buffer = (distTest).floor();
 
         final double a = p1.y - p2.y;
         final double b = p2.x - p1.x;
@@ -130,6 +147,38 @@ class DomainMap {
 
                 if (dist < distTest) {
                     nodes.add(getValLocal(x, y));
+                }
+            }
+        }
+
+        return nodes;
+    }
+
+    Set<Vector> selectCellsAlongLine(num x1, num y1, num x2, num y2, num thickness) {
+        final Set<Vector> nodes = <Vector>{};
+        final Vector p1 = getLocalCoords(x1, y1);
+        final Vector p2 = getLocalCoords(x2, y2);
+        final double distTest = (thickness * 0.5) / (cellSize * Math.sqrt2);
+        final int buffer = (distTest).floor();
+        print(buffer);
+
+        final double a = p1.y - p2.y;
+        final double b = p2.x - p1.x;
+        final double c = p1.x * p2.y - p2.x * p1.y;
+
+        final double divisor = Math.sqrt(a*a + b*b);
+
+        final int left = Math.min(p1.x, p2.x) - buffer;
+        final int right = Math.max(p1.x, p2.x) + buffer;
+        final int top = Math.min(p1.y, p2.y) - buffer;
+        final int bottom = Math.max(p1.y, p2.y) + buffer;
+
+        for (int y = top; y<=bottom; y++) {
+            for (int x = left; x<=right; x++) {
+                final double dist = (a * x + b * y + c).abs() / divisor;
+
+                if (dist < distTest) {
+                    nodes.add(new Vector(x,y));
                 }
             }
         }

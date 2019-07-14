@@ -131,6 +131,7 @@ class Level with Renderable2D {
             ctx.save();
             if (routeNodes.contains(node)) {
                 ctx.strokeStyle = "rgba(30,50,255, 1.0)";
+                ctx.lineWidth = 2;
             }
 
             final Vector pos = node.posVector;

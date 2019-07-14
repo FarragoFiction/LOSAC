@@ -29,8 +29,6 @@ class Pathfinder {
 
         final List<dynamic> nodeIdsToPrune = await worker.sendCommand(Commands.processNodeData, payload: payload);
 
-        print("to prune: $nodeIdsToPrune");
-
         level.prunePathNodes(nodeIdsToPrune.map<PathNode>((dynamic id) => level.pathNodes[id-1]));
     }
 
