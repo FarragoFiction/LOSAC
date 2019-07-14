@@ -123,12 +123,15 @@ class DomainMap {
         ctx.restore();
     }
 
-    Set<int> nodesAlongLine(double x1, double y1, double x2, double y2, double thickness) {
-        final Set<int> nodes = <int>{};
+    Set<int> valuesAlongLine(double x1, double y1, double x2, double y2, double thickness) => traceLine(x1, y1, x2, y2, thickness, getValLocal);
+    Set<Vector> cellsAlongLine(num x1, num y1, num x2, num y2, num thickness) => traceLine(x1, y1, x2, y2, thickness, (int x, int y) => new Vector(x,y));
+
+    Set<T> traceLine<T>(num x1, num y1, num x2, num y2, num thickness, T Function(int x, int y) getter) {
+        final Set<T> nodes = <T>{};
         final Vector p1 = getLocalCoords(x1, y1);
         final Vector p2 = getLocalCoords(x2, y2);
         final double distTest = (thickness * 0.5) / (cellSize * Math.sqrt2);
-        final int buffer = (distTest).floor();
+        final int buffer = distTest.floor();
 
         final double a = p1.y - p2.y;
         final double b = p2.x - p1.x;
@@ -146,39 +149,7 @@ class DomainMap {
                 final double dist = (a * x + b * y + c).abs() / divisor;
 
                 if (dist < distTest) {
-                    nodes.add(getValLocal(x, y));
-                }
-            }
-        }
-
-        return nodes;
-    }
-
-    Set<Vector> selectCellsAlongLine(num x1, num y1, num x2, num y2, num thickness) {
-        final Set<Vector> nodes = <Vector>{};
-        final Vector p1 = getLocalCoords(x1, y1);
-        final Vector p2 = getLocalCoords(x2, y2);
-        final double distTest = (thickness * 0.5) / (cellSize * Math.sqrt2);
-        final int buffer = (distTest).floor();
-        print(buffer);
-
-        final double a = p1.y - p2.y;
-        final double b = p2.x - p1.x;
-        final double c = p1.x * p2.y - p2.x * p1.y;
-
-        final double divisor = Math.sqrt(a*a + b*b);
-
-        final int left = Math.min(p1.x, p2.x) - buffer;
-        final int right = Math.max(p1.x, p2.x) + buffer;
-        final int top = Math.min(p1.y, p2.y) - buffer;
-        final int bottom = Math.max(p1.y, p2.y) + buffer;
-
-        for (int y = top; y<=bottom; y++) {
-            for (int x = left; x<=right; x++) {
-                final double dist = (a * x + b * y + c).abs() / divisor;
-
-                if (dist < distTest) {
-                    nodes.add(new Vector(x,y));
+                    nodes.add(getter(x,y));
                 }
             }
         }
