@@ -1,4 +1,5 @@
 
+import "../level/domainmap.dart";
 import "../level/pathnode.dart";
 
 abstract class LevelUtils {
@@ -12,6 +13,21 @@ abstract class LevelUtils {
         for (int i=0; i<nodes.length; i++) {
             nodes[i].id = i+1;
         }
+    }
+
+    static bool isLineClear(DomainMap domainMap, List<PathNode> pathNodes, PathNode fromNode, PathNode toNode) {
+        final Set<int> trace = domainMap.nodesAlongLine(fromNode.pos_x, fromNode.pos_y, toNode.pos_x, toNode.pos_y, 50);
+
+        if (trace.contains(0)) { return false; }
+
+        for (final int id in trace) {
+            final PathNode testNode = pathNodes[id - 1];
+            if (testNode.blocked) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

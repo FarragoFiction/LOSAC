@@ -172,7 +172,7 @@ class PathWorker extends WorkerBase {
             }
         }
 
-        calculateShortcuts();
+        //calculateShortcuts();
 
         return pathNodes.map((PathNode node) => node.targetNode == null ? -1 : node.targetNode.id).toList();
     }
@@ -186,30 +186,29 @@ class PathWorker extends WorkerBase {
             if (node.targetNode == null) { continue; }
 
             PathNode inode = node.targetNode;
-            while (inode.validShortcut && inode.targetNode != null && inode.targetNode.validShortcut) {
-                bool ok = true;
-                final Set<int> trace = domainMap.nodesAlongLine(node.pos_x, node.pos_y, inode.targetNode.pos_x, inode.targetNode.pos_y, 50);
-                if (trace.contains(0)) { break; }
-                for (final int id in trace) {
-                    final PathNode testNode = pathNodes[id-1];
-                    if (testNode.blocked) {
-                        ok = false;
+            while (inode.validShortcut) {
+                final bool clear = LevelUtils.isLineClear(domainMap, pathNodes, node, inode);
+
+                if (clear) {
+                    newTargets[node] = inode;
+                    if (inode.targetNode != null) {
+                        inode = inode.targetNode;
+                    } else {
                         break;
                     }
-                }
-                if (!ok) {
+                } else {
                     break;
                 }
-
-                inode = inode.targetNode;
             }
-            newTargets[node] = inode;
+
         }
 
         for (final PathNode node in newTargets.keys) {
             node.targetNode = newTargets[node];
         }
     }
+
+
 }
 
 void main() {

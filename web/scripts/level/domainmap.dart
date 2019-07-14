@@ -109,7 +109,9 @@ class DomainMap {
         final Set<int> nodes = <int>{};
         final Vector p1 = getLocalCoords(x1, y1);
         final Vector p2 = getLocalCoords(x2, y2);
-        final double distTest = (thickness) / cellSize;
+        final double distTest = (thickness * 0.25) / cellSize;
+        final int buffer = (distTest * 0.75).floor();
+        print(buffer);
 
         final double a = p1.y - p2.y;
         final double b = p2.x - p1.x;
@@ -117,27 +119,21 @@ class DomainMap {
 
         final double divisor = Math.sqrt(a*a + b*b);
 
-        final int left = Math.min(p1.x, p2.x);
-        final int right = Math.max(p1.x, p2.x);
-        final int top = Math.min(p1.y, p2.y);
-        final int bottom = Math.max(p1.y, p2.y);
-
-        //print("line <= $distTest");
+        final int left = Math.min(p1.x, p2.x) - buffer;
+        final int right = Math.max(p1.x, p2.x) + buffer;
+        final int top = Math.min(p1.y, p2.y) - buffer;
+        final int bottom = Math.max(p1.y, p2.y) + buffer;
 
         for (int y = top; y<=bottom; y++) {
             for (int x = left; x<=right; x++) {
                 final double dist = (a * x + b * y + c).abs() / divisor;
 
-                if (dist <= distTest) {
-                    //print("true: $x,$y -> $dist");
+                if (dist < distTest) {
                     nodes.add(getValLocal(x, y));
-                } else {
-                    //print("false: $x,$y -> $dist");
                 }
             }
         }
 
-        //print("$p1 -> $p2 : $nodes");
         return nodes;
     }
 }
