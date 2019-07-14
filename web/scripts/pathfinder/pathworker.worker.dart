@@ -185,18 +185,38 @@ class PathWorker extends WorkerBase {
         final Set<PathNode> shortcuttable = new Set<PathNode>.from(pathNodes.where((PathNode n) => n.validShortcut));
 
         final Map<PathNode,PathNode> newTargets = <PathNode,PathNode>{};
+        final Map<PathNode, List<PathNode>> shortcutPassSteps = <PathNode, List<PathNode>>{};
+
+        final Map<PathNode,Map<PathNode,double>> distances = <PathNode,Map<PathNode,double>>{};
+        double getDist(PathNode from, PathNode to) {
+            if(distances.containsKey(from)) {
+                final Map<PathNode, double> subdists = distances[from];
+                if (subdists.containsKey(to)) {
+                    return subdists[to];
+                }
+            } else {
+                distances[from] = <PathNode, double>{};
+            }
+            if (!distances.containsKey(to)) {
+                distances[to] = <PathNode, double>{};
+            }
+            final double dist = (to.posVector - from.posVector).length;
+            distances[from][to] = dist;
+            distances[to][from] = dist;
+            return dist;
+        }
 
         for (final PathNode node in shortcuttable) {
             if (node.targetNode == null) { continue; }
 
-            PathNode inode = node.targetNode;
-            while (inode.validShortcut) {
-                final bool clear = LevelUtils.isLineClear(domainMap, pathNodes, node, inode);
+            PathNode iNode = node.targetNode;
+            while (iNode.validShortcut) {
+                final bool clear = LevelUtils.isLineClear(domainMap, pathNodes, node, iNode);
 
                 if (clear) {
-                    newTargets[node] = inode;
-                    if (inode.targetNode != null) {
-                        inode = inode.targetNode;
+                    newTargets[node] = iNode;
+                    if (iNode.targetNode != null) {
+                        iNode = iNode.targetNode;
                     } else {
                         break;
                     }
@@ -208,11 +228,56 @@ class PathWorker extends WorkerBase {
         }
 
         for (final PathNode node in newTargets.keys) {
-            node.targetNode = newTargets[node];
+            //node.targetNode = newTargets[node];
+            final PathNode sNode = newTargets[node];
+
+            final List<PathNode> steps = domainMap
+                .valuesAlongLine(node.pos_x, node.pos_y, sNode.pos_x, sNode.pos_y, 10)
+                .map((int id) => pathNodes[id-1])
+                .where((PathNode n) => node != n)
+                .toList();
+
+            final Map<PathNode, double> distances = <PathNode, double>{};
+
+            for (final PathNode step in steps) {
+                distances[step] = getDist(node, step);
+                if (newTargets.containsKey(step)) {
+                    distances[step] += getDist(step, newTargets[step]);
+                }
+            }
+
+            steps.sort((PathNode a, PathNode b) => distances[a].compareTo(distances[b]));
+
+            shortcutPassSteps[node] = steps;
+        }
+
+        for (final PathNode node in shortcuttable) {
+            if (node.targetNode == null) { continue; }
+
+            PathNode iNode = node;
+            while(iNode.validShortcut) {
+                if (shortcutPassSteps.containsKey(iNode)) {
+                    final PathNode shortcut = refineShortcut(iNode, newTargets, shortcutPassSteps[iNode]);
+                    iNode.targetNode = shortcut;
+                    iNode = shortcut;
+                } else {
+                    if (newTargets.containsKey(iNode)) {
+                        iNode.targetNode = newTargets[iNode];
+                    }
+                    break;
+                }
+            }
         }
     }
 
-
+    PathNode refineShortcut(PathNode node, Map<PathNode,PathNode> newTargets, List<PathNode> steps) {
+        for (final PathNode testNode in steps) {
+            if (newTargets[testNode] != newTargets[node]) {
+                return testNode;
+            }
+        }
+        return newTargets[node];
+    }
 }
 
 void main() {

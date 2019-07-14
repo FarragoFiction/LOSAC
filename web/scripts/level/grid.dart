@@ -151,6 +151,20 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                     final GridCell left = getCell(x-1, y);
                     if (left.node != null) {
                         cell.node.connectTo(left.node);
+                        /*if (y < ySize - 1) {
+                            final GridCell down = getCell(x, y+1);
+                            final GridCell downLeft = getCell(x-1,y+1);
+                            if (down.node != null && downLeft.node != null) {
+                                cell.node.connectTo(downLeft.node);
+                            }
+                        }
+                        if (y > 0) {
+                            final GridCell up = getCell(x, y-1);
+                            final GridCell upLeft = getCell(x-1, y-1);
+                            if (up.node != null && upLeft.node != null) {
+                                cell.node.connectTo(upLeft.node);
+                            }
+                        }*/
                     }
                 }
                 if (y > 0) {
