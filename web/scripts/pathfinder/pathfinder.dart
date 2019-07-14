@@ -30,6 +30,8 @@ class Pathfinder {
         final List<dynamic> nodeIdsToPrune = await worker.sendCommand(Commands.processNodeData, payload: payload);
 
         print("to prune: $nodeIdsToPrune");
+
+        level.prunePathNodes(nodeIdsToPrune.map<PathNode>((dynamic id) => level.pathNodes[id-1]));
     }
 
     Future<void> transferDomainMap(Level level) async {
@@ -42,5 +44,21 @@ class Pathfinder {
         };
 
         await worker.sendCommand(Commands.sendDomainMap, payload: payload);
+    }
+
+    Future<void> recalculatePathData(Level level) async {
+        final List<dynamic> data = await worker.sendCommand(Commands.recalculatePaths);
+        print(data);
+
+        for (final PathNode node in level.pathNodes) {
+            node.targetNode = null;
+        }
+
+        for (int i=0; i<data.length; i++) {
+            final int targetId = data[i];
+            if (targetId > 0) {
+                level.pathNodes[i].targetNode = level.pathNodes[targetId-1];
+            }
+        }
     }
 }

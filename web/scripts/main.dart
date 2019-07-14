@@ -94,10 +94,9 @@ Future<void> main() async {
     //testLevel.domainMap.updateDebugCanvas();
 
     await pathfinder.transferDomainMap(testLevel);
+    await pathfinder.recalculatePathData(testLevel);
 
     Renderer2D renderer = new Renderer2D(testCanvas, testLevel);
-
-
 
 
 }

@@ -1,4 +1,5 @@
 import "dart:html";
+import "dart:math" as Math;
 import "dart:typed_data";
 
 import "package:CommonLib/Colours.dart";
@@ -20,13 +21,18 @@ class DomainMap {
 
     CanvasElement debugCanvas;
 
-    DomainMap(num x, num y, num levelWidth, num levelHeight) :
-        pos_x = x - cellSize * cellBuffer,
-        pos_y = y - cellSize * cellBuffer,
-        width = (levelWidth/cellSize).ceil() + cellBuffer * 2,
-        height = (levelHeight/cellSize).ceil() + cellBuffer * 2
-    {
-        _array = new Uint16List(width*height);
+    factory DomainMap(num x, num y, num levelWidth, num levelHeight) {
+        final int width = (levelWidth/cellSize).ceil() + cellBuffer * 2;
+        final int height = (levelHeight/cellSize).ceil() + cellBuffer * 2;
+        final Uint16List array = new Uint16List(width*height);
+        return new DomainMap.fromData(x, y, width, height, array);
+    }
+
+    DomainMap.fromData(num x, num y, int this.width, int this.height, Uint16List array) : pos_x = x - cellSize * cellBuffer, pos_y = y - cellSize * cellBuffer {
+        _array = array;
+        if (array.length != width * height) {
+            throw Exception("DomainMap array length does not match dimensions! $width*$height = ${width*height} vs ${array.length}");
+        }
     }
 
     int getVal(num x, num y) {
@@ -97,6 +103,42 @@ class DomainMap {
                 ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
             }
         }
+    }
+
+    Set<int> nodesAlongLine(double x1, double y1, double x2, double y2, double thickness) {
+        final Set<int> nodes = <int>{};
+        final Vector p1 = getLocalCoords(x1, y1);
+        final Vector p2 = getLocalCoords(x2, y2);
+        final double distTest = (thickness) / cellSize;
+
+        final double a = p1.y - p2.y;
+        final double b = p2.x - p1.x;
+        final double c = p1.x * p2.y - p2.x * p1.y;
+
+        final double divisor = Math.sqrt(a*a + b*b);
+
+        final int left = Math.min(p1.x, p2.x);
+        final int right = Math.max(p1.x, p2.x);
+        final int top = Math.min(p1.y, p2.y);
+        final int bottom = Math.max(p1.y, p2.y);
+
+        //print("line <= $distTest");
+
+        for (int y = top; y<=bottom; y++) {
+            for (int x = left; x<=right; x++) {
+                final double dist = (a * x + b * y + c).abs() / divisor;
+
+                if (dist <= distTest) {
+                    //print("true: $x,$y -> $dist");
+                    nodes.add(getValLocal(x, y));
+                } else {
+                    //print("false: $x,$y -> $dist");
+                }
+            }
+        }
+
+        //print("$p1 -> $p2 : $nodes");
+        return nodes;
     }
 }
 

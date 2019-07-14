@@ -3,6 +3,7 @@ import "dart:html";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/renderable2d.dart";
 import "../renderer/2d/vector.dart";
+import "../utility/levelutils.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import "levelobject.dart";
@@ -29,9 +30,12 @@ class Level with Renderable2D {
             o.drawToCanvas(ctx);
         }
 
+        ctx.save();
+        ctx.globalAlpha = 0.3;
         if (domainMap != null && domainMap.debugCanvas != null) {
             ctx.drawImage(domainMap.debugCanvas, domainMap.pos_x, domainMap.pos_y);
         }
+        ctx.restore();
     }
 
     @override
@@ -40,9 +44,11 @@ class Level with Renderable2D {
             o.drawUIToCanvas(ctx, scaleFactor);
         }
 
-        drawPathNodes(ctx, scaleFactor);
+        //drawPathNodes(ctx, scaleFactor);
 
-        drawBoundingBoxes(ctx, scaleFactor);
+        //drawBoundingBoxes(ctx, scaleFactor);
+
+        drawRoutes(ctx, scaleFactor);
     }
 
     void drawBoundingBoxes(CanvasRenderingContext2D ctx, double scaleFactor) {
@@ -102,6 +108,46 @@ class Level with Renderable2D {
         }
     }
 
+    void drawRoutes(CanvasRenderingContext2D ctx, double scaleFactor) {
+        ctx.save();
+        final Set<PathNode> routeNodes = <PathNode>{};
+        routeNodes.addAll(spawners);
+
+        for (final SpawnNode spawn in spawners) {
+            PathNode node = spawn;
+            while (node.targetNode != null) {
+                if (routeNodes.contains(node.targetNode)) {
+                    break;
+                }
+                routeNodes.add(node.targetNode);
+                node = node.targetNode;
+            }
+        }
+
+        ctx.strokeStyle = "rgba(30,50,255, 0.3)";
+
+        for (final PathNode node in pathNodes) {
+            if (node.targetNode == null) { continue; }
+            ctx.save();
+            if (routeNodes.contains(node)) {
+                ctx.strokeStyle = "rgba(30,50,255, 1.0)";
+            }
+
+            final Vector pos = node.posVector;
+            final Vector tpos = node.targetNode.posVector;
+
+            ctx
+                ..beginPath()
+                ..moveTo(pos.x * scaleFactor, pos.y * scaleFactor)
+                ..lineTo(tpos.x * scaleFactor, tpos.y * scaleFactor)
+                ..stroke();
+
+            ctx.restore();
+        }
+
+        ctx.restore();
+    }
+
     void derivePathNodes() {
         this.pathNodes.clear();
 
@@ -140,6 +186,10 @@ class Level with Renderable2D {
         for (final Connectible object in connectibles) {
             object.connectPathNodes();
         }
+    }
+
+    void prunePathNodes(Iterable<PathNode> toPrune) {
+        LevelUtils.prunePathNodeList(this.pathNodes, toPrune.toList());
     }
 
     void buildDomainMap() {
