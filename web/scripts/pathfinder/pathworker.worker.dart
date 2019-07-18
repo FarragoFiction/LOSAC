@@ -6,7 +6,7 @@ import "package:CommonLib/Workers.dart";
 
 import "../level/domainmap.dart";
 import "../level/pathnode.dart";
-import "../renderer/2d/vector.dart";
+//import "../renderer/2d/vector.dart";
 import "../utility/levelutils.dart";
 import "commands.dart";
 

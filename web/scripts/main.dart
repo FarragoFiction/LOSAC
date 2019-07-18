@@ -1,6 +1,9 @@
 import "dart:async";
 import 'dart:html';
 
+import "engine/game.dart";
+import "entities/enemy.dart";
+import "entities/enemytype.dart";
 import "level/curve.dart";
 import "level/endcap.dart";
 import "level/grid.dart";
@@ -18,6 +21,9 @@ Future<void> main() async {
     final CanvasRenderingContext2D ctx = testCanvas.context2D;
 
     document.body.append(testCanvas);
+
+    final DivElement fpsElement = new DivElement();
+    document.body.append(fpsElement);
 
     final Pathfinder pathfinder = new Pathfinder();
     final Level testLevel = new Level();
@@ -101,26 +107,21 @@ Future<void> main() async {
     testLevel.buildDomainMap();
     //testLevel.domainMap.updateDebugCanvas();
 
-    /*final List<Vector> highlightTest = <Vector>[];
-    for (int y=0; y<5; y++) {
-        for (int x=0; x<5; x++) {
-            highlightTest.add(new Vector(x,y));
-        }
-    }*/
-    /*PathNode c1 = testGrid.getCell(1, 9).node;
-    PathNode c2 = testGrid.getCell(2, 3).node;
-    final Set<Vector> highlightTest = testLevel.domainMap.selectCellsAlongLine(c1.pos_x, c1.pos_y, c2.pos_x, c2.pos_y, 50);
-    bool check = LevelUtils.isLineClear(testLevel.domainMap, testLevel.pathNodes, c1, c2);
-    print("route: ${c1.id} -> ${c2.id}, clear: $check");
-    print(highlightTest);
-
-    testLevel.domainMap.debugHighlight(highlightTest);*/
-
-
     await pathfinder.transferDomainMap(testLevel);
     await pathfinder.recalculatePathData(testLevel);
 
-    Renderer2D renderer = new Renderer2D(testCanvas, testLevel);
+    final EnemyType testEnemyType = new EnemyType();
+    
+    Enemy testEnemy = new Enemy(testEnemyType)
+        ..posVector = testSpawner1.posVector
+        ..rot_angle = testSpawner1.rot_angle;
+    
+    final Renderer2D renderer = new Renderer2D(testCanvas);
 
+    final Game game = new Game(renderer)
+        ..addObject(testEnemy)
+        ..level = testLevel
+        ..fpsElement = fpsElement
+        ..start();
 
 }

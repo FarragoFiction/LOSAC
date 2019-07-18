@@ -162,12 +162,8 @@ class LevelObject extends SimpleLevelObject {
     }
 
     Point<num> getLocalPositionFromWorld(Point<num> pos) {
-        final Vector worldpos = this.getWorldPosition();
-        //final Vector parentpos = worldpos - this.posVector;
-
-        //print("pos: $pos, worldpos: $worldpos, parentpos: $parentpos");
-        //return pos - parentpos;
-        return new Vector.fromPoint(pos - worldpos).rotate(-rot_angle);
+        final Vector worldPos = this.getWorldPosition();
+        return new Vector.fromPoint(pos - worldPos).rotate(-rot_angle);
     }
 
     num getWorldRotation() {
@@ -183,9 +179,9 @@ class LevelObject extends SimpleLevelObject {
     }
 
     num getLocalRotationFromWorld(num angle) {
-        final num parentrot = getWorldRotation() - this.rot_angle;
+        final num parentRot = getWorldRotation() - this.rot_angle;
 
-        return angle - parentrot;
+        return angle - parentRot;
     }
 
     void makeBoundsDirty() {

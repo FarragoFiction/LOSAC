@@ -20,6 +20,8 @@ class Vector extends Math.Point<num> {
         return new Vector(point.x, point.y);
     }
 
+    factory Vector.zero() => new Vector(0,0);
+
     Vector applyMatrix(RotationMatrix matrix) {
         final num x = matrix.cos * this.x - matrix.sin * this.y;
         final num y = matrix.sin * this.x + matrix.cos * this.y;

@@ -1,15 +1,16 @@
 import "dart:html";
 import "dart:math" as Math;
 
-import "../../level/level.dart";
+import "../../engine/engine.dart";
+import "../renderer.dart";
+import "renderable2d.dart";
 
 /// Debug and stand-in development renderer!
 /// Render chain involving classes implementing [Renderable2D]
 /// Slow compared to 3d but as long as individual objects are simple drawing should be cheap enough to be workable
-class Renderer2D {
+class Renderer2D extends Renderer{
     final CanvasElement canvas;
     final CanvasRenderingContext2D ctx;
-    Level level;
 
     bool dragging = false;
     int zoomLevel = 0;
@@ -17,13 +18,19 @@ class Renderer2D {
 
     Point<num> offset = const Point<num>(0,0);
 
-    Renderer2D(CanvasElement this.canvas, Level this.level) : ctx = canvas.context2D {
+    Iterable<Renderable2D> renderableEntities;
+
+    @override
+    set engine(Engine e) {
+        super.engine = e;
+        this.renderableEntities = e.entities.whereType();
+    }
+
+    Renderer2D(CanvasElement this.canvas) : ctx = canvas.context2D {
         this.canvas.onMouseDown.listen(mouseDown);
         window.onMouseUp.listen(mouseUp);
         window.onMouseMove.listen(mouseMove);
         this.canvas.onMouseWheel.listen(mouseWheel);
-
-        redraw();
     }
 
     void mouseDown(MouseEvent e) {
@@ -45,7 +52,7 @@ class Renderer2D {
             offset += e.movement;
             //print("offset: $offset");
 
-            redraw();
+            //draw();
         }
     }
 
@@ -67,26 +74,35 @@ class Renderer2D {
 
         offset -= delta;
 
-        redraw();
+        //draw();
         //print(zoomLevel);
     }
 
     void clear() => ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    void redraw() {
+    @override
+    void draw([double dt = 0]) {
         this.clear();
         ctx.save();
         ctx.translate(offset.x, offset.y);
         ctx.scale(zoomFactor, zoomFactor);
 
-        level.drawToCanvas(ctx);
+        engine.level.drawToCanvas(ctx);
+
+        for (final Renderable2D o in renderableEntities) {
+            o.drawToCanvas(ctx);
+        }
 
         ctx.restore();
 
         ctx.save();
         ctx.translate(offset.x, offset.y);
 
-        level.drawUIToCanvas(ctx, zoomFactor);
+        engine.level.drawUIToCanvas(ctx, zoomFactor);
+
+        for (final Renderable2D o in renderableEntities) {
+            o.drawUIToCanvas(ctx, zoomFactor);
+        }
 
         ctx.restore();
     }
