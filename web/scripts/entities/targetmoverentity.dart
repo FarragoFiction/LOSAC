@@ -41,6 +41,7 @@ class TargetMoverEntity extends MoverEntity {
         final double angDiff = angleDiff(this.rot_angle, targetAngle);
 
         final double turnAmount = Math.min(angDiff.abs(), turnRate * dt);
+        this.previousRot = this.rot_angle;
         this.rot_angle += -turnAmount * angDiff.sign;
 
         if (angDiff.abs() < turnThreshold) {
@@ -63,7 +64,7 @@ class TargetMoverEntity extends MoverEntity {
         return dx*dx + dy*dy <= distance*distance;
     }
 
-    @override
+    /*@override
     void drawUIToCanvas(CanvasRenderingContext2D ctx, double scaleFactor) {
         ctx.strokeStyle = "#00FF00";
 
@@ -84,5 +85,5 @@ class TargetMoverEntity extends MoverEntity {
                 ..lineTo(targetPos.x * scaleFactor, targetPos.y * scaleFactor)
                 ..stroke();
         }
-    }
+    }*/
 }

@@ -1,10 +1,14 @@
 import "dart:html";
 
+import "../engine/game.dart";
 import "../entities/targetmoverentity.dart";
+import "../level/endcap.dart";
 import "../level/pathnode.dart";
 import "enemytype.dart";
 
 class Enemy extends TargetMoverEntity {
+
+    SpawnerObject originSpawner;
 
     double health;
     double get maxHealth => enemyType.health;
@@ -36,7 +40,7 @@ class Enemy extends TargetMoverEntity {
 
     @override
     void renderUpdate([num interpolation = 0]) {
-
+        super.renderUpdate(interpolation);
     }
 
     void updateTarget() {
@@ -49,6 +53,12 @@ class Enemy extends TargetMoverEntity {
                 this.targetPos = node.posVector;
             } else {
                 this.targetPos = node.targetNode.posVector;
+            }
+            if (engine is Game && node is ExitNode) {
+                if (closeToPos(node.pos_x, node.pos_y, this.stoppingThreshold + 1)) {
+                    final Game game = engine;
+                    game.leakEnemy(this);
+                }
             }
         }
     }

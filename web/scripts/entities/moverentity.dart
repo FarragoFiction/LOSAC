@@ -1,3 +1,6 @@
+import "dart:html";
+
+import "package:CommonLib/Utility.dart";
 
 import "../engine/entity.dart";
 import "../level/levelobject.dart";
@@ -12,6 +15,9 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
     Vector velocity = new Vector.zero();
     Vector previousPos;
+    double previousRot;
+    Vector drawPos;
+    double drawRot;
 
     MoverEntity() {
         speed = baseSpeed;
@@ -31,5 +37,33 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     @override
     void renderUpdate([num interpolation = 0]) {
         previousPos ??= posVector;
+        previousRot ??= rot_angle;
+
+        final double dx = this.pos_x - previousPos.x;
+        final double dy = this.pos_y - previousPos.y;
+        drawPos = new Vector(previousPos.x + dx * interpolation, previousPos.y + dy * interpolation);
+
+        final double da = angleDiff(rot_angle, previousRot);
+        drawRot = previousRot + da * interpolation;
+    }
+
+    @override
+    void drawToCanvas(CanvasRenderingContext2D ctx) {
+        if (hidden) { return; }
+        ctx.save();
+
+        ctx.translate(drawPos.x, drawPos.y);
+        ctx.rotate(drawRot);
+        ctx.scale(scale, scale);
+
+        if (!invisible) {
+            this.draw2D(ctx);
+        }
+
+        for (final LevelObject subObject in subObjects) {
+            subObject.drawToCanvas(ctx);
+        }
+
+        ctx.restore();
     }
 }

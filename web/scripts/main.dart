@@ -112,16 +112,19 @@ Future<void> main() async {
 
     final EnemyType testEnemyType = new EnemyType();
     
-    Enemy testEnemy = new Enemy(testEnemyType)
-        ..posVector = testSpawner1.posVector
-        ..rot_angle = testSpawner1.rot_angle;
-    
     final Renderer2D renderer = new Renderer2D(testCanvas);
 
     final Game game = new Game(renderer)
-        ..addObject(testEnemy)
         ..level = testLevel
         ..fpsElement = fpsElement
         ..start();
 
+    int n = 0;
+    new Timer.periodic(Duration(milliseconds: 1500), (Timer t) {
+        game.spawnEnemy(testEnemyType, testSpawner1);
+        n++;
+        if (n >= 30) {
+            t.cancel();
+        }
+    });
 }
