@@ -115,7 +115,7 @@ Future<void> main() async {
     final Renderer2D renderer = new Renderer2D(testCanvas);
 
     final Game game = new Game(renderer)
-        ..level = testLevel
+        ..setLevel(testLevel)
         ..fpsElement = fpsElement
         ..start();
 

@@ -1,12 +1,13 @@
 import "dart:html";
 
 import "../engine/game.dart";
+import "../engine/spatialhash.dart";
 import "../entities/targetmoverentity.dart";
 import "../level/endcap.dart";
 import "../level/pathnode.dart";
 import "enemytype.dart";
 
-class Enemy extends TargetMoverEntity {
+class Enemy extends TargetMoverEntity with SpatialHashable {
 
     SpawnerObject originSpawner;
 
@@ -30,12 +31,23 @@ class Enemy extends TargetMoverEntity {
     void logicUpdate([num dt = 0]) {
         if (this.health <= 0) {
             this.dead = true;
+
+            if (this.engine is Game) {
+                final Game game = engine;
+                game.enemySelector.remove(this);
+            }
+
             return;
         }
 
         this.updateTarget();
 
         super.logicUpdate(dt);
+
+        if (this.engine is Game) {
+            final Game game = engine;
+            game.enemySelector.insert(this);
+        }
     }
 
     @override

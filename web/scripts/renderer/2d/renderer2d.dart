@@ -31,6 +31,7 @@ class Renderer2D extends Renderer{
         window.onMouseUp.listen(mouseUp);
         window.onMouseMove.listen(mouseMove);
         this.canvas.onMouseWheel.listen(mouseWheel);
+        this.container = this.canvas;
     }
 
     void mouseDown(MouseEvent e) {
@@ -109,12 +110,6 @@ class Renderer2D extends Renderer{
 
     void recalculateZoomFactor() {
         double n = 1.0;
-
-        /*if (zoomLevel > 0) {
-            n = zoomLevel.toDouble() + 1;
-        } else if (zoomLevel < 0) {
-            n = 1 / (-zoomLevel + 1);
-        }*/
 
         n = Math.pow(1.2, zoomLevel);
 

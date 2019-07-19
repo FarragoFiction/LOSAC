@@ -11,7 +11,7 @@ import "../utility/levelutils.dart";
 import "commands.dart";
 
 class PathWorker extends WorkerBase {
-    static final Logger logger = new Logger("Path Worker", true);
+    static final Logger logger = new Logger("Path Worker");//, true); // debug print flag
 
     DomainMap domainMap;
     List<PathNode> pathNodes;

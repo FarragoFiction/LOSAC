@@ -23,6 +23,8 @@ abstract class Engine {
 
     Engine(Renderer this.renderer) {
         renderer.engine = this;
+
+
     }
 
     void start() {
@@ -101,4 +103,12 @@ abstract class Engine {
         entity.engine = this;
         this.entities.add(entity);
     }
+
+    void setLevel(Level level) {
+        this.level = level;
+    }
+
+    //input
+
+
 }
