@@ -3,11 +3,14 @@ import "dart:html";
 import "../level/level.dart";
 import "../renderer/renderer.dart";
 import "entity.dart";
+import "inputhandler.dart";
 
 abstract class Engine {
     Renderer renderer;
     Level level;
     Set<Entity> entities = <Entity>{};
+
+    InputHandler input;
 
     bool started = false;
     int currentFrame = 0;
@@ -21,10 +24,11 @@ abstract class Engine {
     num lastFpsUpdate = 0;
     Element fpsElement;
 
+    Element get container => renderer.container;
+
     Engine(Renderer this.renderer) {
         renderer.engine = this;
-
-
+        this.input = new InputHandler(this);
     }
 
     void start() {

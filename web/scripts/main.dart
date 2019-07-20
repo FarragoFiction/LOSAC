@@ -2,6 +2,7 @@ import "dart:async";
 import 'dart:html';
 
 import "engine/game.dart";
+import "engine/inputhandler.dart";
 import "entities/enemy.dart";
 import "entities/enemytype.dart";
 import "level/curve.dart";
@@ -127,4 +128,10 @@ Future<void> main() async {
             t.cancel();
         }
     });
+
+    game.input.listen("A", testCallback, allowRepeats: false);
+}
+
+void testCallback(String key, KeyEventType type, bool shift, bool control, bool alt) {
+    print("key: $key, shift: $shift, type: $type");
 }
