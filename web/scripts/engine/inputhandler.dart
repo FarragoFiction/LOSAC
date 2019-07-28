@@ -17,6 +17,10 @@ enum KeyEventType {
 }
 
 class InputHandler {
+    Engine engine;
+
+    static const double dragDistance = 3;
+    static const double _dragDistanceSquared = dragDistance * dragDistance;
 
     final Map<String, String> _codeToName = <String, String>{};
     //final Map<String, String> _nameToCode = <String, String>{};
@@ -24,9 +28,15 @@ class InputHandler {
 
     final Set<_KeyPressCallbackHandler> _keyCallbacks = <_KeyPressCallbackHandler>{};
 
-    InputHandler(Engine engine) {
+    final Map<int, bool> _mouseStates = <int, bool>{};
+    Point<num> _mousePosPrev;
+    bool _dragging = false;
+
+    bool get dragging => _dragging;
+
+    InputHandler(Engine this.engine) {
         engine.container.onMouseDown.listen(_onMouseDown);
-        window.onMouseDown.listen(_onMouseUp);
+        window.onMouseUp.listen(_onMouseUp);
         window.onMouseMove.listen(_onMouseMove);
         engine.container.onMouseWheel.listen(_onMouseWheel);
 
@@ -52,6 +62,13 @@ class InputHandler {
     bool getKeyState(String code) {
         if (_keyStates.containsKey(code)) {
             return _keyStates[code];
+        }
+        return false;
+    }
+
+    bool getMouseState(int button) {
+        if (_mouseStates.containsKey(button)) {
+            return _mouseStates[button];
         }
         return false;
     }
@@ -84,10 +101,58 @@ class InputHandler {
     // Handlers
     // #######################################################################################
 
-    void _onMouseDown(MouseEvent e) {}
-    void _onMouseUp(MouseEvent e) {}
-    void _onMouseMove(MouseEvent e) {}
-    void _onMouseWheel(WheelEvent e) {}
+    void _onMouseDown(MouseEvent e) {
+        _mouseStates[e.button] = true;
+        if (e.button == 0) {
+            _mousePosPrev = e.page;
+        }
+        this.engine.renderer.onMouseDown(e);
+    }
+    void _onMouseUp(MouseEvent e) {
+        _mouseStates[e.button] = false;
+        if (e.button == 0) {
+            if (_dragging) {
+                _dragging = false;
+            } else {
+                _click(e);
+            }
+        } else {
+            _click(e);
+        }
+        this.engine.renderer.onMouseUp(e);
+    }
+    void _onMouseMove(MouseEvent e) {
+        _mousePosPrev ??= e.page;
+        final Point<num> diff = e.page - _mousePosPrev;
+
+
+        if (getMouseState(0)) {
+            if (!_dragging) {
+                final num len = diff.x * diff.x + diff.y * diff.y;
+
+                if (len >= _dragDistanceSquared) {
+                    _dragging = true;
+                }
+            }
+
+            if (_dragging) {
+                _mousePosPrev = e.page;
+                _drag(e, diff);
+            }
+        }
+
+        this.engine.renderer.onMouseMove(e);
+    }
+    void _onMouseWheel(WheelEvent e) {
+        this.engine.renderer.onMouseWheel(e);
+    }
+
+    void _click(MouseEvent e) {
+        this.engine.renderer.click(e);
+    }
+    void _drag(MouseEvent e, Point<num> offset) {
+        this.engine.renderer.drag(e, offset);
+    }
 
     void _onKeyDown(KeyboardEvent e) {
         // exclude IME composition
@@ -123,6 +188,8 @@ class InputHandler {
 
         final String key = _getKeyName(e.code).toLowerCase();
 
+        bool preventDefault = false;
+
         for (final _KeyPressCallbackHandler cbh in _keyCallbacks) {
             if (repeat && !cbh.allowsRepeats) { continue; }
             if (!cbh.anyKey && !cbh.triggerKeys.contains(key)) { continue; }
@@ -130,12 +197,17 @@ class InputHandler {
             if (!(cbh.control == ModifierKeyState.any || (e.ctrlKey && cbh.control == ModifierKeyState.pressed) || ((!e.ctrlKey) && cbh.control == ModifierKeyState.unpressed))) { continue; }
             if (!(cbh.alt == ModifierKeyState.any || (e.altKey && cbh.alt == ModifierKeyState.pressed) || ((!e.altKey) && cbh.alt == ModifierKeyState.unpressed))) { continue; }
 
-            cbh.callback(key, type, e.shiftKey, e.ctrlKey, e.altKey);
+            preventDefault = preventDefault || cbh.callback(key, type, e.shiftKey, e.ctrlKey, e.altKey);
+            cbh.token.lastEvent = e;
+        }
+
+        if (preventDefault) {
+            e.preventDefault();
         }
     }
 }
 
-typedef KeyPressCallback = void Function(String key, KeyEventType type, bool shift, bool control, bool alt);
+typedef KeyPressCallback = bool Function(String key, KeyEventType type, bool shift, bool control, bool alt);
 
 class _KeyPressCallbackHandler {
     final ModifierKeyState shift;
@@ -147,6 +219,8 @@ class _KeyPressCallbackHandler {
     bool anyKey = false;
     final Set<String> triggerKeys = <String>{};
     final KeyPressCallback callback;
+
+    KeyCallbackToken token;
 
     _KeyPressCallbackHandler(KeyPressCallback this.callback, {String key, Iterable<String> keys, bool this.anyKey = false, bool this.allowsRepeats = true, ModifierKeyState this.shift = ModifierKeyState.any, ModifierKeyState this.control = ModifierKeyState.unpressed, ModifierKeyState this.alt = ModifierKeyState.unpressed}) {
         if (!anyKey) {
@@ -167,7 +241,11 @@ class KeyCallbackToken {
     final _KeyPressCallbackHandler _callback;
     final InputHandler _handler;
 
-    KeyCallbackToken(InputHandler this._handler, _KeyPressCallbackHandler this._callback);
+    KeyEvent lastEvent;
+
+    KeyCallbackToken(InputHandler this._handler, _KeyPressCallbackHandler this._callback) {
+        _callback.token = this;
+    }
 
     void cancel() => _handler._keyCallbacks.remove(_callback);
 }

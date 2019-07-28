@@ -2,8 +2,10 @@ import "dart:html";
 import "dart:math" as Math;
 
 import "../../engine/engine.dart";
+import "../../level/pathnode.dart";
 import "../renderer.dart";
 import "renderable2d.dart";
+import "vector.dart";
 
 /// Debug and stand-in development renderer!
 /// Render chain involving classes implementing [Renderable2D]
@@ -12,7 +14,6 @@ class Renderer2D extends Renderer{
     final CanvasElement canvas;
     final CanvasRenderingContext2D ctx;
 
-    bool dragging = false;
     int zoomLevel = 0;
     double zoomFactor = 1.0;
 
@@ -27,37 +28,30 @@ class Renderer2D extends Renderer{
     }
 
     Renderer2D(CanvasElement this.canvas) : ctx = canvas.context2D {
-        this.canvas.onMouseDown.listen(mouseDown);
+        /*this.canvas.onMouseDown.listen(mouseDown);
         window.onMouseUp.listen(mouseUp);
         window.onMouseMove.listen(mouseMove);
-        this.canvas.onMouseWheel.listen(mouseWheel);
+        this.canvas.onMouseWheel.listen(mouseWheel);*/
         this.container = this.canvas;
     }
 
-    void mouseDown(MouseEvent e) {
-        if (e.button == 0) {
-            dragging = true;
-            canvas.classes.add("dragging");
-        }
+    @override
+    void onMouseDown(MouseEvent e) {
+        _updateCursor();
     }
 
-    void mouseUp(MouseEvent e) {
-        if (e.button == 0) {
-            dragging = false;
-            canvas.classes.remove("dragging");
-        }
+    @override
+    void onMouseUp(MouseEvent e) {
+        _updateCursor();
     }
 
-    void mouseMove(MouseEvent e) {
-        if (dragging) {
-            offset += e.movement;
-            //print("offset: $offset");
-
-            //draw();
-        }
+    @override
+    void onMouseMove(MouseEvent e) {
+        _updateCursor();
     }
 
-    void mouseWheel(WheelEvent e) {
+    @override
+    void onMouseWheel(WheelEvent e) {
         e.preventDefault();
         zoomLevel -= e.deltaY.sign;
 
@@ -77,6 +71,26 @@ class Renderer2D extends Renderer{
 
         //draw();
         //print(zoomLevel);
+    }
+
+    @override
+    void click(MouseEvent e) {
+        final Vector worldPos = new Vector(e.offset.x - offset.x, e.offset.y - offset.y);
+        this.engine.click(worldPos);
+    }
+
+    @override
+    void drag(MouseEvent e, Point<num> offset) {
+        this.offset += offset;
+        _updateCursor();
+    }
+
+    void _updateCursor() {
+        if (this.engine.input.dragging) {
+            canvas.classes.add("dragging");
+        } else {
+            canvas.classes.remove("dragging");
+        }
     }
 
     void clear() => ctx.clearRect(0, 0, canvas.width, canvas.height);

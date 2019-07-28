@@ -32,6 +32,10 @@ class PathWorker extends WorkerBase {
                 return processDomainMap(payload);
             case Commands.recalculatePaths:
                 return rebuildPathData();
+            case Commands.connectivityCheck:
+                return connectivityCheck(payload);
+            case Commands.flipNodeState:
+                return flipNodeState(payload);
         }
 
         return null;
@@ -277,6 +281,27 @@ class PathWorker extends WorkerBase {
             }
         }
         return newTargets[node];
+    }
+
+    Future<List<int>> connectivityCheck(dynamic payload) async {
+        final Map<dynamic,dynamic> data = payload;
+
+        final bool ignore = data.containsKey("ignore") ? data["ignore"] : false;
+        final List<int> flips = data.containsKey("flip") ? new List<int>.from(data["flip"]) : null;
+
+        final List<PathNode> nodes = await connectivityTest(ignoreBlockedStatus: ignore, flipTests: flips);
+
+        return nodes.map((PathNode node) => node.id).toList();
+    }
+
+    Future<void> flipNodeState(dynamic payload) async {
+        final List<dynamic> ids = payload;
+
+        for (int i=0; i<ids.length; i++) {
+            final int id = ids[i];
+            final PathNode n = pathNodes[id-1];
+            n.blocked = !n.blocked;
+        }
     }
 }
 

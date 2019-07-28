@@ -23,6 +23,8 @@ class Grid extends LevelObject with HasMatrix, Connectible {
     final int ySize;
     final List<GridCell> cells;
 
+    final Map<PathNode, GridCell> _cellsFromNodes = <PathNode, GridCell>{};
+
     Grid(int this.xSize, int this.ySize) : cells = new List<GridCell>(xSize*ySize) {
         final double ox = (xSize - 1) * cellSize * 0.5;
         final double oy = (ySize - 1) * cellSize * 0.5;
@@ -145,6 +147,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                     ..posVector = cell.getWorldPosition()
                     ..blocked = cell.state == GridCellState.blocked;
 
+                _cellsFromNodes[node] = cell;
                 cell.setNode(node);
 
                 if (x > 0) {
@@ -187,6 +190,8 @@ class Grid extends LevelObject with HasMatrix, Connectible {
             cell.node = null;
         }
 
+        _cellsFromNodes.clear();
+
         super.clearPathNodes();
     }
 
@@ -226,6 +231,13 @@ class Grid extends LevelObject with HasMatrix, Connectible {
         final int cy = ((y + oy) / cellSize).floor();
 
         return getCell(cx, cy);
+    }
+
+    GridCell getCellFromPathNode(PathNode node) {
+        if (_cellsFromNodes.containsKey(node)) {
+            return _cellsFromNodes[node];
+        }
+        return null;
     }
 
     @override
@@ -271,6 +283,28 @@ class GridCell extends LevelObject {
         if (this.left != null) { left.node = n; }
         if (this.right != null) { right.node = n; }
 
+    }
+
+    void setBlocked() {
+        this.state = GridCellState.blocked;
+        if (this.node != null) {
+            node.blocked = true;
+        }
+    }
+
+    void setClear() {
+        this.state = GridCellState.clear;
+        if (this.node != null) {
+            node.blocked = false;
+        }
+    }
+
+    void toggleBlocked() {
+        if (this.state == GridCellState.clear) {
+            setBlocked();
+        } else if (this.state == GridCellState.blocked) {
+            setClear();
+        }
     }
 
     @override

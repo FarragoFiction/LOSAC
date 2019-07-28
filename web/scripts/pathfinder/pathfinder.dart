@@ -59,4 +59,23 @@ class Pathfinder {
             }
         }
     }
+
+    Future<List<PathNode>> connectivityCheck(Level level, {Iterable<PathNode> flipTests, bool ignoreBlockedStatus = false}) async {
+
+        final Map<String,dynamic> payload = <String,dynamic> {
+            "ignore": ignoreBlockedStatus
+        };
+
+        if (flipTests != null) {
+            payload["flip"] = flipTests.map((PathNode node) => node.id).toList();
+        }
+
+        final List<dynamic> unreachableIds = await worker.sendCommand(Commands.connectivityCheck, payload: payload);
+
+        return unreachableIds.map((dynamic id) => level.pathNodes[id-1]).toList();
+    }
+
+    Future<void> flipNodeState(Iterable<PathNode> nodes) async {
+        return worker.sendCommand(Commands.flipNodeState, payload: nodes.map((PathNode node) => node.id).toList());
+    }
 }

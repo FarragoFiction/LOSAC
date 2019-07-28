@@ -1,6 +1,7 @@
 import "dart:html";
 
 import "../level/level.dart";
+import "../pathfinder/pathfinder.dart";
 import "../renderer/renderer.dart";
 import "entity.dart";
 import "inputhandler.dart";
@@ -23,6 +24,8 @@ abstract class Engine {
     int framesThisSecond = 0;
     num lastFpsUpdate = 0;
     Element fpsElement;
+
+    Pathfinder pathfinder;
 
     Element get container => renderer.container;
 
@@ -114,5 +117,6 @@ abstract class Engine {
 
     //input
 
+    Future<void> click(Point<num> worldPos);
 
 }

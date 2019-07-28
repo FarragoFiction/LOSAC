@@ -6,6 +6,7 @@ import "../renderer/2d/vector.dart";
 import "../utility/levelutils.dart";
 import "connectible.dart";
 import "domainmap.dart";
+import "grid.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
@@ -206,5 +207,13 @@ class Level with Renderable2D {
 
             object.fillDomainMap(boundsRegion);
         }
+    }
+
+    PathNode getNodeFromPos(Point<num> pos) {
+        final int id = domainMap.getVal(pos.x, pos.y);
+        if (id != 0) {
+            return pathNodes[id-1];
+        }
+        return null;
     }
 }

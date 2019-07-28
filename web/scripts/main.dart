@@ -116,6 +116,7 @@ Future<void> main() async {
     final Renderer2D renderer = new Renderer2D(testCanvas);
 
     final Game game = new Game(renderer)
+        ..pathfinder = pathfinder
         ..setLevel(testLevel)
         ..fpsElement = fpsElement
         ..start();
@@ -132,6 +133,7 @@ Future<void> main() async {
     game.input.listen("A", testCallback, allowRepeats: false);
 }
 
-void testCallback(String key, KeyEventType type, bool shift, bool control, bool alt) {
+bool testCallback(String key, KeyEventType type, bool shift, bool control, bool alt) {
     print("key: $key, shift: $shift, type: $type");
+    return false;
 }
