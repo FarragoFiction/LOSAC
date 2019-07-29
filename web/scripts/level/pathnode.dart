@@ -33,6 +33,9 @@ class PathNode extends SimpleLevelObject {
         this.connections[other] = distance;
         other.connections[this] = distance;
     }
+
+    @override
+    String toString() => "($runtimeType $id)";
 }
 
 class ExitNode extends PathNode {}

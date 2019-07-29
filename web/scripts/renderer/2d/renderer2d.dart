@@ -75,7 +75,7 @@ class Renderer2D extends Renderer{
 
     @override
     void click(MouseEvent e) {
-        final Vector worldPos = new Vector(e.offset.x - offset.x, e.offset.y - offset.y);
+        final Vector worldPos = new Vector((e.offset.x - offset.x) / zoomFactor, (e.offset.y - offset.y) / zoomFactor);
         this.engine.click(worldPos);
     }
 

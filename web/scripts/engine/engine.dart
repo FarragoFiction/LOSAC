@@ -19,6 +19,7 @@ abstract class Engine {
     double delta = 0;
 
     double logicStep = 1000 / 20;
+    static const int maxLogicStepsPerFrame = 250;
 
     double fps = 60;
     int framesThisSecond = 0;
@@ -63,9 +64,17 @@ abstract class Engine {
 
         }*/
 
+        int stepsThisFrame = 0;
         while (delta >= logicStep) {
-            this.logicUpdate(logicStep);
-            delta -= logicStep;
+            stepsThisFrame++;
+            if (stepsThisFrame > maxLogicStepsPerFrame) {
+                final int skipped = (delta / logicStep).floor();
+                delta -= skipped * logicStep;
+                print("Skipping $skipped logic steps");
+            } else {
+                this.logicUpdate(logicStep);
+                delta -= logicStep;
+            }
         }
 
         this.graphicsUpdate(delta / logicStep);

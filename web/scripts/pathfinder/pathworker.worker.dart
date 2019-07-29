@@ -138,18 +138,31 @@ class PathWorker extends WorkerBase {
         return unconnected;
     }
 
+    /// Modified Theta* without heuristic, so basically Dijkstra's with corner cutting.
+    /// Respects the pathNode validShortcut property
     Future<List<int>> rebuildPathData() async {
-
         final Map<PathNode, double> distance = <PathNode, double>{
             exitNode : 0
         };
-        final Map<PathNode, PathNode> previous = <PathNode, PathNode>{};
+        final Map<PathNode, PathNode> previous = <PathNode, PathNode>{
+            exitNode : exitNode
+        };
 
         final Map<PathNode, double> priorities = <PathNode,double>{
             exitNode: 0
         };
-        final PriorityQueue<PathNode> open = new PriorityQueue<PathNode>((PathNode a, PathNode b) => priorities[a].compareTo(priorities[b]));
+        final PriorityQueue<PathNode> open = new PriorityQueue<PathNode>((PathNode a, PathNode b) {
+            print("c 0: a: $a, b: $b");
+            final int c = priorities[a].compareTo(priorities[b]);
+            if (c == 0 && a != b) { return 1; }
+            print("c 1");
+            return c;
+        });
         open.add(exitNode);
+        // openSet tracks the same objects as open, but is cheaper to query contains
+        final Set<PathNode> openSet = <PathNode>{exitNode};
+
+        final Set<PathNode> closed = <PathNode>{};
 
         // init values
         for (final PathNode node in pathNodes) {
@@ -159,17 +172,52 @@ class PathWorker extends WorkerBase {
             }
         }
 
-        while(!open.isEmpty) {
+        //update function
+        void update_vertex(PathNode s, PathNode neighbour) {
+            if( neighbour.validShortcut && previous[s].validShortcut && LevelUtils.isLineClear(domainMap, pathNodes, previous[s], neighbour)) {
+                final double dist = (previous[s].posVector - neighbour.posVector).length;
+
+                if (distance[previous[s]] + dist < distance[neighbour]) {
+                    distance[neighbour] = distance[previous[s]] + dist;
+                    previous[neighbour] = previous[s];
+                    if (openSet.contains(neighbour)) {
+                        print(priorities);
+                        open.remove(neighbour);
+                        openSet.remove(neighbour);
+                    }
+                    priorities[neighbour] = distance[neighbour];
+                    open.add(neighbour);
+                    openSet.add(neighbour);
+                }
+            } else {
+                if (distance[s] + s.connections[neighbour] < distance[neighbour]) {
+                    distance[neighbour] = distance[s] + s.connections[neighbour];
+                    previous[neighbour] = s;
+                    if (openSet.contains(neighbour)) {
+                        open.remove(neighbour);
+                        openSet.remove(neighbour);
+                    }
+                    priorities[neighbour] = distance[neighbour];
+                    open.add(neighbour);
+                    openSet.add(neighbour);
+                }
+            }
+        }
+
+        while(!openSet.isEmpty) {
             final PathNode u = open.removeFirst();
+            openSet.remove(u);
+            closed.add(u);
 
             for (final PathNode neighbour in u.connections.keys) {
                 if (neighbour.blocked) { continue; }
-                final double alt = distance[u] + u.connections[neighbour];
-                if (alt < distance[neighbour]) {
-                    distance[neighbour] = alt;
-                    previous[neighbour] = u;
-                    priorities[neighbour] = alt;
-                    open.add(neighbour);
+
+                if (!closed.contains(neighbour)) {
+                    if(!openSet.contains(neighbour)) {
+                        distance[neighbour] = double.infinity;
+                        previous[neighbour] = null;
+                    }
+                    update_vertex(u, neighbour);
                 }
             }
         }
@@ -180,9 +228,22 @@ class PathWorker extends WorkerBase {
             }
         }
 
-        calculateShortcuts();
-
         return pathNodes.map((PathNode node) => node.targetNode == null ? -1 : node.targetNode.id).toList();
+    }
+
+    bool compareOpenToOpenSet(PriorityQueue<PathNode> open, Set<PathNode> openSet ) {
+        if (open.length != openSet.length) { return true; }
+
+        final Set<PathNode> checked = <PathNode>{};
+        final List<PathNode> openList = open.toList();
+        for (final PathNode n in openList) {
+            checked.add(n);
+            if (!openSet.contains(n)) {
+                return true;
+            }
+        }
+        if (checked.length != openSet.length) { return true; }
+        return false;
     }
 
     void calculateShortcuts() {
