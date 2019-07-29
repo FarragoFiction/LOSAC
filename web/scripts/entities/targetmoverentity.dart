@@ -12,6 +12,7 @@ class TargetMoverEntity extends MoverEntity {
     double stoppingThreshold = 5.0;
     double turnRate = 1.0;
     double turnThreshold = Math.pi *0.51;
+    bool turningAround = false;
 
     double debugTargetAngle = 0;
 
@@ -40,7 +41,14 @@ class TargetMoverEntity extends MoverEntity {
 
         final double angDiff = angleDiff(this.rot_angle, targetAngle);
 
-        final double turnAmount = Math.min(angDiff.abs(), turnRate * dt);
+        double turn = turnRate * dt;
+
+        if (this.turningAround) {
+            turn *= 2.5;
+        }
+
+        final double turnAmount = Math.min(angDiff.abs(), turn);
+
         this.previousRot = this.rot_angle;
         this.rot_angle += -turnAmount * angDiff.sign;
 
@@ -49,8 +57,13 @@ class TargetMoverEntity extends MoverEntity {
             //final double newSpeed = Math.min(targetDist, this.baseSpeed);
             //this.speed = newSpeed;
             this.speed = this.baseSpeed;
+
+            if (angDiff.abs() < turnThreshold * 0.25) {
+                this.turningAround = false;
+            }
         } else {
             this.speed = 0;
+            this.turningAround = true;
         }
     }
 

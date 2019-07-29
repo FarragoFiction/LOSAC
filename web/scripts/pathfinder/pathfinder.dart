@@ -46,7 +46,6 @@ class Pathfinder {
 
     Future<void> recalculatePathData(Level level) async {
         final List<dynamic> data = await worker.sendCommand(Commands.recalculatePaths);
-        print(data);
 
         for (final PathNode node in level.pathNodes) {
             node.targetNode = null;

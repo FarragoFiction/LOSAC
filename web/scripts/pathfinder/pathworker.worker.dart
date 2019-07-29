@@ -15,6 +15,7 @@ class PathWorker extends WorkerBase {
 
     DomainMap domainMap;
     List<PathNode> pathNodes;
+    Iterable<PathNode> connectedNodes;
     List<SpawnNode> spawners;
     ExitNode exitNode;
 
@@ -47,6 +48,7 @@ class PathWorker extends WorkerBase {
         final List<dynamic> data = nodeDataPayload;
 
         pathNodes = <PathNode>[];
+        connectedNodes = pathNodes.where((PathNode node) => !node.isolated);
         spawners = <SpawnNode>[];
         exitNode = null;
 
@@ -91,7 +93,10 @@ class PathWorker extends WorkerBase {
 
         final List<int> returnIds = unconnected.map((PathNode node) => node.id).toList();
 
-        LevelUtils.prunePathNodeList(pathNodes, unconnected);
+        //LevelUtils.prunePathNodeList(pathNodes, unconnected);
+        for (final PathNode node in unconnected) {
+            node.isolated = true;
+        }
 
         return returnIds;
     }
@@ -152,10 +157,8 @@ class PathWorker extends WorkerBase {
             exitNode: 0
         };
         final PriorityQueue<PathNode> open = new PriorityQueue<PathNode>((PathNode a, PathNode b) {
-            print("c 0: a: $a, b: $b");
             final int c = priorities[a].compareTo(priorities[b]);
             if (c == 0 && a != b) { return 1; }
-            print("c 1");
             return c;
         });
         open.add(exitNode);
@@ -181,7 +184,6 @@ class PathWorker extends WorkerBase {
                     distance[neighbour] = distance[previous[s]] + dist;
                     previous[neighbour] = previous[s];
                     if (openSet.contains(neighbour)) {
-                        print(priorities);
                         open.remove(neighbour);
                         openSet.remove(neighbour);
                     }

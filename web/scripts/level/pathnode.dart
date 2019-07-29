@@ -18,6 +18,9 @@ class PathNode extends SimpleLevelObject {
     bool blocked = false;
     bool validShortcut = false;
 
+    /// Isolated from the pathing graph - not walkable
+    bool isolated = false;
+
     double distanceToExit = double.infinity;
     PathNode targetNode;
 

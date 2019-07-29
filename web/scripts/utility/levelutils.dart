@@ -4,7 +4,7 @@ import "../level/pathnode.dart";
 
 abstract class LevelUtils {
 
-    static void prunePathNodeList(List<PathNode> nodes, Iterable<PathNode> toPrune) {
+    /*static void prunePathNodeList(List<PathNode> nodes, Iterable<PathNode> toPrune) {
 
         for (final PathNode prunee in toPrune) {
             nodes.remove(prunee);
@@ -13,7 +13,7 @@ abstract class LevelUtils {
         for (int i=0; i<nodes.length; i++) {
             nodes[i].id = i+1;
         }
-    }
+    }*/
 
     static bool isLineClear(DomainMap domainMap, List<PathNode> pathNodes, PathNode fromNode, PathNode toNode) {
         final Set<int> trace = domainMap.valuesAlongLine(fromNode.pos_x, fromNode.pos_y, toNode.pos_x, toNode.pos_y, 50);

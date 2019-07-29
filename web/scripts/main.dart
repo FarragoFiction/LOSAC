@@ -9,6 +9,7 @@ import "level/curve.dart";
 import "level/endcap.dart";
 import "level/grid.dart";
 import "level/level.dart";
+import "level/level2d.dart";
 import "level/pathnode.dart";
 import "pathfinder/pathfinder.dart";
 import "renderer/2d/renderer2d.dart";
@@ -27,7 +28,7 @@ Future<void> main() async {
     document.body.append(fpsElement);
 
     final Pathfinder pathfinder = new Pathfinder();
-    final Level testLevel = new Level();
+    final Level testLevel = new Level2D();
 
     // basic object test
 

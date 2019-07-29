@@ -2,7 +2,7 @@ import "dart:html";
 import "dart:math" as Math;
 
 import "../../engine/engine.dart";
-import "../../level/pathnode.dart";
+import "../../level/level2d.dart";
 import "../renderer.dart";
 import "renderable2d.dart";
 import "vector.dart";
@@ -102,7 +102,9 @@ class Renderer2D extends Renderer{
         ctx.translate(offset.x, offset.y);
         ctx.scale(zoomFactor, zoomFactor);
 
-        engine.level.drawToCanvas(ctx);
+        Level2D level = engine.level;
+
+        level.drawToCanvas(ctx);
 
         for (final Renderable2D o in renderableEntities) {
             o.drawToCanvas(ctx);
@@ -113,7 +115,7 @@ class Renderer2D extends Renderer{
         ctx.save();
         ctx.translate(offset.x, offset.y);
 
-        engine.level.drawUIToCanvas(ctx, zoomFactor);
+        level.drawUIToCanvas(ctx, zoomFactor);
 
         for (final Renderable2D o in renderableEntities) {
             o.drawUIToCanvas(ctx, zoomFactor);

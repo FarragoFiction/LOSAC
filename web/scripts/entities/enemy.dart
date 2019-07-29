@@ -5,9 +5,12 @@ import "../engine/spatialhash.dart";
 import "../entities/targetmoverentity.dart";
 import "../level/endcap.dart";
 import "../level/pathnode.dart";
+import "../renderer/2d/bounds.dart";
+import "../renderer/2d/vector.dart";
 import "enemytype.dart";
+import "terraincollider.dart";
 
-class Enemy extends TargetMoverEntity with SpatialHashable {
+class Enemy extends TargetMoverEntity with SpatialHashable, TerrainCollider {
 
     SpawnerObject originSpawner;
 
@@ -40,7 +43,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable {
             return;
         }
 
-        this.updateTarget();
+        this.updateTarget(dt);
 
         super.logicUpdate(dt);
 
@@ -55,7 +58,13 @@ class Enemy extends TargetMoverEntity with SpatialHashable {
         super.renderUpdate(interpolation);
     }
 
-    void updateTarget() {
+    @override
+    Rectangle<num> calculateBounds() {
+        final double size = enemyType.size * .85;
+        return rectBounds(this, size, size);
+    }
+
+    void updateTarget(num dt) {
         final int nodeId = this.engine.level.domainMap.getVal(this.pos_x, this.pos_y);
         if (nodeId == 0) {
             this.targetPos = null;
@@ -65,6 +74,21 @@ class Enemy extends TargetMoverEntity with SpatialHashable {
                 this.targetPos = node.posVector;
             } else {
                 this.targetPos = node.targetNode.posVector;
+
+                /*if (this.speed > 0 && node != node.targetNode) {
+                    final Vector p = this.posVector;
+                    final Vector p1 = node.posVector;
+                    final Vector p2 = this.targetPos;
+
+                    final double outerProduct = (p.x - p1.x) * (p2.y - p1.y) - (p.y - p1.y) * (p2.x - p1.x);
+
+                    final Vector dir = (p2 - p1).norm();
+                    final double px = -dir.y;
+                    final double py = dir.x;
+
+                    this.pos_x += px * outerProduct.sign * speed * 0.1 * dt;
+                    this.pos_y += py * outerProduct.sign * speed * 0.1 * dt;
+                }*/
             }
             if (engine is Game && node is ExitNode) {
                 if (closeToPos(node.pos_x, node.pos_y, this.stoppingThreshold + 1)) {

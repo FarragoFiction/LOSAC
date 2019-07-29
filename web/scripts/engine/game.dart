@@ -89,8 +89,11 @@ class Game extends Engine {
         }
 
         for (final Enemy enemy in this.entities.whereType()) {
-            if (unreachables.contains(level.getNodeFromPos(enemy.posVector))) {
-                return false;
+            final Set<PathNode> enemyNodes = enemy.getNodesAtPos();
+            for (final PathNode node in enemyNodes) {
+                if (unreachables.contains(node)) {
+                    return false;
+                }
             }
         }
 
