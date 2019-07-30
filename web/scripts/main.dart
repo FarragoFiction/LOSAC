@@ -5,6 +5,8 @@ import "engine/game.dart";
 import "engine/inputhandler.dart";
 import "entities/enemy.dart";
 import "entities/enemytype.dart";
+import "entities/tower.dart";
+import "entities/towertype.dart";
 import "level/curve.dart";
 import "level/endcap.dart";
 import "level/grid.dart";
@@ -20,7 +22,7 @@ Future<void> main() async {
     print("LOSAC yo");
 
     final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600)..style.border="1px solid black";
-    final CanvasRenderingContext2D ctx = testCanvas.context2D;
+    //final CanvasRenderingContext2D ctx = testCanvas.context2D;
 
     document.body.append(testCanvas);
 
@@ -113,6 +115,12 @@ Future<void> main() async {
     await pathfinder.recalculatePathData(testLevel);
 
     final EnemyType testEnemyType = new EnemyType();
+    final TowerType testTowerType = new TowerType();
+
+    final Tower testTower = new Tower(testTowerType);
+    //final Point<num> towerCoord = sideGrid.getCell(2, 0).getWorldPosition();
+    final Point<num> towerCoord = testGrid.getCell(0, 8).getWorldPosition();
+    testTower..pos_x = towerCoord.x..pos_y = towerCoord.y;
     
     final Renderer2D renderer = new Renderer2D(testCanvas);
 
@@ -122,6 +130,12 @@ Future<void> main() async {
         ..fpsElement = fpsElement
         ..start();
 
+    game.addEntity(testTower);
+
+    final Rectangle<num> lb = testLevel.bounds;
+    renderer.moveTo((lb.left + lb.right)*0.5, (lb.top + lb.bottom)*0.5);
+
+    //game.spawnEnemy(testEnemyType, testSpawner1);
     int n = 0;
     new Timer.periodic(Duration(milliseconds: 1500), (Timer t) {
         game.spawnEnemy(testEnemyType, testSpawner1);

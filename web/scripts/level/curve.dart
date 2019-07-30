@@ -417,7 +417,7 @@ class CurveVertex extends LevelObject with HasMatrix {
     void draw2D(CanvasRenderingContext2D ctx) {}
 
     @override
-    void drawUI2D(CanvasRenderingContext2D ctx) {
+    void drawUI2D(CanvasRenderingContext2D ctx, double scaleFactor) {
         final Vector v = new Vector(0,1).applyMatrix(matrix);
 
         ctx

@@ -1,3 +1,11 @@
+html {
+    background-color: #808080;
+}
+
+canvas {
+    background-color: white;
+}
+
 .dragging {
     cursor:move;
 }

@@ -2,6 +2,7 @@ import "dart:html";
 
 import "../entities/enemy.dart";
 import "../entities/enemytype.dart";
+import "../entities/tower.dart";
 import "../level/endcap.dart";
 import "../level/grid.dart";
 import "../level/level.dart";
@@ -12,8 +13,8 @@ import "spatialhash.dart";
 
 class Game extends Engine {
 
-    SpatialHash towerSelector;
-    SpatialHash enemySelector;
+    SpatialHash<Tower> towerSelector;
+    SpatialHash<Enemy> enemySelector;
 
     Game(Renderer renderer) : super(renderer);
 
@@ -30,7 +31,7 @@ class Game extends Engine {
             ..originSpawner = spawner
             ..rot_angle = spawner.rot_angle
             ..posVector = spawner.node.posVector;
-        this.addObject(enemy);
+        this.addEntity(enemy);
     }
 
     void leakEnemy(Enemy enemy) {
@@ -48,8 +49,8 @@ class Game extends Engine {
 
         const int buffer = 20;
 
-        enemySelector = new SpatialHash(20, levelBounds.left - buffer, levelBounds.top - buffer, levelBounds.width + buffer*2, levelBounds.height + buffer*2);
-        towerSelector = new SpatialHash(60, levelBounds.left - buffer, levelBounds.top - buffer, levelBounds.width + buffer*2, levelBounds.height + buffer*2);
+        enemySelector = new SpatialHash<Enemy>(50, levelBounds.left - buffer, levelBounds.top - buffer, levelBounds.width + buffer*2, levelBounds.height + buffer*2);
+        towerSelector = new SpatialHash<Tower>(100, levelBounds.left - buffer, levelBounds.top - buffer, levelBounds.width + buffer*2, levelBounds.height + buffer*2);
     }
 
     @override

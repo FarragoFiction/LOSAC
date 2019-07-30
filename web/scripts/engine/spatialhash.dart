@@ -2,26 +2,29 @@ import "dart:math";
 
 import "../level/levelobject.dart";
 
-class SpatialHash {
+// ignore: always_specify_types
+class SpatialHash<T extends SpatialHashable> {
 	final double bucketSize;
 	final int xPos;
 	final int yPos;
 	final int xSize;
 	final int ySize;
 
-	Map<SpatialHashable, Rectangle<num>> objects;
-	Map<SpatialHashKey, Set<SpatialHashable>> _map;
+	Map<T, Rectangle<num>> objects;
+	Map<SpatialHashKey, Set<T>> buckets;
+
+	int get length => objects.length;
 	
 	SpatialHash(double this.bucketSize, num xPos, num yPos, num xSize, num ySize) : this.xPos = xPos.floor(), this.yPos = yPos.floor(), this.xSize = xSize.ceil(), this.ySize = ySize.ceil() {
 		this.clear();
 	}
 	
 	void clear() {
-		this.objects = <SpatialHashable, Rectangle<num>>{};
-		this._map = <SpatialHashKey, Set<SpatialHashable>>{};
+		this.objects = <T, Rectangle<num>>{};
+		this.buckets = <SpatialHashKey, Set<T>>{};
 	}
 	
-	void insert(SpatialHashable col) {
+	void insert(T col) {
 		if (col.spatialHash == null || col.spatialHash == this) {
 			final Rectangle<num> bounds = col.bounds;
 			
@@ -51,10 +54,10 @@ class SpatialHash {
 	Set<SpatialHashKey> getKeysForRect(Rectangle<num> bounds) {
 		final Set<SpatialHashKey> keys = <SpatialHashKey>{};
 
-		final int minX = (bounds.left   / this.bucketSize).floor() - xPos;
-		final int maxX = (bounds.right  / this.bucketSize).floor() - xPos;
-		final int minY = (bounds.top    / this.bucketSize).floor() - yPos;
-		final int maxY = (bounds.bottom / this.bucketSize).floor() - yPos;
+		final int minX = ((bounds.left   - xPos) / this.bucketSize).floor();
+		final int maxX = ((bounds.right  - xPos) / this.bucketSize).floor();
+		final int minY = ((bounds.top    - yPos) / this.bucketSize).floor();
+		final int maxY = ((bounds.bottom - yPos) / this.bucketSize).floor();
 
 		for (int x = minX; x <= maxX; x++) {
 			for (int y = minY; y <= maxY; y++) {
@@ -66,7 +69,7 @@ class SpatialHash {
 		return keys;
 	}
 	
-	void remove(SpatialHashable col) {
+	void remove(T col) {
 		for (final SpatialHashKey key in col.spatialBuckets) {
 			this.removeFromBucket(key, col);
 		}
@@ -76,65 +79,68 @@ class SpatialHash {
 		col.spatialHash = null;
 	}
 	
-	void addToBucket(SpatialHashKey key, SpatialHashable val) {
-		if (!_map.containsKey(key)) {
-			_map[key] = <SpatialHashable>{};
+	void addToBucket(SpatialHashKey key, T val) {
+		if (!buckets.containsKey(key)) {
+			buckets[key] = <T>{};
 		}
-		_map[key].add(val);
+		buckets[key].add(val);
 	}
 	
-	void removeFromBucket(SpatialHashKey key, SpatialHashable val) {
-		_map[key].remove(val);
-		if (_map[key].isEmpty) {
-			_map.remove(key);
+	void removeFromBucket(SpatialHashKey key, T val) {
+		buckets[key].remove(val);
+		if (buckets[key].isEmpty) {
+			buckets.remove(key);
 		}
 	}
 	
-	Set<SpatialHashable> query(SpatialHashable test) {
+	Set<T> query(T test) {
 		if (test.spatialHash != this) { return null; }
-		final Set<SpatialHashable> collided = <SpatialHashable>{};
+		final Set<T> collided = <T>{};
 		
 		for (final SpatialHashKey key in test.spatialBuckets) {
-			if (_map.containsKey(key)) {
-				collided.addAll(_map[key]);
+			if (buckets.containsKey(key)) {
+				collided.addAll(buckets[key]);
 			}
 		}
 		
 		return collided;
 	}
 	
-	Set<SpatialHashable> queryRect(Rectangle<num> bounds) {
-		final Set<SpatialHashable> collided = <SpatialHashable>{};
+	Set<T> queryRect(Rectangle<num> bounds) {
+		final Set<T> collided = <T>{};
 		
 		final Set<SpatialHashKey> keys = this.getKeysForRect(bounds);
 		
 		for (final SpatialHashKey key in keys) {
-			if (_map.containsKey(key)) {
-				collided.addAll(this._map[key]);
+			if (buckets.containsKey(key)) {
+				collided.addAll(this.buckets[key]);
 			}
 		}
 		
 		return collided;
 	}
 
-	Set<SpatialHashable> queryRadius(num x, num y, num radius) {
+	Set<T> queryRadius(num x, num y, num radius) {
 		final Rectangle<num> rect = new Rectangle<num>(x - radius, y - radius, radius*2, radius*2);
+		final double rSquared = radius * radius;
 
-		final Set<SpatialHashable> collided = <SpatialHashable>{};
+		final Set<T> collided = <T>{};
 		final Set<SpatialHashKey> keys = this.getKeysForRect(rect);
 
 		for (final SpatialHashKey key in keys) {
-			if (_map.containsKey(key)) {
-				final Set<SpatialHashable> objects = this._map[key];
-				for(final SpatialHashable object in objects) {
-					final double dx = object.pos_x - x;
-					final double dy = object.pos_y - y;
+			if (buckets.containsKey(key)) {
+				final Set<T> objects = this.buckets[key];
+				for(final T object in objects) {
+					final Point<num> pos = object.getWorldPosition();
+					final double dx = pos.x - x;
+					final double dy = pos.y - y;
 					final double distSquared = dx*dx + dy*dy;
 
-					if (distSquared <= radius) {
+					if (distSquared <= rSquared) {
 						collided.add(object);
 					}
 				}
+				//collided.addAll(this.buckets[key]);
 			}
 		}
 
@@ -148,6 +154,7 @@ class SpatialHashKey {
 
 	int _hash;
 
+	// ignore: always_specify_types
 	SpatialHashKey(SpatialHash sh, int this.x, int this.y) {
 		final int xh = x + sh.xSize + 31;
 		final int yh = y + sh.ySize + 37;
@@ -164,7 +171,8 @@ class SpatialHashKey {
 	}
 }
 
-mixin SpatialHashable on LevelObject {
-	SpatialHash spatialHash;
+// ignore: always_specify_types
+mixin SpatialHashable<T extends SpatialHashable> on LevelObject {
+	SpatialHash<T> spatialHash;
 	Set<SpatialHashKey> spatialBuckets;
 }

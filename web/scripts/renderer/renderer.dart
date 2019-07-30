@@ -17,4 +17,6 @@ abstract class Renderer {
     void onMouseWheel(WheelEvent e);
     void drag(MouseEvent e, Point<num> offset);
     void click(MouseEvent e);
+
+    void moveTo(num x, num y);
 }

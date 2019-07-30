@@ -115,7 +115,7 @@ abstract class Engine {
         renderer.draw(interpolation);
     }
 
-    void addObject(Entity entity) {
+    void addEntity(Entity entity) {
         entity.engine = this;
         this.entities.add(entity);
     }

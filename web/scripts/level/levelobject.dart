@@ -107,7 +107,7 @@ class LevelObject extends SimpleLevelObject {
         ctx.translate(pos_x * scaleFactor, pos_y * scaleFactor);
 
         if (!invisible) {
-            this.drawUI2D(ctx);
+            this.drawUI2D(ctx, scaleFactor);
         }
 
         for (final LevelObject subObject in subObjects) {
@@ -117,7 +117,7 @@ class LevelObject extends SimpleLevelObject {
         ctx.restore();
     }
 
-    void drawUI2D(CanvasRenderingContext2D ctx) {
+    void drawUI2D(CanvasRenderingContext2D ctx, double scaleFactor) {
 
     }
 
