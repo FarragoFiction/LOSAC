@@ -1,6 +1,7 @@
 import "dart:html";
 import "dart:math" as Math;
 
+import "../entities/tower.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
@@ -258,6 +259,19 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 }
             }
         }
+    }
+
+    void placeTower(int x, int y, Tower tower) {
+        final GridCell cell = getCell(x, y);
+        if (cell == null) { throw Exception("invalid cell $x,$y"); }
+        final Math.Point<num> worldCoords = cell.getWorldPosition();
+        final double rot = cell.getWorldRotation();
+        tower
+            ..pos_x = worldCoords.x
+            ..pos_y = worldCoords.y
+            ..rot_angle = rot
+            ..turretAngle = rot
+            ..prevTurretAngle = rot;
     }
 }
 

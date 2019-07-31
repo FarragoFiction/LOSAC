@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:math" as Math;
 
 import "package:CommonLib/Workers.dart";
 
@@ -45,16 +46,36 @@ class Pathfinder {
     }
 
     Future<void> recalculatePathData(Level level) async {
-        final List<dynamic> data = await worker.sendCommand(Commands.recalculatePaths);
+        final Map<dynamic, dynamic> payload = await worker.sendCommand(Commands.recalculatePaths);
+        final List<dynamic> ids = payload["id"];
+        final List<dynamic> distances = payload["dist"];
 
         for (final PathNode node in level.pathNodes) {
             node.targetNode = null;
         }
 
-        for (int i=0; i<data.length; i++) {
-            final int targetId = data[i];
+        double maxDist = 0;
+
+        for (int i=0; i<ids.length; i++) {
+            // set node next targets
+            final int targetId = ids[i];
             if (targetId > 0) {
                 level.pathNodes[i].targetNode = level.pathNodes[targetId-1];
+            }
+            // set distances from exit and calculate largest distance for fractional
+            final double dist = distances[i];
+            level.pathNodes[i].distanceToExit = dist;
+            if (dist < double.infinity) {
+                maxDist = Math.max(maxDist, dist);
+            }
+        }
+
+        //divide distance for each node by maxDist to get the fraction, if not infinite
+        for (final PathNode node in level.pathNodes) {
+            if (maxDist > 0 && node.distanceToExit < double.infinity) {
+                node.distanceToExitFraction = node.distanceToExit / maxDist;
+            } else {
+                node.distanceToExitFraction = double.infinity;
             }
         }
     }

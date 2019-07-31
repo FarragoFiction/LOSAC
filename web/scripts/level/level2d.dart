@@ -78,6 +78,8 @@ class Level2D extends Level with Renderable2D {
 
             ctx.fillRect(node.pos_x * scaleFactor - size/2, node.pos_y * scaleFactor - size/2, size, size);
 
+            ctx.fillText(node.distanceToExitFraction.toStringAsFixed(3), node.pos_x * scaleFactor + size, node.pos_y * scaleFactor - 5);
+
             ctx.restore();
 
             for (final PathNode other in node.connections.keys) {

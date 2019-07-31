@@ -10,6 +10,7 @@ abstract class Engine {
     Renderer renderer;
     Level level;
     Set<Entity> entities = <Entity>{};
+    Set<Entity> _entityQueue = <Entity>{};
 
     InputHandler input;
 
@@ -96,6 +97,9 @@ abstract class Engine {
         final double updateTime = dt / 1000;
         final Set<Entity> toRemove = <Entity>{};
 
+        entities.addAll(_entityQueue);
+        _entityQueue.clear();
+
         for (final Entity o in entities) {
             if (o.active) {
                 o.logicUpdate(updateTime);
@@ -117,7 +121,7 @@ abstract class Engine {
 
     void addEntity(Entity entity) {
         entity.engine = this;
-        this.entities.add(entity);
+        this._entityQueue.add(entity);
     }
 
     void setLevel(Level level) {

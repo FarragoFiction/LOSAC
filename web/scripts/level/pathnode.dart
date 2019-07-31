@@ -22,6 +22,7 @@ class PathNode extends SimpleLevelObject {
     bool isolated = false;
 
     double distanceToExit = double.infinity;
+    double distanceToExitFraction = double.infinity;
     PathNode targetNode;
 
     final Map<PathNode,double> connections = <PathNode,double>{};

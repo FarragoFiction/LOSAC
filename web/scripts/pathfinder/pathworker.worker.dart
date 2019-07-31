@@ -145,7 +145,7 @@ class PathWorker extends WorkerBase {
 
     /// Modified Theta* without heuristic, so basically Dijkstra's with corner cutting.
     /// Respects the pathNode validShortcut property
-    Future<List<int>> rebuildPathData() async {
+    Future<Map<String, List<num>>> rebuildPathData() async {
         final Map<PathNode, double> distance = <PathNode, double>{
             exitNode : 0
         };
@@ -230,7 +230,10 @@ class PathWorker extends WorkerBase {
             }
         }
 
-        return pathNodes.map((PathNode node) => node.targetNode == null ? -1 : node.targetNode.id).toList();
+        return <String,List<num>> {
+            "id": pathNodes.map((PathNode node) => node.targetNode == null ? -1 : node.targetNode.id).toList(),
+            "dist": pathNodes.map((PathNode node) => distance[node]).toList()
+        };
     }
 
     bool compareOpenToOpenSet(PriorityQueue<PathNode> open, Set<PathNode> openSet ) {

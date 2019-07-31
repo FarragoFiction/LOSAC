@@ -117,10 +117,10 @@ Future<void> main() async {
     final EnemyType testEnemyType = new EnemyType();
     final TowerType testTowerType = new TowerType();
 
-    final Tower testTower = new Tower(testTowerType);
+    /*final Tower testTower = new Tower(testTowerType);
     //final Point<num> towerCoord = sideGrid.getCell(2, 0).getWorldPosition();
     final Point<num> towerCoord = testGrid.getCell(0, 8).getWorldPosition();
-    testTower..pos_x = towerCoord.x..pos_y = towerCoord.y;
+    testTower..pos_x = towerCoord.x..pos_y = towerCoord.y;*/
     
     final Renderer2D renderer = new Renderer2D(testCanvas);
 
@@ -130,7 +130,26 @@ Future<void> main() async {
         ..fpsElement = fpsElement
         ..start();
 
-    game.addEntity(testTower);
+    //game.addEntity(testTower);
+
+    /*const int towers = 1;
+    for (int i=0; i<towers; i++) {
+        final Tower tower = new Tower(testTowerType);
+        testGrid.placeTower(i, 8, tower);
+        game.addEntity(tower);
+    }*/
+
+    {
+        final Tower tower = new Tower(testTowerType);
+        sideGrid.placeTower(3, 0, tower);
+        game.addEntity(tower);
+    }
+
+    {
+        final Tower tower = new Tower(testTowerType);
+        testGrid.placeTower(3, 8, tower);
+        game.addEntity(tower);
+    }
 
     final Rectangle<num> lb = testLevel.bounds;
     renderer.moveTo((lb.left + lb.right)*0.5, (lb.top + lb.bottom)*0.5);
@@ -140,7 +159,7 @@ Future<void> main() async {
     new Timer.periodic(Duration(milliseconds: 1500), (Timer t) {
         game.spawnEnemy(testEnemyType, testSpawner1);
         n++;
-        if (n >= 30) {
+        if (n >= 10) {
             t.cancel();
         }
     });

@@ -35,11 +35,7 @@ class Game extends Engine {
     }
 
     void leakEnemy(Enemy enemy) {
-        enemy.posVector = enemy.originSpawner.posVector;
-        enemy.previousPos = null;
-        enemy.rot_angle = enemy.originSpawner.rot_angle;
-        enemy.previousRot = null;
-        enemy.targetPos = null;
+        enemy.setPositionTo(enemy.originSpawner.posVector, enemy.originSpawner.rot_angle);
     }
 
     @override
