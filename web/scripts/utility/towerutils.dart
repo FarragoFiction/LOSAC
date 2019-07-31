@@ -100,7 +100,9 @@ abstract class TowerUtils {
 
         int iter = 0;
         while(iter < 1000) {
-            final double time = interceptTime(tPos, pos - dir * enemy.speed * timeOffset, dir * enemy.speed, tower.towerType.projectileSpeed) - timeOffset;
+            double time = interceptTime(tPos, pos - dir * enemy.speed * timeOffset, dir * enemy.speed, tower.towerType.projectileSpeed);
+            if (time == -1) { return null; }
+            time -= timeOffset;
 
             final double timeToNode = targetDistance / enemy.speed;
 

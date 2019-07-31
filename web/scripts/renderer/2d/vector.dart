@@ -79,4 +79,5 @@ class Vector extends Math.Point<num> {
 
     Vector norm() => this / this.length;
     double dot(Vector other) => x * other.x + y * other.y;
+    double get angle => Math.atan2(y, x);
 }

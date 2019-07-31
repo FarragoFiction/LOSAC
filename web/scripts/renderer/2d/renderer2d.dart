@@ -98,7 +98,7 @@ class Renderer2D extends Renderer{
         }
     }
 
-    void clear() => ctx.clearRect(0, 0, canvas.width, canvas.height);
+    void clear() => ctx..fillStyle="white"..fillRect(0, 0, canvas.width, canvas.height); //ctx.clearRect(0, 0, canvas.width, canvas.height); //
 
     @override
     void draw([double dt = 0]) {

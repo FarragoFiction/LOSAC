@@ -66,4 +66,22 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
         ctx.restore();
     }
+
+    @override
+    void drawUIToCanvas(CanvasRenderingContext2D ctx, double scaleFactor) {
+        if (hidden || !drawUI) { return; }
+        ctx.save();
+
+        ctx.translate(drawPos.x * scaleFactor, drawPos.y * scaleFactor);
+
+        if (!invisible) {
+            this.drawUI2D(ctx, scaleFactor);
+        }
+
+        for (final LevelObject subObject in subObjects) {
+            subObject.drawUIToCanvas(ctx, scaleFactor * this.scale);
+        }
+
+        ctx.restore();
+    }
 }

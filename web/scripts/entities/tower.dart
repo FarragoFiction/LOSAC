@@ -33,26 +33,30 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
 
     Tower(TowerType this.towerType);
 
+    void updateTargetAngle() {
+        if (targets.isEmpty) {
+            // no targets, idle
+            targetAngle = turretAngle;
+        } else if (targets.length == 1) {
+            // we have one target, the angle is simple
+            final Vector offset = (getTargetLocation(targets.first) - this.posVector);
+            targetAngle = Math.atan2(offset.y, offset.x);
+        } else {
+            // we have many targets... oh boy
+            Vector offset = new Vector.zero();
+            for (final Enemy target in targets) {
+                offset += (getTargetLocation(target) - this.posVector).norm();
+            }
+            offset = offset.norm();
+            targetAngle = Math.atan2(offset.y, offset.x);
+        }
+    }
+
     @override
     void logicUpdate([num dt = 0]) {
         if (towerType.turreted) {
             // we have a turret, and need to determine if we're angled right
-            if (targets.isEmpty) {
-                // no targets, idle
-                targetAngle = turretAngle;
-            } else if (targets.length == 1) {
-                // we have one target, the angle is simple
-                final Vector offset = (getTargetLocation(targets.first) - this.posVector);
-                targetAngle = Math.atan2(offset.y, offset.x);
-            } else {
-                // we have many targets... oh boy
-                Vector offset = new Vector.zero();
-                for (final Enemy target in targets) {
-                    offset += (getTargetLocation(target) - this.posVector).norm();
-                }
-                offset = offset.norm();
-                targetAngle = Math.atan2(offset.y, offset.x);
-            }
+            updateTargetAngle();
 
             // how far we are off pointing at the enemy
             final double diff = angleDiff(this.turretAngle, targetAngle);
@@ -73,6 +77,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
                 }
             }
             evaluateTargets();
+            updateTargetAngle();
             // line up and shoot at previously targeted enemies
             if (!targets.isEmpty) {
                 // wakey wakey
@@ -116,10 +121,11 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
 
     void attack(Enemy target) {
         final Vector targetPos = getTargetLocation(target);
-        final Projectile p = new Projectile()
-            ..posVector = this.posVector
-            ..velocity = (targetPos - this.posVector).norm() * towerType.projectileSpeed
-            ..targetPos = targetPos;
+        final Projectile p = new Projectile(this, target, targetPos)
+            ..travelSpeed = towerType.projectileSpeed / (targetPos - this.posVector).length;
+            //..posVector = this.posVector
+            //..velocity = (targetPos - this.posVector).norm() * towerType.projectileSpeed
+            //..targetPos = targetPos;
         this.engine.addEntity(p);
     }
 
@@ -144,10 +150,15 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
         final Set<Enemy> possibleTargets = game.enemySelector.queryRadius(pos_x, pos_y, towerType.leadTargets ? towerType.range * towerType.leadingRangeGraceFactor : towerType.range);
 
         if (towerType.leadTargets) {
-            final double checkRange = towerType.range * towerType.range * towerType.leadingRangeGraceFactor * towerType. leadingRangeGraceFactor;
+            final double checkRange = towerType.range * towerType.range;
+            final double checkRangeLeading = checkRange * towerType.leadingRangeGraceFactor * towerType. leadingRangeGraceFactor;
             possibleTargets.retainWhere((Enemy target) {
-                final Vector diff = getTargetLocation(target) - this.posVector;
-                return diff.x*diff.x + diff.y*diff.y <= checkRange;
+                final Vector diff = target.posVector - this.posVector;
+                final Vector diffLeading = getTargetLocation(target) - this.posVector;
+
+                final double diffInLeading = diffLeading.x*diffLeading.x + diffLeading.y*diffLeading.y;
+                final double diffIn = diff.x*diff.x + diff.y*diff.y;
+                return (diffIn <= checkRange && diffInLeading <= checkRangeLeading) || (diffIn <= checkRangeLeading && diffInLeading <= checkRange);
             });
         }
 
@@ -239,11 +250,6 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
     void draw2D(CanvasRenderingContext2D ctx) {
         //super.draw2D(ctx);
         towerType.draw2D(ctx);
-
-        if (sleeping) {
-            ctx.fillStyle = "black";
-            ctx.fillRect(-4, -4, 8, 8);
-        }
     }
 
     @override
@@ -289,6 +295,11 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
                         ..stroke();
                 }
             }
+        }
+
+        if (sleeping) {
+            ctx.fillStyle = "black";
+            ctx.fillRect(-4, -4, 8, 8);
         }
     }
 }

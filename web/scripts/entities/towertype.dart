@@ -15,14 +15,16 @@ class TowerType {
     int maxTargets = 1;
     /// Minimum time between shots.
     /// Turreted towers may need more time to line up the shot
-    double weaponCooldown = 1.0;
+    double weaponCooldown = 0.2;
+    /// Damage per hit inflicted upon target.
+    double weaponDamage = 1.0;
     /// Targeting strategies evaluate each enemy in range when targets are being selected.
     /// The enemy/enemies rated highest will be targeted.
     TargetingStrategy<Enemy> targetingStrategy = defaultTargetingStrategy;
     /// Weapon range, in pixels at 100% zoom.
     double range = 200;
     /// Weapon projectile speed, in pixels per second at 100% zoom.
-    double projectileSpeed = 50;
+    double projectileSpeed = 450;
 
     /// Does this tower have a turret?
     bool turreted = true;

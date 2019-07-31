@@ -43,11 +43,23 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
     }
 
     // drawing level progress for debug
-    /*@override
+    @override
     void drawUI2D(CanvasRenderingContext2D ctx, double scaleFactor) {
-        ctx.fillStyle = "#FF0000";
-        ctx.fillText(this.progressToExit.toStringAsFixed(3), (enemyType.size) * scaleFactor, - 5);
-    }*/
+        //ctx.fillStyle = "#FF0000";
+        //ctx.fillText(this.progressToExit.toStringAsFixed(3), (enemyType.size) * scaleFactor, - 5);
+
+        if (health < maxHealth) {
+            final double width = this.enemyType.size* 2 * scaleFactor;
+            const double height = 3;
+            ctx
+                ..fillStyle = "black"
+                ..fillRect(-width*0.5-1, -this.enemyType.size * scaleFactor - height-1, width+2, height+2)
+                ..fillStyle = "#FF0000"
+                ..fillRect(-width*0.5, -this.enemyType.size * scaleFactor - height, width, height)
+                ..fillStyle = "#00FF00"
+                ..fillRect(-width*0.5, -this.enemyType.size* scaleFactor - height, width * (health / maxHealth).clamp(0, 1), height);
+        }
+    }
 
     @override
     void logicUpdate([num dt = 0]) {
