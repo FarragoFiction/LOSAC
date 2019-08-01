@@ -171,8 +171,8 @@ class SpatialHashKey {
 	}
 }
 
-// ignore: always_specify_types
-mixin SpatialHashable<T extends SpatialHashable> on LevelObject {
-	SpatialHash<T> spatialHash;
+mixin SpatialHashable<T> on LevelObject {
+	// ignore: always_specify_types
+	SpatialHash spatialHash;
 	Set<SpatialHashKey> spatialBuckets;
 }
