@@ -3,7 +3,6 @@ import 'dart:html';
 
 import "engine/game.dart";
 import "engine/inputhandler.dart";
-import "entities/enemy.dart";
 import "entities/enemytype.dart";
 import "entities/tower.dart";
 import "entities/towertype.dart";
@@ -12,11 +11,8 @@ import "level/endcap.dart";
 import "level/grid.dart";
 import "level/level.dart";
 import "level/level2d.dart";
-import "level/pathnode.dart";
 import "pathfinder/pathfinder.dart";
 import "renderer/2d/renderer2d.dart";
-import "renderer/2d/vector.dart";
-import "utility/levelutils.dart";
 
 Future<void> main() async {
     print("LOSAC yo");
@@ -132,7 +128,7 @@ Future<void> main() async {
 
     //game.addEntity(testTower);
 
-    /*const int towers = 1;
+    /*const int towers = 5;
     for (int i=0; i<towers; i++) {
         final Tower tower = new Tower(testTowerType);
         testGrid.placeTower(i, 8, tower);

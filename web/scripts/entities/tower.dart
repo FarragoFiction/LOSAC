@@ -12,7 +12,7 @@ import "../renderer/2d/matrix.dart";
 import "../renderer/2d/vector.dart";
 import "../utility/towerutils.dart";
 import "enemy.dart";
-import "projectile.dart";
+import "projectiles/projectile.dart";
 import "towertype.dart";
 
 class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
@@ -121,7 +121,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
 
     void attack(Enemy target) {
         final Vector targetPos = getTargetLocation(target);
-        final Projectile p = new Projectile(this, target, targetPos)
+        final Projectile p = new InterpolatorProjectile(this, target, targetPos)
             ..travelSpeed = towerType.projectileSpeed / (targetPos - this.posVector).length;
             //..posVector = this.posVector
             //..velocity = (targetPos - this.posVector).norm() * towerType.projectileSpeed

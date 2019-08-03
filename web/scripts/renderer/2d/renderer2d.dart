@@ -2,7 +2,6 @@ import "dart:html";
 import "dart:math" as Math;
 
 import "../../engine/engine.dart";
-import "../../engine/game.dart";
 import "../../engine/spatialhash.dart";
 import "../../level/level2d.dart";
 import "../renderer.dart";

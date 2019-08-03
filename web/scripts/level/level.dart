@@ -1,12 +1,8 @@
 import "dart:html";
 
 import "../renderer/2d/bounds.dart";
-import "../renderer/2d/renderable2d.dart";
-import "../renderer/2d/vector.dart";
-import "../utility/levelutils.dart";
 import "connectible.dart";
 import "domainmap.dart";
-import "grid.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 

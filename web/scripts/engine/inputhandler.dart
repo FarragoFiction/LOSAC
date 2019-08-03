@@ -1,4 +1,3 @@
-import "dart:collection";
 import "dart:html";
 
 import "engine.dart";

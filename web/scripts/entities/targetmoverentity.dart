@@ -1,4 +1,3 @@
-import "dart:html";
 import "dart:math" as Math;
 
 import "package:CommonLib/Utility.dart";
@@ -53,7 +52,7 @@ class TargetMoverEntity extends MoverEntity {
         this.rot_angle += -turnAmount * angDiff.sign;
 
         if (angDiff.abs() < turnThreshold) {
-            final double targetDist = targetOffset.length;
+            //final double targetDist = targetOffset.length;
             //final double newSpeed = Math.min(targetDist, this.baseSpeed);
             //this.speed = newSpeed;
             this.speed = this.baseSpeed;

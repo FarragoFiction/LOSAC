@@ -10,7 +10,7 @@ abstract class Engine {
     Renderer renderer;
     Level level;
     Set<Entity> entities = <Entity>{};
-    Set<Entity> _entityQueue = <Entity>{};
+    final Set<Entity> _entityQueue = <Entity>{};
 
     InputHandler input;
 
