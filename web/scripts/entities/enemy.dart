@@ -5,7 +5,6 @@ import "../engine/spatialhash.dart";
 import "../entities/targetmoverentity.dart";
 import "../level/endcap.dart";
 import "../level/pathnode.dart";
-import "../renderer/2d/bounds.dart";
 import "../renderer/2d/vector.dart";
 import "enemytype.dart";
 import "terraincollider.dart";
@@ -64,7 +63,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
     @override
     void logicUpdate([num dt = 0]) {
         if (this.health <= 0) {
-            this.dead = true;
+            this.kill();
 
             if (this.engine is Game) {
                 final Game game = engine;
@@ -107,11 +106,9 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
         _progressDirty = true;
     }
 
+    // might as well link these two together, not like it's going to be set anywhere
     @override
-    Rectangle<num> calculateBounds() {
-        final double size = enemyType.size * .85;
-        return rectBounds(this, size, size);
-    }
+    double get boundsSize => enemyType.size;
 
     void updateTarget(num dt) {
         final int nodeId = this.engine.level.domainMap.getVal(this.pos_x, this.pos_y);

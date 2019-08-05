@@ -95,7 +95,6 @@ abstract class Engine {
 
     void logicUpdate([num dt = 0]) {
         final double updateTime = dt / 1000;
-        final Set<Entity> toRemove = <Entity>{};
 
         entities.addAll(_entityQueue);
         _entityQueue.clear();
@@ -104,12 +103,8 @@ abstract class Engine {
             if (o.active) {
                 o.logicUpdate(updateTime);
             }
-            if (o.dead) {
-                toRemove.add(o);
-            }
         }
-
-        entities.removeAll(toRemove);
+        entities.removeWhere((Entity e) => e.dead);
     }
 
     void graphicsUpdate([num interpolation = 0]) {

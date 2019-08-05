@@ -13,6 +13,9 @@ class InterpolatorProjectile extends Projectile {
         this.previousPos = this.parent.posVector;
         this.rot_angle = (targetPos - parent.posVector).angle;
         this.previousRot = rot_angle;
+
+        this.travelSpeed = parent.towerType.projectileSpeed / (targetPos - this.posVector).length;
+        this.maxAge = 2 / travelSpeed; // 2 because we're hedging bets here, it should never be more than 1/travelSpeed in practice;
     }
 
     @override

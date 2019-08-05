@@ -14,6 +14,9 @@ abstract class Projectile extends MoverEntity {
     Tower parent;
     Enemy target;
 
+    double age = 0;
+    double maxAge = 10; // might need changing elsewhere for very slow and long range projectiles, but why would you go that slow?
+
     /// Not used by all types of projectile
     Vector targetPos;
 
@@ -30,5 +33,14 @@ abstract class Projectile extends MoverEntity {
 
     void impact() {
         target.health -= parent.towerType.weaponDamage;
+    }
+
+    @override
+    void logicUpdate([num dt = 0]) {
+        super.logicUpdate(dt);
+        this.age += dt;
+        if (this.age >= this.maxAge) {
+            this.kill();
+        }
     }
 }

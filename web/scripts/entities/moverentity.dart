@@ -19,6 +19,9 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     Vector drawPos;
     double drawRot;
 
+    /// Used in calculateBounds to override the main [LevelObject] rotated bounds code
+    double boundsSize = 10;
+
     MoverEntity() {
         speed = baseSpeed;
     }
@@ -84,4 +87,8 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
         ctx.restore();
     }
+
+    // this greatly simplifies the bounding boxes for moving objects, which is probably a good thing...
+    @override
+    Rectangle<num> calculateBounds() => new Rectangle<num>(this.pos_x-boundsSize/2, this.pos_y-boundsSize/2, boundsSize, boundsSize);
 }

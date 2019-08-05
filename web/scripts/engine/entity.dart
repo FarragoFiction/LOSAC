@@ -11,4 +11,8 @@ mixin Entity on LevelObject {
     void logicUpdate([num dt = 0]);
 
     void renderUpdate([num interpolation = 0]);
+
+    void kill() {
+        this.dead = true;
+    }
 }

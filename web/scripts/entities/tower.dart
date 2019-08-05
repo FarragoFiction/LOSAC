@@ -121,11 +121,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
 
     void attack(Enemy target) {
         final Vector targetPos = getTargetLocation(target);
-        final Projectile p = new InterpolatorProjectile(this, target, targetPos)
-            ..travelSpeed = towerType.projectileSpeed / (targetPos - this.posVector).length;
-            //..posVector = this.posVector
-            //..velocity = (targetPos - this.posVector).norm() * towerType.projectileSpeed
-            //..targetPos = targetPos;
+        final Projectile p = new ChaserProjectile(this, target, targetPos);
         this.engine.addEntity(p);
     }
 
@@ -147,7 +143,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
 
     void evaluateTargets() {
         final Game game = this.engine;
-        final Set<Enemy> possibleTargets = game.enemySelector.queryRadius(pos_x, pos_y, towerType.leadTargets ? towerType.range * towerType.leadingRangeGraceFactor : towerType.range);
+        final Set<Enemy> possibleTargets = game.enemySelector.queryRadius(pos_x, pos_y, towerType.leadTargets ? towerType.range * towerType.leadingRangeGraceFactor : towerType.range).where((Enemy e) => !e.dead).toSet();
 
         if (towerType.leadTargets) {
             final double checkRange = towerType.range * towerType.range;
