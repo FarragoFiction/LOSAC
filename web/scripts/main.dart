@@ -1,5 +1,6 @@
 import "dart:async";
 import 'dart:html';
+import "dart:math" as Math;
 
 import "engine/game.dart";
 import "engine/inputhandler.dart";
@@ -13,6 +14,7 @@ import "level/level.dart";
 import "level/level2d.dart";
 import "pathfinder/pathfinder.dart";
 import "renderer/2d/renderer2d.dart";
+import "renderer/2d/vector.dart";
 
 Future<void> main() async {
     print("LOSAC yo");
@@ -72,9 +74,9 @@ Future<void> main() async {
         //..renderSegments = true
     ;
 
-    testPath.addVertex(new CurveVertex()..pos_x = 50..pos_y=30..rot_angle = 1.2..handle2 = 60);
-    testPath.addVertex(new CurveVertex()..pos_x = 220..pos_y=40..rot_angle = 2.4..handle1 = 60..handle2 = 60);
-    testPath.addVertex(new CurveVertex()..pos_x = 280..pos_y=180..rot_angle = 2.0..handle1 = 50);
+    testPath.addVertex(new CurveVertex()..pos_x = 50..pos_y=30..rot_angle = -0.3..handle2 = 60);
+    testPath.addVertex(new CurveVertex()..pos_x = 220..pos_y=40..rot_angle = 0.9..handle1 = 60..handle2 = 60);
+    testPath.addVertex(new CurveVertex()..pos_x = 280..pos_y=180..rot_angle = 0.5..handle1 = 50);
 
     testPath.updateConnectors();
     testPath.endConnector.connectAndOrient(testGrid.getCell(0, 0).left);
@@ -90,6 +92,11 @@ Future<void> main() async {
     final ExitObject testExit = new ExitObject();//..pos_x=500..pos_y=500;
 
     testExit.connector.connectAndOrient(testPath.startConnector);
+    //testPath.startConnector.connectAndOrient(testExit.connector);
+
+    testPath.rebuildSegments();
+
+    testPath.recentreOrigin();
 
     testLevel.objects.add(testExit);
 
@@ -160,10 +167,20 @@ Future<void> main() async {
         }
     });
 
-    game.input.listen("A", testCallback, allowRepeats: false);
+    //game.input.listen("A", testCallback, allowRepeats: false);
+
+    Vector v = new Vector(1,0);
+    print("(1,0): ${v.angle}");
+    v = new Vector(1,1);
+    print("(1,1): ${v.angle}");
+    v = new Vector(0,1);
+    print("(0,1): ${v.angle}");
+
+    v = new Vector(1,0).rotate(Math.pi * 0.5);
+    print(v);
 }
 
-bool testCallback(String key, KeyEventType type, bool shift, bool control, bool alt) {
+/*bool testCallback(String key, KeyEventType type, bool shift, bool control, bool alt) {
     print("key: $key, shift: $shift, type: $type");
     return false;
-}
+}*/

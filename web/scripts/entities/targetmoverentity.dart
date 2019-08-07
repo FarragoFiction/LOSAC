@@ -34,7 +34,7 @@ class TargetMoverEntity extends MoverEntity {
         }
 
         final Vector targetOffset = targetPos - this.posVector;
-        final double targetAngle = Math.atan2(targetOffset.y, targetOffset.x) + Math.pi * 0.5;
+        final double targetAngle = targetOffset.angle;//Math.atan2(targetOffset.y, targetOffset.x) + Math.pi * 0.5;
 
         debugTargetAngle = targetAngle;
 
@@ -67,7 +67,7 @@ class TargetMoverEntity extends MoverEntity {
     }
 
     void updateVelocityFromHeading(num dt) {
-        this.velocity = new Vector(0,-1).applyMatrix(this.matrix) * this.speed;
+        this.velocity = new Vector(1,0).applyMatrix(this.matrix) * this.speed;
     }
 
     bool closeToPos(double x, double y, double distance) {

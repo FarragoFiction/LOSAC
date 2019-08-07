@@ -1,6 +1,8 @@
 import "dart:html";
 import "dart:math" as Math;
 
+import "package:CommonLib/Utility.dart";
+
 import "../renderer/2d/vector.dart";
 import "levelobject.dart";
 import "pathnode.dart";
@@ -84,9 +86,9 @@ abstract class Connector extends LevelObject {
 
         ctx
             ..beginPath()
-            ..moveTo(-displaySize, 0)
-            ..lineTo(0, -displaySize)
+            ..moveTo(0, -displaySize)
             ..lineTo(displaySize, 0)
+            ..lineTo(0, displaySize)
             ..closePath()
             ..fill();
     }
@@ -103,7 +105,7 @@ abstract class Connector extends LevelObject {
         final num targetAngle = target.getWorldRotation() + Math.pi;
         final num thisAngle = this.getWorldRotation();
 
-        final double angleOffset = targetAngle - thisAngle;
+        final double angleOffset = angleDiff(targetAngle, thisAngle);
 
         final Vector rotatedPos = this.posVector.rotate(angleOffset);
         final Vector movePos = targetPos - rotatedPos;

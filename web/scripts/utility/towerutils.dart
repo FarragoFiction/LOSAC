@@ -8,6 +8,8 @@ import "../renderer/2d/vector.dart";
 abstract class TowerUtils {
 
     static Vector intercept(Vector firePos, Vector targetPos, Vector targetVel, double projSpeed) {
+        if (projSpeed <= 0) { return null; }
+
         final double tx = targetPos.x - firePos.x;
         final double ty = targetPos.y - firePos.y;
         final double tvx = targetVel.x;
@@ -100,7 +102,7 @@ abstract class TowerUtils {
 
         int iter = 0;
         while(iter < 1000) {
-            double time = interceptTime(tPos, pos - dir * enemy.speed * timeOffset, dir * enemy.speed, tower.towerType.projectileSpeed);
+            double time = interceptTime(tPos, pos - dir * enemy.speed * timeOffset, dir * enemy.speed, tower.towerType.weapon.projectileSpeed);
             if (time == -1) { return null; }
             time -= timeOffset;
 

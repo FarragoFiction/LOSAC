@@ -20,7 +20,7 @@ class Vector extends Math.Point<num> {
         return new Vector(point.x, point.y);
     }
 
-    factory Vector.zero() => new Vector(0,0);
+    factory Vector.zero() => Vector(0,0);
 
     Vector applyMatrix(RotationMatrix matrix) {
         final num x = matrix.cos * this.x - matrix.sin * this.y;
@@ -77,7 +77,7 @@ class Vector extends Math.Point<num> {
         throw ArgumentError("Invalid vector division: $this / $other");
     }
 
-    Vector norm() => this / this.length;
+    Vector norm() => this.length == 0 ? new Vector.zero() : this / this.length;
     double dot(Vector other) => x * other.x + y * other.y;
     double get angle => Math.atan2(y, x);
 }

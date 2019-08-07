@@ -373,7 +373,7 @@ class CurveSegment extends LevelObject {
             ..strokeStyle = "#40CC40"
             ..beginPath()
             ..moveTo(o.x, o.y)
-            ..lineTo(- o.x, -o.y)
+            ..lineTo(-o.x, -o.y)
             ..stroke();
     }
 }
@@ -405,11 +405,11 @@ class CurveVertex extends LevelObject with HasMatrix {
     }
 
     Vector get handle1pos {
-        _handle1pos ??= new Vector(0,handle1).applyMatrix(matrix);
+        _handle1pos ??= new Vector(-handle1,0).applyMatrix(matrix);
         return _handle1pos;
     }
     Vector get handle2pos {
-        _handle2pos ??= new Vector(0,-handle2).applyMatrix(matrix);
+        _handle2pos ??= new Vector(handle2,0).applyMatrix(matrix);
         return _handle2pos;
     }
 

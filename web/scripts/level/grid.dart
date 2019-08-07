@@ -60,7 +60,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                     final Connector c = new ConnectorPositive()
                         ..pos_x = cell.pos_x
                         ..pos_y = cell.pos_y - cellSize*0.5
-                        ..rot_angle = 0;
+                        ..rot_angle = -Math.pi * 0.5;
                     cell.up = c;
                     addSubObject(c);
                 }
@@ -70,7 +70,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                     final Connector c = new ConnectorPositive()
                         ..pos_x = cell.pos_x
                         ..pos_y = cell.pos_y + cellSize*0.5
-                        ..rot_angle = Math.pi;
+                        ..rot_angle = Math.pi * 0.5;
                     cell.down = c;
                     addSubObject(c);
                 }
@@ -80,7 +80,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                     final Connector c = new ConnectorPositive()
                         ..pos_x = cell.pos_x - cellSize*0.5
                         ..pos_y = cell.pos_y
-                        ..rot_angle = -Math.pi * 0.5;
+                        ..rot_angle = Math.pi;
                     cell.left = c;
                     addSubObject(c);
                 }
@@ -90,7 +90,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                     final Connector c = new ConnectorPositive()
                         ..pos_x = cell.pos_x + cellSize*0.5
                         ..pos_y = cell.pos_y
-                        ..rot_angle = Math.pi * 0.5;
+                        ..rot_angle = 0;
                     cell.right = c;
                     addSubObject(c);
                 }

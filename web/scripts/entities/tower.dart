@@ -26,6 +26,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
     static const int _sleepFrames = 10;
 
     double weaponCooldown = 0;
+    int currentBurst = 0;
     double turretAngle = 0;
     double prevTurretAngle = 0;
     double targetAngle = 0;
@@ -93,7 +94,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
                         for (final Enemy target in targets) {
                             attack(target);
                         }
-                        weaponCooldown = towerType.weaponCooldown;
+                        _setCooldown();
                     } else {
                         // if the angle is greater, delay the attack
                         weaponCooldown = dt;
@@ -103,7 +104,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
                     for (final Enemy target in targets) {
                         attack(target);
                     }
-                    weaponCooldown = towerType.weaponCooldown;
+                    _setCooldown();
                 }
             } else {
                 // count down to sleep cycle
@@ -119,9 +120,23 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
         }
     }
 
+    void _setCooldown() {
+        if (towerType.weapon.burst <= 1) {
+            weaponCooldown = towerType.weapon.cooldown;
+        } else {
+            currentBurst++;
+            if (currentBurst >= towerType.weapon.burst) {
+                weaponCooldown = towerType.weapon.cooldown * (1-towerType.weapon.burstTime) * towerType.weapon.burst;
+                currentBurst = 0;
+            } else {
+                weaponCooldown = towerType.weapon.cooldown * towerType.weapon.burstTime;
+            }
+        }
+    }
+
     void attack(Enemy target) {
         final Vector targetPos = getTargetLocation(target);
-        final Projectile p = new ChaserProjectile(this, target, targetPos);
+        final Projectile p = new Projectile(this, target, targetPos);
         this.engine.addEntity(p);
     }
 
@@ -143,10 +158,10 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
 
     void evaluateTargets() {
         final Game game = this.engine;
-        final Set<Enemy> possibleTargets = game.enemySelector.queryRadius(pos_x, pos_y, towerType.leadTargets ? towerType.range * towerType.leadingRangeGraceFactor : towerType.range).where((Enemy e) => !e.dead).toSet();
+        final Set<Enemy> possibleTargets = game.enemySelector.queryRadius(pos_x, pos_y, towerType.leadTargets ? towerType.weapon.range * towerType.leadingRangeGraceFactor : towerType.weapon.range).where((Enemy e) => !e.dead).toSet();
 
         if (towerType.leadTargets) {
-            final double checkRange = towerType.range * towerType.range;
+            final double checkRange = towerType.weapon.range * towerType.weapon.range;
             final double checkRangeLeading = checkRange * towerType.leadingRangeGraceFactor * towerType. leadingRangeGraceFactor;
             possibleTargets.retainWhere((Enemy target) {
                 final Vector diff = target.posVector - this.posVector;
@@ -161,16 +176,16 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
         final Map<Enemy, double> evaluations = <Enemy, double>{};
         double getEval(Enemy enemy) {
             if (!evaluations.containsKey(enemy)) {
-                evaluations[enemy] = towerType.targetingStrategy.evaluate(this, enemy);
+                evaluations[enemy] = towerType.weapon.targetingStrategy.evaluate(this, enemy);
             }
             return evaluations[enemy];
         }
 
-        if (towerType.maxTargets >= possibleTargets.length) {
+        if (towerType.weapon.maxTargets >= possibleTargets.length) {
             // if we can target at least as many targets as possibles, just target them all!
             targets.clear();
             targets.addAll(possibleTargets);
-        } else if (towerType.maxTargets == 1) {
+        } else if (towerType.weapon.maxTargets == 1) {
             // if we only want a single target, then we work out the best
             Enemy best;
 
@@ -195,7 +210,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
                 best.add(enemy);
                 // here we remove the first element if the queue is longer than our max targets
                 // because of the backwards sorting, this prunes the worst candidate
-                if (best.length > towerType.maxTargets) {
+                if (best.length > towerType.weapon.maxTargets) {
                     best.removeFirst();
                 }
             }
@@ -253,7 +268,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
         ctx
             ..strokeStyle = "#30FF30"
             ..beginPath()
-            ..arc(0, 0, towerType.range * scaleFactor, 0, Math.pi*2)
+            ..arc(0, 0, towerType.weapon.range * scaleFactor, 0, Math.pi*2)
             ..closePath()
             ..stroke();
 

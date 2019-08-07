@@ -15,7 +15,7 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
     Connector connector;
 
     EndCap() {
-        final Connector c = new ConnectorNeutral()..pos_y = -Grid.cellSize * 0.5;
+        final Connector c = new ConnectorNeutral()..pos_x = Grid.cellSize * 0.5;
         this.connector = c;
         this.addSubObject(c);
     }
@@ -72,9 +72,9 @@ class SpawnerObject extends EndCap<SpawnNode> {
 
         ctx
             ..beginPath()
-            ..moveTo(-size, size * 0.5)
-            ..lineTo(0, -size * 0.75)
-            ..lineTo(size, size * 0.5)
+            ..moveTo(-size * 0.5, -size)
+            ..lineTo(size * 0.75, 0)
+            ..lineTo(-size * 0.5, size)
             ..closePath()
             ..fill();
     }
@@ -101,9 +101,9 @@ class ExitObject extends EndCap<ExitNode> {
 
         ctx
             ..beginPath()
-            ..moveTo(-size, -size * 0.5)
-            ..lineTo(0, size * 0.75)
-            ..lineTo(size, -size * 0.5)
+            ..moveTo(-size * 0.5, -size)
+            ..lineTo(size * 0.75, 0)
+            ..lineTo(-size * 0.5, size)
             ..closePath()
             ..fill();
     }

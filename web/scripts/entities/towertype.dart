@@ -3,42 +3,32 @@ import "dart:math" as Math;
 
 import "../targeting/strategies.dart";
 import "enemy.dart";
+import "projectiles/projectile.dart";
 
 class TowerType {
     /// "close enough" angle delta for turrets - within this, we are considered to be pointing at the target
     static const double fireAngleFuzz = 0.01;
     static final TargetingStrategy<Enemy> defaultTargetingStrategy = new ProgressTargetingStrategy() + new StickyTargetingStrategy() * 0.1;
 
-    /// Maximum target count
-    /// This isn't the amount of targets which can be hit (since AoE is a thing),
-    /// but how many enemies may be independently targeted at once.
-    int maxTargets = 1;
-    /// Minimum time between shots.
-    /// Turreted towers may need more time to line up the shot
-    double weaponCooldown = 0.2;
-    /// Damage per hit inflicted upon target.
-    double weaponDamage = 1.0;
-    /// Targeting strategies evaluate each enemy in range when targets are being selected.
-    /// The enemy/enemies rated highest will be targeted.
-    TargetingStrategy<Enemy> targetingStrategy = defaultTargetingStrategy;
-    /// Weapon range, in pixels at 100% zoom.
-    double range = 200;
-    /// Weapon projectile speed, in pixels per second at 100% zoom.
-    double projectileSpeed = 450;
+
 
     /// Does this tower have a turret?
-    bool turreted = true;
+    bool turreted = false;
     /// Does this tower lead targets with its turret?
-    bool leadTargets = true;
+    bool leadTargets = false;
     /// When leading targets, allow leading points which are within this many times [range].
     double leadingRangeGraceFactor = 1.1;
     /// Turret turn rate per second in radians.
     double turnRate = Math.pi * 0.5;
     /// How close the turret angle needs to be to fire, in radians.
     /// This might be greater than 0 for something like a missile launcher which doesn't require precise aim
-    double fireAngle = 0;
+    double fireAngle = 1.5;
 
+    WeaponType weapon;
 
+    TowerType() {
+        weapon = new ChaserWeaponType(this);
+    }
 
     void draw2D(CanvasRenderingContext2D ctx) {
         ctx.fillStyle="#A0A0A0";

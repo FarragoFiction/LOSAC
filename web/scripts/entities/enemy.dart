@@ -159,4 +159,9 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
         }
         _progressDirty = false;
     }
+
+    void damage(double amount) {
+        this.health -= amount;
+        //print("$this, $amount");
+    }
 }

@@ -12,9 +12,9 @@ class EnemyType {
 
         ctx
             ..beginPath()
-            ..moveTo(-size, size)
-            ..lineTo(0, -size)
-            ..lineTo(size, size)
+            ..moveTo(-size, -size)
+            ..lineTo(size, 0)
+            ..lineTo(-size, size)
             ..closePath()
             ..fill();
     }
