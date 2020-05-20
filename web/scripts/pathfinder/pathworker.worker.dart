@@ -1,8 +1,10 @@
 import "dart:collection";
+import 'dart:html';
 
 import "package:collection/collection.dart";
 import "package:CommonLib/Logging.dart";
 import "package:CommonLib/Workers.dart";
+import "package:CubeLib/CubeLib.dart" as B;
 
 import "../level/domainmap.dart";
 import "../level/pathnode.dart";
@@ -275,5 +277,13 @@ class PathWorker extends WorkerBase {
 
 void main() {
     new PathWorker();
+    
+    WorkerGlobalScope.instance.importScripts("packages/CubeLib/js/babylon.js");
+
+
+    final B.Vector3 a = new B.Vector3(1,0,0);
+    final B.Vector3 b = new B.Vector3(0.5,1,0);
+
+    print(a+b);
 }
 

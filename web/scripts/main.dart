@@ -2,6 +2,8 @@ import "dart:async";
 import 'dart:html';
 import "dart:math" as Math;
 
+import "package:CubeLib/CubeLib.dart" as B;
+
 import "engine/game.dart";
 import "engine/inputhandler.dart";
 import "entities/enemytype.dart";
