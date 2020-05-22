@@ -31,27 +31,18 @@ vec2 offsetSample(vec2 direction) {
     return vec2(0.0, sign(direction.y)) / screenSize;
 }
 
-float colourDifference(vec4 c1, vec4 c2) {
-    float dr = abs(c1.r - c2.r);
-    float dg = abs(c1.g - c2.g);
-    float db = abs(c1.b - c2.b);
-
-    float l1 = 0.299 * c1.r + 0.587 * c1.g + 0.114 * c1.b;
-    float l2 = 0.299 * c2.r + 0.587 * c2.g + 0.114 * c2.b;
-
-    float dl = l1-l2;
-
-    return dl * 0.65 + (0.299 * dr + 0.587 * dg + 0.114 * db) * 0.35;
+float brightness(vec4 colour) {
+    return 0.299 * colour.r + 0.587 * colour.g + 0.114 * colour.b;
 }
 
 vec2 colourVariance(vec2 coord, vec3 dim) {
     vec4 middle = texture2D(textureSampler, coord);
     vec2 total = vec2(0.0);
 
-    total += colourDifference(middle, texture2D(textureSampler, coord - dim.zy)) * vec2( 0.0, -1.0);
-    total += colourDifference(middle, texture2D(textureSampler, coord - dim.xz)) * vec2(-1.0,  0.0);
-    total += colourDifference(middle, texture2D(textureSampler, coord + dim.xz)) * vec2( 1.0,  0.0);
-    total += colourDifference(middle, texture2D(textureSampler, coord + dim.zy)) * vec2( 0.0,  1.0);
+    total += (brightness(middle) - brightness(texture2D(textureSampler, coord - dim.zy))) * vec2( 0.0, -1.0);
+    total += (brightness(middle) - brightness(texture2D(textureSampler, coord - dim.xz))) * vec2(-1.0,  0.0);
+    total += (brightness(middle) - brightness(texture2D(textureSampler, coord + dim.xz))) * vec2( 1.0,  0.0);
+    total += (brightness(middle) - brightness(texture2D(textureSampler, coord + dim.zy))) * vec2( 0.0,  1.0);
 
     return total * 0.25;
 }
@@ -167,8 +158,8 @@ float worldNoise(float depth, vec2 uv) {
     vec3 world = worldPos(depth, uv);
 
     float val = mixval.r * SimplexPerlin3D(world * scale)
-        + mixval.g * SimplexPerlin3D(world * 0.6 * scale)
-        + mixval.b * SimplexPerlin3D(world * 0.1 * scale) * 1.5;
+    + mixval.g * SimplexPerlin3D(world * 0.6 * scale)
+    + mixval.b * SimplexPerlin3D(world * 0.1 * scale) * 1.5;
 
     return val;
 }
@@ -217,7 +208,7 @@ void main(void)
 
     float depthThreshold = 0.0005;
     float colourDepthThreshold = -0.0005;
-    float colourThreshold = 0.02;
+    float colourThreshold = 0.01;
 
     bool isOuterEdge = depthMag > depthThreshold;
     bool isInnerEdge = depth.mag > colourDepthThreshold && colourMag > colourThreshold;
@@ -229,19 +220,23 @@ void main(void)
         if (!isOuterEdge) {
             // we're on an interior edge, sample directly
             noise = worldNoise(depth.depth, vUV);
-            samplePos += offsetSample(colourDiff * noise);
+            if (noise > 0.0) {
+                samplePos += offsetSample(-colourDiff * noise);
+            }
         } else {
             // we're on an exterior edge, sample offset instead
             vec2 o = offsetSample(depth.dir);
             float d = texture2D(depthSampler, vUV + o).r;
             noise = worldNoise(d, vUV + o);
-            samplePos += o;
+            if (noise > 0.0) {
+                samplePos += o;
+            }
         }
 
-        if (noise > 0.0) {
+        float threshold = smoothstep(0.0,1.0, (depth.depth - 0.1) / 0.8);
+
+        if (noise > threshold) {
             gl_FragColor = texture2D(textureSampler, samplePos);
         }
     }
-
-    gl_FragColor = vec4(depth.depth,depth.depth,depth.depth,1.0);
 }
