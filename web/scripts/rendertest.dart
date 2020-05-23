@@ -43,8 +43,10 @@ Future<void> main() async {
     plane.material = material;
 
     final DateTime startTime = new DateTime.now();
+    double time = 0.0;
     scene.registerBeforeRender(JS.allowInterop(([dynamic a, dynamic b]) {
-        material.setFloat("time", (DateTime.now().difference(startTime)).inMilliseconds * 0.001);
+        time += engine.getDeltaTime();
+        material.setFloat("time", time * 0.001);// (DateTime.now().difference(startTime)).inMilliseconds * 0.001);
         material.setVector3("cameraPosition", camera.position);
     }));
 
