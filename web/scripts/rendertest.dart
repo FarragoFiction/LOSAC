@@ -22,7 +22,7 @@ class TestObject {
 
     TestObject(B.Mesh sourceMesh, B.BaseParticleSystem this.particles, B.Vector3 this.position, B.Vector3 this.velocity, double this.lifetime) {
         this.mesh = sourceMesh.createInstance("TestObject ${this.hashCode}");
-        this.trail = new B.TrailMesh("Train ${this.hashCode}", this.mesh, this.mesh.getScene(), 0.5, 60, false);
+        this.trail = new B.TrailMesh("Trail ${this.hashCode}", this.mesh, this.mesh.getScene(), 0.5, 60, false);
 
     }
 
@@ -93,9 +93,7 @@ Future<void> complexityTest() async {
             diameterBottom: 2,
             tessellation: 5,
             cap: B.Mesh.NO_CAP
-        ), scene)
-            //..convertToUnIndexedMesh()
-            ..isVisible = false;
+        ), scene);
 
         final B.Material treeMat = new B.StandardMaterial("treeMat$i", scene)
             ..specularColor.set(0.1,0.1,0.1)
@@ -104,19 +102,27 @@ Future<void> complexityTest() async {
         ;
         tree.material = treeMat;
 
+        final List<B.Mesh> trees = <B.Mesh>[];
         for (int j=0; j<treeCountPerType; j++) {
             final double x = terrainSize * (rand.nextDouble() - 0.5);
             final double z = terrainSize * (rand.nextDouble() - 0.5);
             final double y = terrain.getHeightAtCoordinates(x,z);
             final double scale = 0.85 + rand.nextDouble() * 0.3;
-            //print("($x, $y, $z)");
-            final B.InstancedMesh instance = tree.createInstance("tree${i}_$j")
-                ..position.set(x, y + 2.5 * scale, z)
-                ..scaling.set(scale, scale, scale)
-                ..freezeWorldMatrix()
-                ..alwaysSelectAsActiveMesh = true
-                ..doNotSyncBoundingInfo = true;
+            if (j == 0) {
+                trees.add(tree
+                    ..position.set(x, y + 2.5 * scale, z)
+                    ..scaling.set(scale, scale, scale)
+                );
+            } else {
+                trees.add(tree.clone("tree${i}_$j")
+                    ..position.set(x, y + 2.5 * scale, z)
+                    ..scaling.set(scale, scale, scale));
+            }
         }
+        B.Mesh.MergeMeshes(trees)
+            ..alwaysSelectAsActiveMesh = true
+            ..doNotSyncBoundingInfo = true
+            ..freezeWorldMatrix();
     }
 
     final B.Mesh projectileMesh = B.MeshBuilder.CreateBox("projectile", B.MeshBuilderCreateBoxOptions(size: 1))
