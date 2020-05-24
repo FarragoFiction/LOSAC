@@ -22,7 +22,7 @@ class TestObject {
 
     TestObject(B.Mesh sourceMesh, B.BaseParticleSystem this.particles, B.Vector3 this.position, B.Vector3 this.velocity, double this.lifetime) {
         this.mesh = sourceMesh.createInstance("TestObject ${this.hashCode}");
-        this.trail = new B.TrailMesh("Trail ${this.hashCode}", this.mesh, this.mesh.getScene(), 0.5, 60, false);
+        //this.trail = new B.TrailMesh("Trail ${this.hashCode}", this.mesh, this.mesh.getScene(), 0.5, 60, false);
 
     }
 
@@ -48,7 +48,7 @@ class TestObject {
         ;
 
         this.mesh.dispose();
-        this.trail.dispose();
+        //this.trail.dispose();
     }
 }
 
@@ -169,7 +169,7 @@ Future<void> complexityTest() async {
     const double tickInterval = 1000 / ticksPerSecond;
 
     double spawnTimer = 0.0;
-    const double spawnInterval = 0.25;
+    const double spawnInterval = 0.01;
 
     final Set<TestObject> objects = <TestObject>{};
     final Set<TestObject> dispose = <TestObject>{};
@@ -208,7 +208,7 @@ Future<void> complexityTest() async {
                 final double vz = Math.cos(angle) * speed;
                 final double vy = (rand.nextDouble() - 0.5) * 10;
                 final TestObject obj = new TestObject(projectileMesh, explosions, new B.Vector3(0,30,0), new B.Vector3(vx,vy,vz), 2.0 + rand.nextDouble() * 5.0);
-                obj.trail.start();
+                //obj.trail.start();
                 objects.add(obj);
             }
         }
