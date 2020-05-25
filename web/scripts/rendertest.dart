@@ -1,5 +1,6 @@
 import "dart:async";
 import "dart:html";
+import 'dart:js';
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
@@ -40,7 +41,7 @@ class TestObject {
 
     void destroy() {
         this.dead = true;
-        print("boom $hashCode");
+        //print("boom $hashCode");
         
         this.particles
             ..emitter = this.position
@@ -125,10 +126,22 @@ Future<void> complexityTest() async {
             ..freezeWorldMatrix();
     }
 
+    final String boxMatVert = await Loader.getResource("assets/shaders/basic.vert");
+    final String boxMatFrag = await Loader.getResource("assets/shaders/basic.frag");
+    final B.Material boxMat = new B.ShaderMaterial("boxmat", scene, B.ShaderMaterialShaderPath(
+        vertexSource: boxMatVert,
+        fragmentSource: boxMatFrag
+    ), B.IShaderMaterialOptions(
+        attributes: <String>["position", "normal", "uv", "color"],
+        uniforms: <String>["world", "viewProjection"],
+        defines: <String>["#define INSTANCES"]
+    ));
+
     final B.Mesh projectileMesh = B.MeshBuilder.CreateBox("projectile", B.MeshBuilderCreateBoxOptions(size: 1))
-        ..material = (new B.StandardMaterial("boxmat", scene)
-            ..diffuseColor.set(1, 0, 0)
-        )..isVisible = false;
+        ..material = boxMat /*(new B.StandardMaterial("boxmat", scene)
+            ..diffuseColor.set(1, 1, 1)
+        )*/..isVisible = false;
+    addTrailToMesh(projectileMesh, 5);
     final B.Texture particleTexture = new B.Texture("assets/textures/alphaTest.png", scene);
     final B.BaseParticleSystem explosions = new B.ParticleSystem("boom", 5000, scene)
         //..targetStopDuration = 0.2
@@ -217,6 +230,75 @@ Future<void> complexityTest() async {
     }));
 
     document.body.append(new DivElement()..append(new ButtonElement()..text="show inspector"..onClick.listen((MouseEvent e) { scene.debugLayer.show(); })));
+}
+
+void addTrailToMesh(B.Mesh mesh, int length) {
+    final List<dynamic> positions = mesh.getVerticesData(B.VertexBuffer.PositionKind);
+    final List<dynamic> normals = mesh.getVerticesData(B.VertexBuffer.NormalKind);
+    final List<dynamic> uvs = mesh.getVerticesData(B.VertexBuffer.UVKind);
+    final List<dynamic> indices = mesh.getIndices();
+
+    /*print("before");
+    print(positions);
+    print(normals);
+    print(uvs);
+    print(indices);*/
+
+    final List<double> colours = <double>[];
+
+    const List<double> blankColour = <double>[1,1,1,1];
+    for (int i=0; i<positions.length ~/ 3; i++) {
+        colours.addAll(blankColour);
+    }
+
+    final int offset = positions.length ~/3;
+    for (int i=0; i<length; i++) {
+        final double lengthFraction = i / (length-1);
+        positions.addAll(<double>[1.0,0.0,i * 5.0, -1.0,0.0,i * 5.0]);
+        normals.addAll(<double>[0.0,1.0,0.0, 0.0,1.0,0.0]);
+        colours.addAll(<double>[0.0, lengthFraction, 0.0, 1.0, 0.0, lengthFraction, 1.0, 1.0]);
+        uvs.addAll(<double>[0.0,lengthFraction, 1.0,lengthFraction]);
+
+        if (i<length-1) {
+            final int n = offset + i*2;
+            indices.addAll(<int>[n,n+2,n+1, n+1,n+2,n+3]);
+        }
+    }
+
+    new B.VertexData()
+        ..positions = positions
+        ..normals = normals
+        ..uvs = uvs
+        ..indices = indices
+        ..colors = colours
+        ..applyToMesh(mesh);
+
+    mesh.registerInstancedBuffer("trail", 3 * length);
+    final JsObject buffers = mesh.instancedBuffers;
+    buffers["trail"] = new List<double>(3 * length);
+
+    int step = 0;
+    mesh.onBeforeDrawObservable.add(JS.allowInterop((B.Mesh m, B.EventState eventState) {
+        for (final B.InstancedMesh instance in mesh.instances) {
+            dynamic thing = instance.instancedBuffers["trail"];
+            print(thing.runtimeType);
+        }
+        step++;
+        if (step >= length) {
+            step -= length;
+        }
+    }));
+
+    /*final List<dynamic> positions2 = mesh.getVerticesData(B.VertexBuffer.PositionKind);
+    final List<dynamic> normals2 = mesh.getVerticesData(B.VertexBuffer.NormalKind);
+    final List<dynamic> uvs2 = mesh.getVerticesData(B.VertexBuffer.UVKind);
+    final List<dynamic> indices2 = mesh.getIndices();
+
+    print("after");
+    print(positions2);
+    print(normals2);
+    print(uvs2);
+    print(indices2);*/
 }
 
 Future<void> portalTest() async {
