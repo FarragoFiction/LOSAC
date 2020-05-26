@@ -5,14 +5,18 @@ import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
 import "package:js/js.dart" as JS;
+import "package:js/js_util.dart" as JSu;
 import "package:LoaderLib/Loader.dart";
 
 Future<void> main() async {
     complexityTest();
+
+    testTrailId();
 }
 
 class TestObject {
     B.Vector3 position;
+    B.Vector3 prevPosition;
     B.Vector3 velocity;
     double lifetime;
     bool dead = false;
@@ -24,19 +28,30 @@ class TestObject {
     TestObject(B.Mesh sourceMesh, B.BaseParticleSystem this.particles, B.Vector3 this.position, B.Vector3 this.velocity, double this.lifetime) {
         this.mesh = sourceMesh.createInstance("TestObject ${this.hashCode}");
         //this.trail = new B.TrailMesh("Trail ${this.hashCode}", this.mesh, this.mesh.getScene(), 0.5, 60, false);
+        this.prevPosition = position.clone();
 
     }
 
     void update(double dt) {
-        if (dead) { return; }
+        if (dead) {
+            return;
+        }
         lifetime -= dt;
         if (lifetime <= 0) {
             this.destroy();
             return;
         }
-
+        this.prevPosition.copyFrom(this.position);
         this.position.addInPlace(velocity * dt);
-        this.mesh.position.set(position.x, position.y, position.z);
+    }
+    void renderUpdate(double dt, double frameProgress) {
+        final B.Vector3 diff = position - prevPosition;
+
+        this.mesh.position.set(
+            prevPosition.x + frameProgress * diff.x,
+            prevPosition.y + frameProgress * diff.y,
+            prevPosition.z + frameProgress * diff.z,
+        );
     }
 
     void destroy() {
@@ -126,14 +141,14 @@ Future<void> complexityTest() async {
             ..freezeWorldMatrix();
     }
 
-    final String boxMatVert = await Loader.getResource("assets/shaders/basic.vert");
+    final String boxMatVert = await Loader.getResource("assets/shaders/basic_with_trail.vert");
     final String boxMatFrag = await Loader.getResource("assets/shaders/basic.frag");
     final B.Material boxMat = new B.ShaderMaterial("boxmat", scene, B.ShaderMaterialShaderPath(
         vertexSource: boxMatVert,
         fragmentSource: boxMatFrag
     ), B.IShaderMaterialOptions(
-        attributes: <String>["position", "normal", "uv", "color"],
-        uniforms: <String>["world", "viewProjection"],
+        attributes: <String>["position", "normal", "uv", "color", "world0","world1","world2","world3", "trail0","trail1","trail2","trail3","trail4"],
+        uniforms: <String>["world", "viewProjection", "worldViewProjection", "trailStep", "trailLength"],
         defines: <String>["#define INSTANCES"]
     ));
 
@@ -195,6 +210,7 @@ Future<void> complexityTest() async {
         int iter = 0;
         while(tickCounter >= tickInterval) {
             tickCounter -= tickInterval;
+
             iter++;
             if (iter > 4) { continue; }
             dispose.clear();
@@ -224,6 +240,11 @@ Future<void> complexityTest() async {
                 //obj.trail.start();
                 objects.add(obj);
             }
+        }
+
+        final double fraction = (tickCounter / tickInterval).clamp(0, 1);
+        for (final TestObject o in objects) {
+            o.renderUpdate(tickInterval * 0.001, fraction);
         }
 
         scene.render();
@@ -273,19 +294,38 @@ void addTrailToMesh(B.Mesh mesh, int length) {
         ..colors = colours
         ..applyToMesh(mesh);
 
-    mesh.registerInstancedBuffer("trail", 3 * length);
-    final JsObject buffers = mesh.instancedBuffers;
-    buffers["trail"] = new List<double>(3 * length);
+
+    for (int i = 0; i<length; i++) {
+        mesh.registerInstancedBuffer("trail$i", 3);
+        //JSu.setProperty(mesh.instancedBuffers, "trail$i", new B.Vector3(i*5,0,0));
+    }
 
     int step = 0;
-    mesh.onBeforeDrawObservable.add(JS.allowInterop((B.Mesh m, B.EventState eventState) {
+    mesh.getScene().registerBeforeRender(JS.allowInterop(([dynamic a, dynamic b]) {
         for (final B.InstancedMesh instance in mesh.instances) {
-            dynamic thing = instance.instancedBuffers["trail"];
-            print(thing.runtimeType);
+            final dynamic iBuffers = instance.instancedBuffers;
+
+            if (JSu.getProperty(iBuffers, "trail0") == null) {
+                //print("set");
+                for (int i=0; i<length; i++) {
+                    JSu.setProperty(iBuffers, "trail$i", new B.Vector3(0, 0, 0));
+                }
+            }
+
+            final B.Vector3 data = JSu.getProperty(iBuffers, "trail$step");
+            data.set(instance.position.x, instance.position.y, instance.position.z);
+            //print("$step $data");
+            //print(context["console"]);
+
         }
-        step++;
-        if (step >= length) {
-            step -= length;
+
+        final B.ShaderMaterial material = mesh.material;
+        material.setInt("trailStep", step);
+        material.setInt("trailLength", length);
+
+        step--;
+        if (step < 0) {
+            step += length;
         }
     }));
 
@@ -362,4 +402,56 @@ Future<void> portalTest() async {
     engine.runRenderLoop(JS.allowInterop((){
         scene.render();
     }));
+}
+
+void testTrailId() {
+    const int length = 5;
+    const List<double> points = <double>[0.0,0.25,0.5,0.75,1.0];
+
+    int getIndex(double fraction) {
+        return ((fraction) * (length-1) + 0.2).floor();
+    }
+
+    int getPointIndex(int index, int step) {
+        int id = index + step;
+        if (id >= length) {
+            id -= length;
+        }
+        return id;
+    }
+
+    void printTestRange(int step) {
+        final List<int> list = <int>[];
+        for (int i=0; i<length; i++) {
+            list.add(getPointIndex(getIndex(points[i]), step));
+        }
+        print(list);
+    }
+
+    /*for (int i=0; i<length; i++) {
+        printTestRange(i);
+    }*/
+
+    final B.Vector3 pos = new B.Vector3();
+    final List<B.Vector3> trailPositions = new List<B.Vector3>.generate(length, (int i) => new B.Vector3());
+
+    int step = 0;
+    for (int iter = 0; iter < 10; iter++) {
+        pos.x += 1.0;
+
+        trailPositions[step].set(pos.x, pos.y, pos.z);
+
+        final List<B.Vector3> positions = <B.Vector3>[];
+        for (int i=0; i<length; i++) {
+            final int id = getIndex(points[i]);
+            final int pointId = getPointIndex(id, step);
+            positions.add(trailPositions[pointId]);
+        }
+        print(positions);
+
+        step --;
+        if(step < 0) {
+            step += length;
+        }
+    }
 }
