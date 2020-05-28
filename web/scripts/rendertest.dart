@@ -18,6 +18,7 @@ class TestObject {
     B.Vector3 position;
     B.Vector3 prevPosition;
     B.Vector3 velocity;
+    double spin;
     double lifetime;
     bool dead = false;
 
@@ -25,11 +26,15 @@ class TestObject {
     B.BaseParticleSystem particles;
     B.TrailMesh trail;
 
-    TestObject(B.Mesh sourceMesh, B.BaseParticleSystem this.particles, B.Vector3 this.position, B.Vector3 this.velocity, double this.lifetime) {
+    TestObject(B.Mesh sourceMesh, B.BaseParticleSystem this.particles, B.Vector3 this.position, B.Vector3 this.velocity, double this.spin, double this.lifetime) {
         this.mesh = sourceMesh.createInstance("TestObject ${this.hashCode}");
         //this.trail = new B.TrailMesh("Trail ${this.hashCode}", this.mesh, this.mesh.getScene(), 0.5, 60, false);
         this.prevPosition = position.clone();
-
+        final dynamic iBuffers = this.mesh.instancedBuffers;
+        const int trail = 5;
+        for (int i=0; i<trail; i++) {
+            JSu.setProperty(iBuffers, "trail$i", position.clone());
+        }
     }
 
     void update(double dt) {
@@ -42,6 +47,9 @@ class TestObject {
             return;
         }
         this.prevPosition.copyFrom(this.position);
+
+        this.velocity.rotateByQuaternionAroundPointToRef(B.Quaternion.FromEulerAngles(0, this.spin * dt, 0), this.position, this.velocity);
+
         this.position.addInPlace(velocity * dt);
     }
     void renderUpdate(double dt, double frameProgress) {
@@ -98,6 +106,7 @@ Future<void> complexityTest() async {
     await terrainCompleter.future;
 
     final Math.Random rand = new Math.Random(1);
+    final B.Observable<double> tickObservable = new B.Observable<double>();
 
     const int treeTypes = 10;
     const int treeCount = 5000;
@@ -143,7 +152,7 @@ Future<void> complexityTest() async {
 
     final String boxMatVert = await Loader.getResource("assets/shaders/basic_with_trail.vert");
     final String boxMatFrag = await Loader.getResource("assets/shaders/basic.frag");
-    final B.Material boxMat = new B.ShaderMaterial("boxmat", scene, B.ShaderMaterialShaderPath(
+    final B.ShaderMaterial boxMat = new B.ShaderMaterial("boxmat", scene, B.ShaderMaterialShaderPath(
         vertexSource: boxMatVert,
         fragmentSource: boxMatFrag
     ), B.IShaderMaterialOptions(
@@ -156,7 +165,7 @@ Future<void> complexityTest() async {
         ..material = boxMat /*(new B.StandardMaterial("boxmat", scene)
             ..diffuseColor.set(1, 1, 1)
         )*/..isVisible = false;
-    addTrailToMesh(projectileMesh, 5);
+    tickObservable.add(addTrailToMesh(projectileMesh, 5));
     final B.Texture particleTexture = new B.Texture("assets/textures/alphaTest.png", scene);
     final B.BaseParticleSystem explosions = new B.ParticleSystem("boom", 5000, scene)
         //..targetStopDuration = 0.2
@@ -223,6 +232,8 @@ Future<void> complexityTest() async {
                 }
             }
 
+            tickObservable.notifyObservers(seconds);
+
             for (final TestObject o in dispose) {
                 objects.remove(o);
             }
@@ -236,7 +247,7 @@ Future<void> complexityTest() async {
                 final double vx = Math.sin(angle) * speed;
                 final double vz = Math.cos(angle) * speed;
                 final double vy = (rand.nextDouble() - 0.5) * 10;
-                final TestObject obj = new TestObject(projectileMesh, explosions, new B.Vector3(0,30,0), new B.Vector3(vx,vy,vz), 2.0 + rand.nextDouble() * 5.0);
+                final TestObject obj = new TestObject(projectileMesh, explosions, new B.Vector3(0,30,0), new B.Vector3(vx,vy,vz), (rand.nextDouble() - 0.5) * 15, 2.0 + rand.nextDouble() * 5.0);
                 //obj.trail.start();
                 objects.add(obj);
             }
@@ -244,6 +255,8 @@ Future<void> complexityTest() async {
 
         final double fraction = (tickCounter / tickInterval).clamp(0, 1);
         for (final TestObject o in objects) {
+            boxMat.setFloat("tickFraction", fraction);
+            boxMat.setVector3("cameraPos", camera.position);
             o.renderUpdate(tickInterval * 0.001, fraction);
         }
 
@@ -253,7 +266,7 @@ Future<void> complexityTest() async {
     document.body.append(new DivElement()..append(new ButtonElement()..text="show inspector"..onClick.listen((MouseEvent e) { scene.debugLayer.show(); })));
 }
 
-void addTrailToMesh(B.Mesh mesh, int length) {
+void Function(double dt, B.EventState state) addTrailToMesh(B.Mesh mesh, int length) {
     final List<dynamic> positions = mesh.getVerticesData(B.VertexBuffer.PositionKind);
     final List<dynamic> normals = mesh.getVerticesData(B.VertexBuffer.NormalKind);
     final List<dynamic> uvs = mesh.getVerticesData(B.VertexBuffer.UVKind);
@@ -297,11 +310,11 @@ void addTrailToMesh(B.Mesh mesh, int length) {
 
     for (int i = 0; i<length; i++) {
         mesh.registerInstancedBuffer("trail$i", 3);
-        //JSu.setProperty(mesh.instancedBuffers, "trail$i", new B.Vector3(i*5,0,0));
+        //JSu.setProperty(mesh.instancedBuffers, "trail$i", new B.Vector3(0,0,0));
     }
 
     int step = 0;
-    mesh.getScene().registerBeforeRender(JS.allowInterop(([dynamic a, dynamic b]) {
+    return (JS.allowInterop((double dt, B.EventState state) {
         for (final B.InstancedMesh instance in mesh.instances) {
             final dynamic iBuffers = instance.instancedBuffers;
 

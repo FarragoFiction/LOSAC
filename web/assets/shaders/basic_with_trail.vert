@@ -21,6 +21,8 @@ uniform mat4 worldViewProjection;
 uniform mat4 viewProjection;
 uniform int trailStep;
 uniform int trailLength;
+uniform float tickFraction;
+uniform vec3 cameraPos;
 
 // Varying
 varying vec3 vNormal;
@@ -32,7 +34,7 @@ int getTrailId(float fraction) {
     return index;
 }
 
-vec3 getTrail(int index) {
+vec3 getTrailBase(int index) {
     index += trailStep;
     if (index >= trailLength) {
         index -= trailLength;
@@ -50,6 +52,15 @@ vec3 getTrail(int index) {
         return trail4;
     }
     return vec3(0,0,0);
+}
+
+vec3 getTrail(int index) {
+    if (index == 0) {
+        return (mat4(world0, world1, world2, world3) * vec4(0.0,0.0,0.0, 1.0)).xyz;
+    }
+    vec3 trail = getTrailBase(index);
+    vec3 next = getTrailBase(index-1);
+    return mix(trail, next, vec3(tickFraction));
 }
 
 vec3 getDirection(int id) {
@@ -89,16 +100,22 @@ void main() {
     bool isTrail = color.r < 0.1;
 
     if (isTrail) {
-        vec2 trailPos = vec2(color.b - 0.5, color.g);
+        vec2 trailData = vec2(color.b - 0.5, color.g);
 
-        int id = getTrailId(trailPos.y);
-        vec3 trail = getTrail(id);
+        int id = getTrailId(trailData.y);
+        vec3 trailPos = getTrail(id);
         vec3 direction = getDirection(id);
 
-        trail.x -= direction.z * -trailPos.x;
-        trail.z += direction.x * -trailPos.x;
+        vec3 cameraDir = cameraPos - trailPos;
 
-        vec4 pos = vec4(trail, 1.0);
+        vec3 offset = normalize(cross(direction, cameraDir));
+
+        //trailPos.x -= direction.z * -trailData.x;
+        //trailPos.z += direction.x * -trailData.x;
+
+        trailPos += offset * -trailData.x;
+
+        vec4 pos = vec4(trailPos, 1.0);
         //pos.xyz += position;
         gl_Position = (viewProjection * world * pos);// + (viewProjection * finalWorld * vec4(position,1.0));
         //gl_Position = (viewProjection * finalWorld * vec4(position,1.0));
