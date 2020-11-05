@@ -51,6 +51,10 @@ class TestObject {
         this.velocity.rotateByQuaternionAroundPointToRef(B.Quaternion.FromEulerAngles(0, this.spin * dt, 0), this.position, this.velocity);
 
         this.position.addInPlace(velocity * dt);
+
+        if (this.position.x.abs() > 150 || this.position.z.abs() > 150) {
+            this.destroy();
+        }
     }
     void renderUpdate(double dt, double frameProgress) {
         final B.Vector3 diff = position - prevPosition;
@@ -83,11 +87,24 @@ Future<void> complexityTest() async {
     final B.Scene scene = new B.Scene(engine);
 
     final B.Camera camera = new B.FreeCamera("camera", B.Vector3(0,50,00), scene)
+    ..maxZ = 500
     ..attachControl(canvas);
 
     final B.Texture depth = scene.enableDepthRenderer(camera, false).getDepthMap();
     //final B.Light light = new B.HemisphericLight("light1", new B.Vector3(0,1,0), scene);
-    final B.Light light = new B.DirectionalLight("light", B.Vector3(-.5,-1,0), scene);
+    final B.Light light = new B.DirectionalLight("light", B.Vector3(-.5,-1,0), scene)
+        ..position.y = 50
+        //..shadowMaxZ = 500
+        //..autoUpdateExtends = false
+        ..autoCalcShadowZBounds = true
+    ;
+    final B.ShadowGenerator shadows = new B.ShadowGenerator(4096, light)
+        ..useCloseExponentialShadowMap = true
+        //..bias = 0.1
+        ..usePoissonSampling = true
+        //..autoCalcDepthBounds = true
+        //..forceBackFacesOnly = true
+    ;
 
     const double terrainSize = 300;
 
@@ -104,6 +121,8 @@ Future<void> complexityTest() async {
         ..alwaysSelectAsActiveMesh = true
         ..doNotSyncBoundingInfo = true;
     await terrainCompleter.future;
+    //shadows.addShadowCaster(terrain);
+    terrain.receiveShadows = true;
 
     final Math.Random rand = new Math.Random(1);
     final B.Observable<double> tickObservable = new B.Observable<double>();
@@ -144,10 +163,11 @@ Future<void> complexityTest() async {
                     ..scaling.set(scale, scale, scale));
             }
         }
-        B.Mesh.MergeMeshes(trees)
+        final B.Mesh merged = B.Mesh.MergeMeshes(trees)
             ..alwaysSelectAsActiveMesh = true
             ..doNotSyncBoundingInfo = true
             ..freezeWorldMatrix();
+        shadows.addShadowCaster(merged);
     }
 
     final String boxMatVert = await Loader.getResource("assets/shaders/basic_with_trail.vert");
@@ -165,6 +185,7 @@ Future<void> complexityTest() async {
         ..material = boxMat /*(new B.StandardMaterial("boxmat", scene)
             ..diffuseColor.set(1, 1, 1)
         )*/..isVisible = false;
+    shadows.addShadowCaster(projectileMesh);
     tickObservable.add(addTrailToMesh(projectileMesh, 5));
     final B.Texture particleTexture = new B.Texture("assets/textures/alphaTest.png", scene);
     final B.BaseParticleSystem explosions = new B.ParticleSystem("boom", 5000, scene)
@@ -250,6 +271,7 @@ Future<void> complexityTest() async {
                 final TestObject obj = new TestObject(projectileMesh, explosions, new B.Vector3(0,30,0), new B.Vector3(vx,vy,vz), (rand.nextDouble() - 0.5) * 15, 2.0 + rand.nextDouble() * 5.0);
                 //obj.trail.start();
                 objects.add(obj);
+                shadows.addShadowCaster(obj.mesh);
             }
         }
 
