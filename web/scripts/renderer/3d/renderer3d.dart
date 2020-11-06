@@ -31,11 +31,10 @@ class Renderer3D extends Renderer {
             ..attachControl(canvas);*/
 
         this.camera = new B.ArcRotateCamera("Camera", Math.pi/2, Math.pi/2, 10, new B.Vector3(0,0,0), scene)
-            ..upVector.set(0, 0, 1)
             ..maxZ = 5000.0
             ..attachControl(canvas, true);
 
-        this.scene.addLight(new B.DirectionalLight("sun", new B.Vector3(1,1,-5), scene));
+        this.scene.addLight(new B.DirectionalLight("sun", new B.Vector3(1,-5,1), scene));
 
         this.defaultMaterial = new B.StandardMaterial("defaultMaterial", scene);
     }
@@ -65,7 +64,6 @@ class Renderer3D extends Renderer {
 
             if (renderable.mesh != null) {
                 this.scene.addMesh(renderable.mesh);
-                print("add mesh");
             }
         }
     }
@@ -78,7 +76,6 @@ class Renderer3D extends Renderer {
             if (renderable.mesh != null) {
                 this.scene.removeMesh(renderable.mesh);
                 renderable.mesh.dispose();
-                print("remove mesh");
             }
         }
     }
@@ -95,7 +92,8 @@ class Renderer3D extends Renderer {
 
     @override
     void moveTo(num x, num y) {
-        // TODO: implement moveTo
+        final B.ArcRotateCamera c = this.camera;
+        c.target.set(x, 0, y);
     }
 
     @override

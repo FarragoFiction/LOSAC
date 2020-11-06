@@ -52,8 +52,8 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
         if (this.mesh != null) {
             this.mesh
-                ..position.set(drawPos.x, drawPos.y, 0)
-                ..rotation.z = drawRot;
+                ..position.set(drawPos.x, 0, drawPos.y)
+                ..rotation.y = drawRot;
         }
     }
 

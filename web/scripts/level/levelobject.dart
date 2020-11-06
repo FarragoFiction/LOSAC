@@ -15,7 +15,7 @@ class SimpleLevelObject with Renderable3D {
     void generateMesh() {
         this.mesh = B.MeshBuilder.CreateBox("Object ${this.hashCode}", new B.MeshBuilderCreateBoxOptions(size: 10));
         this.mesh.material = this.renderer.defaultMaterial;
-        this.mesh.position.set(this.posVector.x, this.posVector.y, 0);
+        this.mesh.position.set(this.posVector.x, 0, this.posVector.y);
     }
 }
 
