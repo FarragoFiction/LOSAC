@@ -1,5 +1,7 @@
 import "dart:math";
 
+import "package:CubeLib/CubeLib.dart" as B;
+
 import "../level/levelobject.dart";
 
 // ignore: always_specify_types
@@ -131,7 +133,7 @@ class SpatialHash<T extends SpatialHashable> {
 			if (buckets.containsKey(key)) {
 				final Set<T> objects = this.buckets[key];
 				for(final T object in objects) {
-					final Point<num> pos = object.getWorldPosition();
+					final B.Vector2 pos = object.getWorldPosition();
 					final double dx = pos.x - x;
 					final double dy = pos.y - y;
 					final double distSquared = dx*dx + dy*dy;

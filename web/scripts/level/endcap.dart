@@ -1,8 +1,9 @@
 import "dart:html";
 
+import "package:CubeLib/CubeLib.dart" as B;
+
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
-import "../renderer/2d/vector.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import "grid.dart";
@@ -15,18 +16,9 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
     Connector connector;
 
     EndCap() {
-        final Connector c = new ConnectorNeutral()..pos_x = Grid.cellSize * 0.5;
+        final Connector c = new ConnectorNeutral()..posVector.x = Grid.cellSize * 0.5;
         this.connector = c;
         this.addSubObject(c);
-    }
-
-    @override
-    void draw2D(CanvasRenderingContext2D ctx) {
-        ctx
-            ..strokeStyle="#404040"
-            ..strokeRect(-Grid.cellSize/2, -Grid.cellSize/2, Grid.cellSize, Grid.cellSize);
-
-        this.drawSymbol(ctx, Grid.cellSize * 0.4);
     }
 
     void drawSymbol(CanvasRenderingContext2D ctx, double size);
@@ -36,7 +28,7 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
 
     @override
     void fillDomainMap(DomainMapRegion map) {
-        Vector mWorld, local;
+        B.Vector2 mWorld, local;
         const double size = Grid.cellSize * 0.5;
         for (int my = 0; my < map.height; my++) {
             for (int mx = 0; mx < map.width; mx++) {

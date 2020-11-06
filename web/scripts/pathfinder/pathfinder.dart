@@ -18,8 +18,8 @@ class Pathfinder {
 
         final List<Map<String, dynamic>> payload = level.pathNodes.map((PathNode node) => <String, dynamic>{
             "type": node is ExitNode ? "exit" : node is SpawnNode ? "spawn" : null,
-            "x": node.pos_x,
-            "y": node.pos_y,
+            "x": node.posVector.x,
+            "y": node.posVector.y,
             "shortcut": node.validShortcut,
             "blocked": node.blocked,
             "links": node.connections.keys.map((PathNode connection) => <String,dynamic>{

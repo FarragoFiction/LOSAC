@@ -13,10 +13,11 @@ import "level/curve.dart";
 import "level/endcap.dart";
 import "level/grid.dart";
 import "level/level.dart";
-import "level/level2d.dart";
+import "level/level3d.dart";
 import "pathfinder/pathfinder.dart";
-import "renderer/2d/renderer2d.dart";
-import "renderer/2d/vector.dart";
+import "renderer/3d/renderer3d.dart";
+import "renderer/renderer.dart";
+import "utility/extensions.dart";
 
 Future<void> main() async {
     print("LOSAC yo");
@@ -30,7 +31,7 @@ Future<void> main() async {
     document.body.append(fpsElement);
 
     final Pathfinder pathfinder = new Pathfinder();
-    final Level testLevel = new Level2D();
+    final Level testLevel = new Level3D();
 
     // basic object test
 
@@ -43,7 +44,7 @@ Future<void> main() async {
 
     // grid
 
-    final Grid testGrid = new Grid(6, 10)..pos_x = 500..pos_y = 400..rot_angle = 0.1;
+    final Grid testGrid = new Grid(6, 10)..posVector.x = 500..posVector.y = 400..rot_angle = 0.1;
 
     List<GridCell> cells = testGrid.getCells(0, 4, 1, 5);
     for (final GridCell c in cells) {
@@ -65,7 +66,7 @@ Future<void> main() async {
 
     // side grid
 
-    final Grid sideGrid = new Grid(4,1)..pos_x = 200..pos_y = 160..rot_angle = 0.75;
+    final Grid sideGrid = new Grid(4,1)..posVector.x = 200..posVector.y = 160..rot_angle = 0.75;
     sideGrid.updateConnectors();
     testLevel.objects.add(sideGrid);
 
@@ -76,9 +77,9 @@ Future<void> main() async {
         //..renderSegments = true
     ;
 
-    testPath.addVertex(new CurveVertex()..pos_x = 50..pos_y=30..rot_angle = -0.3..handle2 = 60);
-    testPath.addVertex(new CurveVertex()..pos_x = 220..pos_y=40..rot_angle = 0.9..handle1 = 60..handle2 = 60);
-    testPath.addVertex(new CurveVertex()..pos_x = 280..pos_y=180..rot_angle = 0.5..handle1 = 50);
+    testPath.addVertex(new CurveVertex()..posVector.x = 50..posVector.y=30..rot_angle = -0.3..handle2 = 60);
+    testPath.addVertex(new CurveVertex()..posVector.x = 220..posVector.y=40..rot_angle = 0.9..handle1 = 60..handle2 = 60);
+    testPath.addVertex(new CurveVertex()..posVector.x = 280..posVector.y=180..rot_angle = 0.5..handle1 = 50);
 
     testPath.updateConnectors();
     testPath.endConnector.connectAndOrient(testGrid.getCell(0, 0).left);
@@ -127,7 +128,7 @@ Future<void> main() async {
     final Point<num> towerCoord = testGrid.getCell(0, 8).getWorldPosition();
     testTower..pos_x = towerCoord.x..pos_y = towerCoord.y;*/
     
-    final Renderer2D renderer = new Renderer2D(testCanvas);
+    final Renderer renderer = new Renderer3D(testCanvas);
 
     final Game game = new Game(renderer)
         ..pathfinder = pathfinder
@@ -161,7 +162,7 @@ Future<void> main() async {
 
     //game.spawnEnemy(testEnemyType, testSpawner1);
     int n = 0;
-    new Timer.periodic(Duration(milliseconds: 1500), (Timer t) {
+    new Timer.periodic(const Duration(milliseconds: 1500), (Timer t) {
         game.spawnEnemy(testEnemyType, testSpawner1);
         n++;
         if (n >= 10) {
@@ -171,14 +172,14 @@ Future<void> main() async {
 
     //game.input.listen("A", testCallback, allowRepeats: false);
 
-    Vector v = new Vector(1,0);
+    B.Vector2 v = new B.Vector2(1,0);
     print("(1,0): ${v.angle}");
-    v = new Vector(1,1);
+    v = new B.Vector2(1,1);
     print("(1,1): ${v.angle}");
-    v = new Vector(0,1);
+    v = new B.Vector2(0,1);
     print("(0,1): ${v.angle}");
 
-    v = new Vector(1,0).rotate(Math.pi * 0.5);
+    v = new B.Vector2(1,0).rotate(Math.pi * 0.5);
     print(v);
 }
 

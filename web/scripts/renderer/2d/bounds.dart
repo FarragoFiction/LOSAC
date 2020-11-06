@@ -1,10 +1,11 @@
 import "dart:html";
 import "dart:math" as Math;
 
-import "../../level/levelobject.dart";
-import "vector.dart";
+import "package:CubeLib/CubeLib.dart" as B;
 
-Rectangle<num> polyBounds(List<Vector> vertices) {
+import "../../level/levelobject.dart";
+
+Rectangle<num> polyBounds(List<B.Vector2> vertices) {
     const double buffer = 3;
 
     double left   = double.infinity;
@@ -12,7 +13,7 @@ Rectangle<num> polyBounds(List<Vector> vertices) {
     double top    = double.infinity;
     double bottom = double.negativeInfinity;
 
-    for(final Vector v in vertices) {
+    for(final B.Vector2 v in vertices) {
         left   = Math.min(left,   v.x);
         right  = Math.max(right,  v.x);
         top    = Math.min(top,    v.y);
@@ -27,13 +28,13 @@ Rectangle<num> polyBounds(List<Vector> vertices) {
     return new Rectangle<num>(left, top, right-left, bottom-top);
 }
 
-Rectangle<num> polyBoundsLocal(LevelObject object, List<Vector> vertices) {
-    final List<Vector> worldVertices = new List<Vector>(vertices.length);
+Rectangle<num> polyBoundsLocal(LevelObject object, List<B.Vector2> vertices) {
+    final List<B.Vector2> worldVertices = new List<B.Vector2>(vertices.length);
 
     for (int i=0; i<vertices.length; i++) {
-        final Vector local = vertices[i];
+        final B.Vector2 local = vertices[i];
 
-        final Vector world = object.getWorldPosition(local);
+        final B.Vector2 world = object.getWorldPosition(local);
 
         worldVertices[i] = world;
     }
@@ -44,7 +45,7 @@ Rectangle<num> polyBoundsLocal(LevelObject object, List<Vector> vertices) {
 Rectangle<num> rectBounds(LevelObject object, double width, double height) {
     final double x = width/2;
     final double y = height/2;
-    return polyBoundsLocal(object, <Vector>[ new Vector(-x,-y), new Vector(x,-y), new Vector(-x, y), new Vector(x,y)]);
+    return polyBoundsLocal(object, <B.Vector2>[ new B.Vector2(-x,-y), new B.Vector2(x,-y), new B.Vector2(-x, y), new B.Vector2(x,y)]);
 }
 
 Rectangle<num> outerBounds(Iterable<Rectangle<num>> bounds) {

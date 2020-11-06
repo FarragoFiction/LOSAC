@@ -30,8 +30,8 @@ class PathNode extends SimpleLevelObject {
     void connectTo(PathNode other) {
         if (connections.keys.contains(other)) { return; }
 
-        final double dx = other.pos_x - this.pos_x;
-        final double dy = other.pos_y - this.pos_y;
+        final double dx = other.posVector.x - this.posVector.x;
+        final double dy = other.posVector.y - this.posVector.y;
         final double distance = Math.sqrt(dx*dx + dy*dy);
 
         this.connections[other] = distance;

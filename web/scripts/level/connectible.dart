@@ -1,9 +1,9 @@
-import "dart:html";
 import "dart:math" as Math;
 
 import "package:CommonLib/Utility.dart";
+import "package:CubeLib/CubeLib.dart" as B;
 
-import "../renderer/2d/vector.dart";
+import "../utility/extensions.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
@@ -33,14 +33,14 @@ mixin Connectible on LevelObject implements PathNodeObject {
         }
     }
 
-    @override
+    /*@override
     void draw2D(CanvasRenderingContext2D ctx) {
         super.draw2D(ctx);
 
         for (final Connector connector in connectors) {
             connector.drawToCanvas(ctx);
         }
-    }
+    }*/
 
     void clearConnectors() {
         final List<Connector> conlist = connectors.toList();
@@ -78,7 +78,7 @@ abstract class Connector extends LevelObject {
         }
     }
 
-    @override
+    /*@override
     void draw2D(CanvasRenderingContext2D ctx) {
         if(connected) { return; }
 
@@ -91,7 +91,7 @@ abstract class Connector extends LevelObject {
             ..lineTo(0, displaySize)
             ..closePath()
             ..fill();
-    }
+    }*/
 
     void connectAndOrient(Connector target) {
         if (target == null || this.connected || target.connected) {
@@ -101,21 +101,21 @@ abstract class Connector extends LevelObject {
 
         this.connect(target);
 
-        final Vector targetPos = target.getWorldPosition();
+        final B.Vector2 targetPos = target.getWorldPosition();
         final num targetAngle = target.getWorldRotation() + Math.pi;
         final num thisAngle = this.getWorldRotation();
 
         final double angleOffset = angleDiff(targetAngle, thisAngle);
 
-        final Vector rotatedPos = this.posVector.rotate(angleOffset);
-        final Vector movePos = targetPos - rotatedPos;
+        final B.Vector2 rotatedPos = this.posVector.rotate(angleOffset);
+        final B.Vector2 movePos = targetPos - rotatedPos;
 
 
-        final Vector finalPos = this.getLocalPositionFromWorld(movePos) + this.parentObject.posVector + this.posVector;
+        final B.Vector2 finalPos = this.getLocalPositionFromWorld(movePos) + this.parentObject.posVector + this.posVector;
         final double finalAngle = this.parentObject.rot_angle + angleOffset;
 
         this.parentObject.rot_angle = finalAngle;
-        this.parentObject.posVector = finalPos;
+        this.parentObject.posVector.setFrom(finalPos);
     }
 }
 

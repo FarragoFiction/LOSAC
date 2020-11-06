@@ -8,7 +8,6 @@ import "package:CubeLib/CubeLib.dart" as B;
 
 import "../level/domainmap.dart";
 import "../level/pathnode.dart";
-//import "../renderer/2d/vector.dart";
 import "../utility/levelutils.dart";
 import "commands.dart";
 
@@ -74,8 +73,8 @@ class PathWorker extends WorkerBase {
 
             node
                 ..id = i + 1
-                ..pos_x = nodeData["x"]
-                ..pos_y = nodeData["y"]
+                ..posVector.x = nodeData["x"]
+                ..posVector.y = nodeData["y"]
                 ..blocked = nodeData["blocked"]
                 ..validShortcut = nodeData["shortcut"];
 
@@ -180,7 +179,7 @@ class PathWorker extends WorkerBase {
         //update function
         void update_vertex(PathNode s, PathNode neighbour) {
             if( neighbour.validShortcut && previous[s].validShortcut && LevelUtils.isLineClear(domainMap, pathNodes, previous[s], neighbour)) {
-                final double dist = (previous[s].posVector - neighbour.posVector).length;
+                final double dist = (previous[s].posVector - neighbour.posVector).length();
 
                 if (distance[previous[s]] + dist < distance[neighbour]) {
                     distance[neighbour] = distance[previous[s]] + dist;

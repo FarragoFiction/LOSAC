@@ -1,6 +1,8 @@
 import "dart:math" as Math;
 
-import "../renderer/2d/vector.dart";
+import "package:CubeLib/CubeLib.dart" as B;
+
+import "../utility/extensions.dart";
 import "moverentity.dart";
 
 mixin NewtonianMover on MoverEntity {
@@ -49,20 +51,20 @@ mixin NewtonianMover on MoverEntity {
         this.rot_angle += this.angularVelocity * _newtAngularFrictionMult;
         this.angularVelocity *= this._newtAngularFrictionStep;
 
-        final Vector velDir = this.velocity.norm();
-        final Vector angDir = new Vector(1,0).applyMatrix(matrix);
+        final B.Vector2 velDir = this.velocity.normalized();
+        final B.Vector2 angDir = new B.Vector2(1,0)..applyMatrixInPlace(matrix);
 
         //print("velDir: $velDir, angDir: $angDir");
         final double angDotVel = angDir.dot(velDir);
         final double absdot = angDotVel.abs();
 
         //super.applyVelocity(dt);
-        this.previousPos = this.posVector;
-        this.posVector += this.velocity * (this._newtFrictionMult * absdot + this._newtLateralFrictionMult * (1-absdot));
+        this.previousPos.setFrom(this.posVector);
+        this.posVector.addInPlace(this.velocity.scale(this._newtFrictionMult * absdot + this._newtLateralFrictionMult * (1-absdot)));
 
         //print("v: dot: $angDotVel");
         //print(velocity);
-        this.velocity *= this._newtFrictionStep * absdot + this._newtLateralFrictionStep * (1-absdot);
+        this.velocity.scaleInPlace(this._newtFrictionStep * absdot + this._newtLateralFrictionStep * (1-absdot));
         //print(velocity);
 
         if (velocityAngleTransfer > 0) {
@@ -75,18 +77,18 @@ mixin NewtonianMover on MoverEntity {
                 fraction = velocityAngleTransfer * absdot + velocityAngleTransfer * velocityAngleTransferLateral * (1-absdot);
             }
 
-            final double magV = this.velocity.length;
-            this.velocity *= (1-fraction);
-            this.velocity += angDir * magV * fraction;
+            final double magV = this.velocity.length();
+            this.velocity.scaleInPlace(1-fraction);
+            this.velocity.addInPlace(angDir * magV * fraction);
         }
     }
 
     void accelerate(double x, double y) {
-        this.velocity = new Vector(velocity.x+x, velocity.y+y);
+        this.velocity.set(this.velocity.x + x, this.velocity.y + y);
     }
 
     void thrust(double force) {
-        this.velocity += new Vector(force,0).applyMatrix(this.matrix);
+        this.velocity.addInPlace(new B.Vector2(force,0)..applyMatrixInPlace(this.matrix));
     }
 
     void torque(double force) => this.angularVelocity += force;

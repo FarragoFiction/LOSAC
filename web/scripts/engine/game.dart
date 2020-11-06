@@ -8,6 +8,7 @@ import "../level/grid.dart";
 import "../level/level.dart";
 import "../level/pathnode.dart";
 import "../renderer/renderer.dart";
+import "../utility/extensions.dart";
 import "engine.dart";
 import "spatialhash.dart";
 
@@ -30,7 +31,7 @@ class Game extends Engine {
         enemy
             ..originSpawner = spawner
             ..rot_angle = spawner.rot_angle
-            ..posVector = spawner.node.posVector;
+            ..posVector.setFrom(spawner.node.posVector);
         this.addEntity(enemy);
     }
 

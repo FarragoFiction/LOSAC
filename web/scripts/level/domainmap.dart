@@ -4,8 +4,7 @@ import "dart:typed_data";
 
 import "package:CommonLib/Colours.dart";
 import "package:CommonLib/Random.dart";
-
-import "../renderer/2d/vector.dart";
+import "package:CubeLib/CubeLib.dart" as B;
 
 class DomainMap {
     static const int cellSize = 4;
@@ -38,7 +37,7 @@ class DomainMap {
     }
 
     int getVal(num x, num y) {
-        final Vector local = getLocalCoords(x, y);
+        final B.Vector2 local = getLocalCoords(x, y);
         return getValLocal(local.x, local.y);
     }
 
@@ -63,20 +62,20 @@ class DomainMap {
         array[id] = val;
     }
 
-    Vector getWorldCoords(int x, int y) {
+    B.Vector2 getWorldCoords(int x, int y) {
         if (getID(x, y) == -1) {
             return null;
         }
 
-        return new Vector((x + 0.5) * cellSize + pos_x, (y + 0.5) * cellSize + pos_y);
+        return new B.Vector2((x + 0.5) * cellSize + pos_x, (y + 0.5) * cellSize + pos_y);
     }
 
-    Vector getLocalCoords(num x, num y) => new Vector(((x - pos_x) / cellSize).floor(), ((y - pos_y) / cellSize).floor());
+    B.Vector2 getLocalCoords(num x, num y) => new B.Vector2(((x - pos_x) / cellSize).floor(), ((y - pos_y) / cellSize).floor());
 
     DomainMapRegion subRegion(int x, int y, int w, int h) => new DomainMapRegion(this, x, y, w, h);
     DomainMapRegion subRegionForBounds(Rectangle<num> bounds) {
-        final Vector topLeft = getLocalCoords(bounds.left, bounds.top);
-        final Vector bottomRight = getLocalCoords(bounds.left + bounds.width, bounds.top + bounds.height);
+        final B.Vector2 topLeft = getLocalCoords(bounds.left, bounds.top);
+        final B.Vector2 bottomRight = getLocalCoords(bounds.left + bounds.width, bounds.top + bounds.height);
 
         return subRegion(topLeft.x, topLeft.y, bottomRight.x - topLeft.x + 1, bottomRight.y - topLeft.y + 1);
     }
@@ -107,7 +106,7 @@ class DomainMap {
         }
     }
 
-    void debugHighlight(Iterable<Vector> cells) {
+    void debugHighlight(Iterable<B.Vector2> cells) {
         if (this.debugCanvas == null) { return; }
 
         final CanvasRenderingContext2D ctx = debugCanvas.context2D;
@@ -116,7 +115,7 @@ class DomainMap {
         ctx.globalAlpha = 0.75;
         ctx.fillStyle = "#FF0000";
 
-        for (final Vector c in cells) {
+        for (final B.Vector2 c in cells) {
             ctx.fillRect(c.x * cellSize, c.y * cellSize, cellSize, cellSize);
         }
 
@@ -124,12 +123,12 @@ class DomainMap {
     }
 
     Set<int> valuesAlongLine(double x1, double y1, double x2, double y2, double thickness) => traceLine(x1, y1, x2, y2, thickness, getValLocal);
-    Set<Vector> cellsAlongLine(num x1, num y1, num x2, num y2, num thickness) => traceLine(x1, y1, x2, y2, thickness, (int x, int y) => new Vector(x,y));
+    Set<B.Vector2> cellsAlongLine(num x1, num y1, num x2, num y2, num thickness) => traceLine(x1, y1, x2, y2, thickness, (int x, int y) => new B.Vector2(x,y));
 
     Set<T> traceLine<T>(num x1, num y1, num x2, num y2, num thickness, T Function(int x, int y) getter) {
         final Set<T> nodes = <T>{};
-        final Vector p1 = getLocalCoords(x1, y1);
-        final Vector p2 = getLocalCoords(x2, y2);
+        final B.Vector2 p1 = getLocalCoords(x1, y1);
+        final B.Vector2 p2 = getLocalCoords(x2, y2);
         final double distTest = (thickness * 0.5) / (cellSize * Math.sqrt2);
         final int buffer = distTest.floor();
 
@@ -197,16 +196,16 @@ class DomainMapRegion {
         map.array[id] = val;
     }
 
-    Vector getWorldCoords(int x, int y) {
+    B.Vector2 getWorldCoords(int x, int y) {
         if (getID(x, y) == -1) {
             return null;
         }
 
-        return new Vector((x + ox + 0.5) * DomainMap.cellSize + map.pos_x, (y + oy + 0.5) * DomainMap.cellSize + map.pos_y);
+        return new B.Vector2((x + ox + 0.5) * DomainMap.cellSize + map.pos_x, (y + oy + 0.5) * DomainMap.cellSize + map.pos_y);
     }
 
-    Vector getLocalCoords(double x, double y) {
-        final Vector mapLocal = map.getLocalCoords(x, y);
-        return new Vector(mapLocal.x - ox, mapLocal.y - oy);
+    B.Vector2 getLocalCoords(double x, double y) {
+        final B.Vector2 mapLocal = map.getLocalCoords(x, y);
+        return new B.Vector2(mapLocal.x - ox, mapLocal.y - oy);
     }
 }

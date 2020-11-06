@@ -1,8 +1,8 @@
-import "dart:html";
 import "dart:math" as Math;
 
+import "package:CubeLib/CubeLib.dart" as B;
+
 import "../../engine/game.dart";
-import "../../renderer/2d/vector.dart";
 import "../../targeting/targetingstrategy.dart";
 import "../enemy.dart";
 import "../moverentity.dart";
@@ -24,26 +24,11 @@ abstract class Projectile extends MoverEntity {
     double maxAge = 10; // might need changing elsewhere for very slow and long range projectiles, but why would you go that slow?
 
     /// Not used by all types of projectile
-    Vector targetPos;
+    B.Vector2 targetPos;
 
-    factory Projectile(Tower parent, Enemy target, Vector targetPos) => parent.towerType.weapon.spawnProjectile(parent, target, targetPos);
+    factory Projectile(Tower parent, Enemy target, B.Vector2 targetPos) => parent.towerType.weapon.spawnProjectile(parent, target, targetPos);
 
-    Projectile.impl(Tower this.parent, Enemy this.target, Vector this.targetPos) : projectileType = parent.towerType.weapon;
-
-    @override
-    void draw2D(CanvasRenderingContext2D ctx) {
-        ctx.fillStyle="#FFDD00";
-        ctx.strokeStyle = "#201D00";
-
-        ctx
-            ..beginPath()
-            ..moveTo(-5, -3)
-            ..lineTo(5, 0)
-            ..lineTo(-5, 3)
-            ..closePath()
-            ..fill()
-            ..stroke();
-    }
+    Projectile.impl(Tower this.parent, Enemy this.target, B.Vector2 this.targetPos) : projectileType = parent.towerType.weapon;
 
     void impact() {
         applyDamage();
@@ -58,13 +43,13 @@ abstract class Projectile extends MoverEntity {
             final double hotspot = projectileType.areaOfEffectHotspot; // full damage fraction of radius
             final double splash = projectileType.areaOfEffectNonTargetMultiplier; // non-main-target damage multiplier
             final Game game = this.engine;
-            final Set<Enemy> targets = game.enemySelector.queryRadius(pos_x, pos_y, radius);
+            final Set<Enemy> targets = game.enemySelector.queryRadius(posVector.x, posVector.y, radius);
 
             if (hotspot < 1) {
                 // if there is falloff to consider
                 for (final Enemy enemy in targets) {
-                    final double dx = enemy.pos_x - this.pos_x;
-                    final double dy = enemy.pos_y - this.pos_y;
+                    final double dx = enemy.posVector.x - this.posVector.x;
+                    final double dy = enemy.posVector.y - this.posVector.y;
                     final double dSquared = dx*dx + dy*dy;
 
                     if (dSquared <= radius * radius * hotspot * hotspot) {
@@ -152,7 +137,7 @@ abstract class WeaponType {
         load(null);
     }
 
-    Projectile spawnProjectile(Tower parent, Enemy target, Vector targetPos);
+    Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos);
 
     void load(Map<dynamic,dynamic> json) {}
 }

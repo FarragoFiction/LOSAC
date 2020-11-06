@@ -2,10 +2,11 @@ import "dart:html";
 import "dart:math" as Math;
 
 import "package:collection/collection.dart";
+import "package:CubeLib/CubeLib.dart" as B;
 
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
-import "../renderer/2d/vector.dart";
+import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import "levelobject.dart";
@@ -28,7 +29,7 @@ class Curve extends LevelObject with Connectible {
         this.drawUI = false;
     }
 
-    @override
+    /*@override
     void draw2D(CanvasRenderingContext2D ctx) {
 
         if (vertices.length > 1) {
@@ -91,7 +92,7 @@ class Curve extends LevelObject with Connectible {
             }
             ctx.stroke();
         }
-    }
+    }*/
 
     void addVertex(CurveVertex vert) {
         this._vertices.add(vert);
@@ -109,12 +110,12 @@ class Curve extends LevelObject with Connectible {
             for (int i = 1; i < vertices.length; i++) {
                 v2 = vertices[i];
 
-                final Vector v1pos = new Vector(v1.pos_x, v1.pos_y);
-                final Vector v2pos = new Vector(v2.pos_x, v2.pos_y);
-                final Vector o1 = v1.handle2pos + v1pos;
-                final Vector o2 = v2.handle1pos + v2pos;
+                final B.Vector2 v1pos = new B.Vector2(v1.posVector.x, v1.posVector.y);
+                final B.Vector2 v2pos = new B.Vector2(v2.posVector.x, v2.posVector.y);
+                final B.Vector2 o1 = v1.handle2pos + v1pos;
+                final B.Vector2 o2 = v2.handle1pos + v2pos;
 
-                final double maxlength = v1.handle2pos.length + v2.handle1pos.length + (o2-o1).length;
+                final double maxlength = v1.handle2pos.length() + v2.handle1pos.length() + (o2-o1).length();
 
                 final int segmentCount = getSegmentCountForLength(maxlength);
 
@@ -130,12 +131,12 @@ class Curve extends LevelObject with Connectible {
 
             for(int i=0; i<segments.length; i++) {
                 final CurveSegment seg = segments[i];
-                final Vector pos = seg.posVector;
+                final B.Vector2 pos = seg.posVector;
                 double mult = 1.0;
 
                 if (i != 0 && i != segments.length - 1) {
-                    final Vector v1 = (pos - segments[i - 1].posVector).norm();
-                    final Vector v2 = (segments[i + 1].posVector - pos).norm();
+                    final B.Vector2 v1 = (pos - segments[i - 1].posVector).normalize();
+                    final B.Vector2 v2 = (segments[i + 1].posVector - pos).normalize();
                     final double dot = v1.dot(v2);
                     mult = Math.sqrt(2 / (dot + 1));
                 }
@@ -152,26 +153,26 @@ class Curve extends LevelObject with Connectible {
         return Math.sqrt(segs * segs * 0.6 + minSegments * minSegments).ceil();
     }
 
-    CurveSegment bezier(double fraction, Vector v1, Vector v1handle, Vector v2, Vector v2handle) {
+    CurveSegment bezier(double fraction, B.Vector2 v1, B.Vector2 v1handle, B.Vector2 v2, B.Vector2 v2handle) {
         final double t = fraction;
         final double nt = 1 - t;
 
-        final Vector b1 = v1 * nt*nt*nt;
-        final Vector b2 = v1handle * 3*nt*nt*t;
-        final Vector b3 = v2handle * 3*nt*t*t;
-        final Vector b4 = v2 * t*t*t;
+        final B.Vector2 b1 = v1 * nt*nt*nt;
+        final B.Vector2 b2 = v1handle * 3*nt*nt*t;
+        final B.Vector2 b3 = v2handle * 3*nt*t*t;
+        final B.Vector2 b4 = v2 * t*t*t;
 
-        final Vector point = b1+b2+b3+b4;
+        final B.Vector2 point = b1+b2+b3+b4;
 
-        final Vector p1 = v1 * -3*nt*nt;
-        final Vector p2 = v1handle * 3 * (1 - 4*t + 3*t*t);
-        final Vector p3 = v2handle * 3 * (2*t - 3*t*t);
-        final Vector p4 = v2 * 3*t*t;
+        final B.Vector2 p1 = v1 * -3*nt*nt;
+        final B.Vector2 p2 = v1handle * 3 * (1 - 4*t + 3*t*t);
+        final B.Vector2 p3 = v2handle * 3 * (2*t - 3*t*t);
+        final B.Vector2 p4 = v2 * 3*t*t;
 
-        Vector norm = (p1 + p2 + p3 + p4).norm();
-        norm = new Vector(-norm.y, norm.x);
+        B.Vector2 norm = (p1 + p2 + p3 + p4).normalize();
+        norm = new B.Vector2(-norm.y, norm.x);
 
-        return new CurveSegment()..pos_x = point.x..pos_y = point.y..norm = norm..parentObject=this;
+        return new CurveSegment()..posVector.x = point.x..posVector.y = point.y..norm = norm..parentObject=this;
     }
 
     @override
@@ -236,8 +237,8 @@ class Curve extends LevelObject with Connectible {
     }
 
     void recentreOrigin() {
-        final Vector newCentreWorld = new Vector(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
-        final Vector offset = getLocalPositionFromWorld(newCentreWorld);
+        final B.Vector2 newCentreWorld = new B.Vector2(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+        final B.Vector2 offset = getLocalPositionFromWorld(newCentreWorld);
 
         this.posVector += offset;
         for (final LevelObject obj in subObjects) {
@@ -250,10 +251,10 @@ class Curve extends LevelObject with Connectible {
 
     @override
     Rectangle<num> calculateBounds() {
-        final List<Vector> points = <Vector>[];
+        final List<B.Vector2> points = <B.Vector2>[];
 
         for (final CurveSegment segment in segments) {
-            final Vector vpos = segment.posVector;
+            final B.Vector2 vpos = segment.posVector;
             points.add(vpos + segment.norm * width * segment.cornerMultiplier);
             points.add(vpos - segment.norm * width * segment.cornerMultiplier);
         }
@@ -264,16 +265,16 @@ class Curve extends LevelObject with Connectible {
     @override
     void fillDomainMap(DomainMapRegion map) {
 
-        final List<List<Vector>> polys = new List<List<Vector>>.generate(segments.length, (int i) => new List<Vector>(4));
+        final List<List<B.Vector2>> polys = new List<List<B.Vector2>>.generate(segments.length, (int i) => new List<B.Vector2>(4));
 
         for(int i=0; i<segments.length; i++) {
             final CurveSegment seg = segments[i];
-            final Vector pos = seg.getWorldPosition();
+            final B.Vector2 pos = seg.getWorldPosition();
 
-            final List<Vector> poly = polys[i];
+            final List<B.Vector2> poly = polys[i];
 
-            final Vector left = pos - seg.norm * width * seg.cornerMultiplier * 1.1;
-            final Vector right = pos + seg.norm * width * seg.cornerMultiplier * 1.1;
+            final B.Vector2 left = pos - seg.norm * width * seg.cornerMultiplier * 1.1;
+            final B.Vector2 right = pos + seg.norm * width * seg.cornerMultiplier * 1.1;
 
             // not first, do previous side
             if (i != 0) {
@@ -286,14 +287,14 @@ class Curve extends LevelObject with Connectible {
             // not last, do next side
             if(i != segments.length - 1) {
                 final CurveSegment next = segments[i+1];
-                final List<Vector> nextPoly = polys[i+1];
-                final Vector nextPos = next.getWorldPosition();
+                final List<B.Vector2> nextPoly = polys[i+1];
+                final B.Vector2 nextPos = next.getWorldPosition();
 
-                final Vector nextLeft = nextPos - next.norm * width * next.cornerMultiplier;
-                final Vector nextRight = nextPos + next.norm * width * next.cornerMultiplier;
+                final B.Vector2 nextLeft = nextPos - next.norm * width * next.cornerMultiplier;
+                final B.Vector2 nextRight = nextPos + next.norm * width * next.cornerMultiplier;
 
-                final Vector aveLeft = (left + nextLeft) / 2;
-                final Vector aveRight = (right + nextRight) / 2;
+                final B.Vector2 aveLeft = (left + nextLeft) / 2;
+                final B.Vector2 aveRight = (right + nextRight) / 2;
 
                 poly[2] = aveRight;
                 poly[3] = aveLeft;
@@ -308,8 +309,8 @@ class Curve extends LevelObject with Connectible {
 
         for (int i=0; i<segments.length; i++) {
             final CurveSegment seg = segments[i];
-            final List<Vector> worldPoly = polys[i];
-            final List<Vector> poly = worldPoly.map((Vector v) => map.getLocalCoords(v.x, v.y)).toList();
+            final List<B.Vector2> worldPoly = polys[i];
+            final List<B.Vector2> poly = worldPoly.map((B.Vector2 v) => map.getLocalCoords(v.x, v.y)).toList();
 
             final int top = Math.min(Math.min(poly[0].y, poly[1].y), Math.min(poly[2].y, poly[3].y)).floor();
             final int bottom = Math.max(Math.max(poly[0].y, poly[1].y), Math.max(poly[2].y, poly[3].y)).ceil();
@@ -357,32 +358,17 @@ class Curve extends LevelObject with Connectible {
 }
 
 class CurveSegment extends LevelObject {
-    Vector norm;
+    B.Vector2 norm;
     double cornerMultiplier = 1.0;
 
     PathNode node;
-
-    @override
-    void draw2D(CanvasRenderingContext2D ctx) {
-        ctx.fillStyle="#40CC40";
-        ctx.fillRect(-1, -1, 3, 3);
-
-        final Vector o = (this.norm) * 15;
-
-        ctx
-            ..strokeStyle = "#40CC40"
-            ..beginPath()
-            ..moveTo(o.x, o.y)
-            ..lineTo(-o.x, -o.y)
-            ..stroke();
-    }
 }
 
 class CurveVertex extends LevelObject with HasMatrix {
     double _handle1 = 10.0;
     double _handle2 = 10.0;
-    Vector _handle1pos;
-    Vector _handle2pos;
+    B.Vector2 _handle1pos;
+    B.Vector2 _handle2pos;
 
     double get handle1 => _handle1;
     set handle1(double val) {
@@ -404,21 +390,18 @@ class CurveVertex extends LevelObject with HasMatrix {
         _handle2pos = null;
     }
 
-    Vector get handle1pos {
-        _handle1pos ??= new Vector(-handle1,0).applyMatrix(matrix);
+    B.Vector2 get handle1pos {
+        _handle1pos ??= new B.Vector2(-handle1,0).applyMatrix(matrix);
         return _handle1pos;
     }
-    Vector get handle2pos {
-        _handle2pos ??= new Vector(handle2,0).applyMatrix(matrix);
+    B.Vector2 get handle2pos {
+        _handle2pos ??= new B.Vector2(handle2,0)..applyMatrixInPlace(matrix);
         return _handle2pos;
     }
 
     @override
-    void draw2D(CanvasRenderingContext2D ctx) {}
-
-    @override
     void drawUI2D(CanvasRenderingContext2D ctx, double scaleFactor) {
-        final Vector v = new Vector(0,1).applyMatrix(matrix);
+        final B.Vector2 v = new B.Vector2(0,1)..applyMatrixInPlace(matrix);
 
         ctx
             ..strokeStyle = "#3333FF"

@@ -1,13 +1,14 @@
 import "dart:math" as Math;
 
+import "package:CubeLib/CubeLib.dart" as B;
+
 import "../entities/enemy.dart";
 import "../entities/tower.dart";
 import "../level/pathnode.dart";
-import "../renderer/2d/vector.dart";
 
 abstract class TowerUtils {
 
-    static Vector intercept(Vector firePos, Vector targetPos, Vector targetVel, double projSpeed) {
+    static B.Vector2 intercept(B.Vector2 firePos, B.Vector2 targetPos, B.Vector2 targetVel, double projSpeed) {
         if (projSpeed <= 0) { return null; }
 
         final double tx = targetPos.x - firePos.x;
@@ -58,7 +59,7 @@ abstract class TowerUtils {
         return null;
     }
 
-    static double interceptTime(Vector firePos, Vector targetPos, Vector targetVel, double projSpeed) {
+    static double interceptTime(B.Vector2 firePos, B.Vector2 targetPos, B.Vector2 targetVel, double projSpeed) {
         final double tx = targetPos.x - firePos.x;
         final double ty = targetPos.y - firePos.y;
         final double tvx = targetVel.x;
@@ -88,16 +89,16 @@ abstract class TowerUtils {
         return -1;
     }
 
-    static Vector interceptEnemy(Tower tower, Enemy enemy) {
+    static B.Vector2 interceptEnemy(Tower tower, Enemy enemy) {
         if (enemy.speed <= 0) { return enemy.posVector; }
 
-        final Vector tPos = tower.posVector;
+        final B.Vector2 tPos = tower.posVector;
 
-        Vector pos = enemy.posVector;
+        B.Vector2 pos = enemy.posVector;
         PathNode nextNode = enemy.targetNode;
-        Vector targetOffset = nextNode.posVector - pos;
-        double targetDistance = targetOffset.length;
-        Vector dir = targetOffset / targetDistance;
+        B.Vector2 targetOffset = nextNode.posVector - pos;
+        num targetDistance = targetOffset.length();
+        B.Vector2 dir = targetOffset / targetDistance;
         double timeOffset = 0;
 
         int iter = 0;
@@ -116,7 +117,7 @@ abstract class TowerUtils {
             pos = nextNode.posVector;
             nextNode = nextNode.targetNode;
             targetOffset = nextNode.posVector - pos;
-            targetDistance = targetOffset.length;
+            targetDistance = targetOffset.length();
             dir = targetOffset / targetDistance;
 
             iter++;

@@ -1,11 +1,13 @@
 import "dart:html";
 
+import "package:CubeLib/CubeLib.dart" as B;
+
 import "../engine/game.dart";
 import "../engine/spatialhash.dart";
 import "../entities/targetmoverentity.dart";
 import "../level/endcap.dart";
 import "../level/pathnode.dart";
-import "../renderer/2d/vector.dart";
+import "../utility/extensions.dart";
 import "enemytype.dart";
 import "terraincollider.dart";
 
@@ -33,12 +35,6 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
     Enemy(EnemyType this.enemyType) : health = enemyType.health, super() {
         this.baseSpeed = enemyType.speed;
         this.turnRate = enemyType.turnRate;
-    }
-
-    @override
-    void draw2D(CanvasRenderingContext2D ctx) {
-        //super.draw2D(ctx);
-        enemyType.draw2D(ctx);
     }
 
     // drawing level progress for debug
@@ -95,8 +91,8 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
     }
 
     /// used for resetting enemies when they leak, not normal movement
-    void setPositionTo(Point<num> pos, double angle) {
-        posVector = pos;
+    void setPositionTo(B.Vector2 pos, double angle) {
+        posVector.setFrom(pos);
         previousPos = null;
         rot_angle = angle;
         previousRot = null;
@@ -111,7 +107,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
     double get boundsSize => enemyType.size;
 
     void updateTarget(num dt) {
-        final int nodeId = this.engine.level.domainMap.getVal(this.pos_x, this.pos_y);
+        final int nodeId = this.engine.level.domainMap.getVal(this.posVector.x, this.posVector.y);
         if (nodeId == 0) {
             this.currentNode = null;
             this.targetNode = null;
@@ -127,7 +123,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
                 this.targetNode = node.targetNode;
             }
             if (engine is Game && node is ExitNode) {
-                if (closeToPos(node.pos_x, node.pos_y, this.stoppingThreshold + 1)) {
+                if (closeToPos(node.posVector.x, node.posVector.y, this.stoppingThreshold + 1)) {
                     final Game game = engine;
                     game.leakEnemy(this);
                 }
@@ -144,11 +140,11 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
             } else {
                 // if the current and target differ, find the fraction of the path between the two and interpolate!
 
-                final Vector currentToTarget = targetNode.posVector - currentNode.posVector;
-                final Vector currentToPos = this.posVector - currentNode.posVector;
+                final B.Vector2 currentToTarget = targetNode.posVector - currentNode.posVector;
+                final B.Vector2 currentToPos = this.posVector - currentNode.posVector;
 
-                final double dot = currentToPos.norm().dot(currentToTarget.norm());
-                final double fraction = (dot * currentToPos.length) / currentToTarget.length;
+                final double dot = currentToPos.normalized().dot(currentToTarget.normalized());
+                final double fraction = (dot * currentToPos.length()) / currentToTarget.length();
 
                 this._progressToExit = 1 - (currentNode.distanceToExitFraction + (targetNode.distanceToExitFraction - currentNode.distanceToExitFraction) * fraction);
             }

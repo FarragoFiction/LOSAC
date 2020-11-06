@@ -1,36 +1,22 @@
 import "dart:html";
 
+import "package:CubeLib/CubeLib.dart" as B;
 import "package:collection/collection.dart";
 
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
-import "../renderer/2d/renderable2d.dart";
-import "../renderer/2d/vector.dart";
+import "../renderer/3d/renderable3d.dart";
+import "../utility/extensions.dart";
 
-class SimpleLevelObject with Renderable2D {
-    double pos_x = 0;
-    double pos_y = 0;
-
-    Vector get posVector => new Vector(pos_x, pos_y);
-    set posVector(Vector pos) {
-        this.pos_x = pos.x;
-        this.pos_y = pos.y;
-    }
+class SimpleLevelObject with Renderable3D {
+    B.Vector2 posVector = B.Vector2.Zero();
 
     @override
-    void drawToCanvas(CanvasRenderingContext2D ctx) {
-        ctx.save();
-
-        ctx.translate(pos_x, pos_y);
-
-        ctx.fillStyle = "#FF0000";
-        ctx.fillRect(-3, -3, 7, 7);
-
-        ctx.restore();
+    void generateMesh() {
+        this.mesh = B.MeshBuilder.CreateBox("Object ${this.hashCode}", new B.MeshBuilderCreateBoxOptions(size: 10));
+        this.mesh.material = this.renderer.defaultMaterial;
+        this.mesh.position.set(this.posVector.x, this.posVector.y, 0);
     }
-
-    @override
-    void drawUIToCanvas(CanvasRenderingContext2D ctx, double ScaleFactor) {}
 }
 
 class LevelObject extends SimpleLevelObject {
@@ -42,18 +28,6 @@ class LevelObject extends SimpleLevelObject {
 
     double rot_angle = 0;
     double scale = 1;
-
-    @override
-    set pos_x(num val) {
-        super.pos_x = val;
-        makeBoundsDirty();
-    }
-
-    @override
-    set pos_y(num val) {
-        super.pos_y = val;
-        makeBoundsDirty();
-    }
 
     Rectangle<num> _bounds;
     bool dirtyBounds = true;
@@ -73,33 +47,7 @@ class LevelObject extends SimpleLevelObject {
 
     void initMixins(){}
 
-    @override
-    void drawToCanvas(CanvasRenderingContext2D ctx) {
-        if (hidden) { return; }
-        ctx.save();
-
-        ctx.translate(pos_x, pos_y);
-        ctx.rotate(rot_angle);
-        ctx.scale(scale, scale);
-
-        if (!invisible) {
-            this.draw2D(ctx);
-        }
-
-        for (final LevelObject subObject in subObjects) {
-            subObject.drawToCanvas(ctx);
-        }
-
-        ctx.restore();
-    }
-
-    void draw2D(CanvasRenderingContext2D ctx) {
-        ctx.fillStyle = "#FF0000";
-
-        ctx.fillRect(-5, -5, 10, 10);
-    }
-
-    @override
+    /*@override
     void drawUIToCanvas(CanvasRenderingContext2D ctx, double scaleFactor) {
         if (hidden || !drawUI) { return; }
         ctx.save();
@@ -115,7 +63,7 @@ class LevelObject extends SimpleLevelObject {
         }
 
         ctx.restore();
-    }
+    }*/
 
     void drawUI2D(CanvasRenderingContext2D ctx, double scaleFactor) {
 
@@ -132,11 +80,11 @@ class LevelObject extends SimpleLevelObject {
         sub.parentObject = null;
     }
 
-    Point<num> getWorldPosition([Point<num> offset]) {
-        Vector pos = this.posVector;
+    B.Vector2 getWorldPosition([B.Vector2 offset]) {
+        final B.Vector2 pos = this.posVector.clone();
 
         if (offset != null) {
-            pos += new Vector.fromPoint(offset).rotate(this.rot_angle);
+            pos.addInPlace(offset.rotate(this.rot_angle));
         }
 
         if (this.parentObject == null) { return pos; }
@@ -154,16 +102,16 @@ class LevelObject extends SimpleLevelObject {
                 rot = new RotationMatrix(o.rot_angle);
             }
 
-            pos = pos.applyMatrix(rot);
-            pos += o.posVector;
+            pos.applyMatrixInPlace(rot);
+            pos.addInPlace(o.posVector);
         }
 
         return pos;
     }
 
-    Point<num> getLocalPositionFromWorld(Point<num> pos) {
-        final Vector worldPos = this.getWorldPosition();
-        return new Vector.fromPoint(pos - worldPos).rotate(-rot_angle);
+    B.Vector2 getLocalPositionFromWorld(B.Vector2 pos) {
+        final B.Vector2 worldPos = this.getWorldPosition();
+        return worldPos.subtractInPlace(pos).scaleInPlace(-1).rotate(-rot_angle);
     }
 
     num getWorldRotation() {

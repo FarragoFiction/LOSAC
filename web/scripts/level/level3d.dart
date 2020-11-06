@@ -1,28 +1,16 @@
 import "dart:html";
 
-import "../renderer/2d/renderable2d.dart";
-import "../renderer/2d/vector.dart";
+import "package:CubeLib/CubeLib.dart" as B;
+
+import "../renderer/3d/renderable3d.dart";
 import "level.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
-class Level2D extends Level with Renderable2D {
+class Level3D extends Level with Renderable3D {
 
-    @override
-    void drawToCanvas(CanvasRenderingContext2D ctx) {
-        for (final LevelObject o in objects) {
-            o.drawToCanvas(ctx);
-        }
 
-        ctx.save();
-        ctx.globalAlpha = 0.3;
-        if (domainMap != null && domainMap.debugCanvas != null) {
-            ctx.drawImage(domainMap.debugCanvas, domainMap.pos_x, domainMap.pos_y);
-        }
-        ctx.restore();
-    }
-
-    @override
+    /*@override
     void drawUIToCanvas(CanvasRenderingContext2D ctx, double scaleFactor) {
         for (final LevelObject o in objects) {
             o.drawUIToCanvas(ctx, scaleFactor);
@@ -33,7 +21,7 @@ class Level2D extends Level with Renderable2D {
         //drawBoundingBoxes(ctx, scaleFactor);
 
         drawRoutes(ctx, scaleFactor);
-    }
+    }*/
 
     void drawBoundingBoxes(CanvasRenderingContext2D ctx, double scaleFactor) {
         const double cross = 10;
@@ -42,7 +30,7 @@ class Level2D extends Level with Renderable2D {
             final Rectangle<num> bounds = o.bounds;
             ctx.strokeRect(bounds.left * scaleFactor, bounds.top * scaleFactor, bounds.width * scaleFactor, bounds.height * scaleFactor);
 
-            final Vector v = o.getWorldPosition() * scaleFactor;
+            final B.Vector2 v = o.getWorldPosition() * scaleFactor;
 
             ctx
                 ..beginPath()
@@ -76,9 +64,9 @@ class Level2D extends Level with Renderable2D {
                 size = 8;
             }
 
-            ctx.fillRect(node.pos_x * scaleFactor - size/2, node.pos_y * scaleFactor - size/2, size, size);
+            ctx.fillRect(node.posVector.x * scaleFactor - size/2, node.posVector.y * scaleFactor - size/2, size, size);
 
-            ctx.fillText(node.distanceToExitFraction.toStringAsFixed(3), node.pos_x * scaleFactor + size, node.pos_y * scaleFactor - 5);
+            ctx.fillText(node.distanceToExitFraction.toStringAsFixed(3), node.posVector.x * scaleFactor + size, node.posVector.y * scaleFactor - 5);
 
             ctx.restore();
 
@@ -87,8 +75,8 @@ class Level2D extends Level with Renderable2D {
 
                 ctx
                     ..beginPath()
-                    ..lineTo(node.pos_x * scaleFactor, node.pos_y * scaleFactor)
-                    ..lineTo(other.pos_x * scaleFactor, other.pos_y * scaleFactor)
+                    ..lineTo(node.posVector.x * scaleFactor, node.posVector.y * scaleFactor)
+                    ..lineTo(other.posVector.x * scaleFactor, other.posVector.y * scaleFactor)
                     ..stroke();
             }
         }
@@ -120,8 +108,8 @@ class Level2D extends Level with Renderable2D {
                 ctx.lineWidth = 2;
             }
 
-            final Vector pos = node.posVector;
-            final Vector tpos = node.targetNode.posVector;
+            final B.Vector2 pos = node.posVector;
+            final B.Vector2 tpos = node.targetNode.posVector;
 
             ctx
                 ..beginPath()

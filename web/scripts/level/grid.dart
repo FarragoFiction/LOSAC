@@ -1,11 +1,12 @@
 import "dart:html";
 import "dart:math" as Math;
 
+import "package:CubeLib/CubeLib.dart" as B;
+
 import "../entities/tower.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
-import "../renderer/2d/vector.dart";
-
+import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import "levelobject.dart";
@@ -34,8 +35,8 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 final int id = y * xSize + x;
 
                 final GridCell cell = new GridCell(this)
-                    ..pos_x = x * cellSize - ox
-                    ..pos_y = y * cellSize - oy;
+                    ..posVector.x = x * cellSize - ox
+                    ..posVector.y = y * cellSize - oy;
 
                 this.cells[id] = cell;
             }
@@ -58,8 +59,8 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 // up
                 if (y == 0 || cells[id - xSize].state == GridCellState.hole) {
                     final Connector c = new ConnectorPositive()
-                        ..pos_x = cell.pos_x
-                        ..pos_y = cell.pos_y - cellSize*0.5
+                        ..posVector.x = cell.posVector.x
+                        ..posVector.y = cell.posVector.y - cellSize*0.5
                         ..rot_angle = -Math.pi * 0.5;
                     cell.up = c;
                     addSubObject(c);
@@ -68,8 +69,8 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 // down
                 if (y == ySize-1 || cells[id + xSize].state == GridCellState.hole) {
                     final Connector c = new ConnectorPositive()
-                        ..pos_x = cell.pos_x
-                        ..pos_y = cell.pos_y + cellSize*0.5
+                        ..posVector.x = cell.posVector.x
+                        ..posVector.y = cell.posVector.y + cellSize*0.5
                         ..rot_angle = Math.pi * 0.5;
                     cell.down = c;
                     addSubObject(c);
@@ -78,8 +79,8 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 // left
                 if (x == 0 || cells[id - 1].state == GridCellState.hole) {
                     final Connector c = new ConnectorPositive()
-                        ..pos_x = cell.pos_x - cellSize*0.5
-                        ..pos_y = cell.pos_y
+                        ..posVector.x = cell.posVector.x - cellSize*0.5
+                        ..posVector.y = cell.posVector.y
                         ..rot_angle = Math.pi;
                     cell.left = c;
                     addSubObject(c);
@@ -88,8 +89,8 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 // right
                 if (x == xSize-1 || cells[id + 1].state == GridCellState.hole) {
                     final Connector c = new ConnectorPositive()
-                        ..pos_x = cell.pos_x + cellSize*0.5
-                        ..pos_y = cell.pos_y
+                        ..posVector.x = cell.posVector.x + cellSize*0.5
+                        ..posVector.y = cell.posVector.y
                         ..rot_angle = 0;
                     cell.right = c;
                     addSubObject(c);
@@ -98,21 +99,21 @@ class Grid extends LevelObject with HasMatrix, Connectible {
         }
     }
 
-    Vector cellCoords(int x, int y) {
+    B.Vector2 cellCoords(int x, int y) {
         if (x < 0 || y < 0 || x >= xSize || y >= ySize) {
             return null;
         }
-        return new Vector((x + 0.5 - (xSize * 0.5)) * cellSize, (y + 0.5 - (ySize * 0.5)) * cellSize).applyMatrix(matrix);
+        return new B.Vector2((x + 0.5 - (xSize * 0.5)) * cellSize, (y + 0.5 - (ySize * 0.5)) * cellSize)..applyMatrixInPlace(matrix);
     }
 
-    Vector cellCoordsById(int id) {
+    B.Vector2 cellCoordsById(int id) {
         final Math.Point<int> coord = id2Coords(id);
         return cellCoords(coord.x, coord.y);
     }
 
     Math.Point<int> id2Coords(int id) => Math.Point<int>(id % xSize, id ~/ xSize);
 
-    @override
+    /*@override
     void draw2D(CanvasRenderingContext2D ctx) {
         final double ox = xSize * cellSize * 0.5;
         final double oy = ySize * cellSize * 0.5;
@@ -131,7 +132,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
         for (final GridCell cell in cells) {
             cell.drawToCanvas(ctx);
         }
-    }
+    }*/
 
     @override
     Iterable<PathNode> generatePathNodes() {
@@ -248,7 +249,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
 
     @override
     void fillDomainMap(DomainMapRegion map) {
-        Vector mWorld, local;
+        B.Vector2 mWorld, local;
         for (int my = 0; my < map.height; my++) {
             for (int mx = 0; mx < map.width; mx++) {
                 mWorld = map.getWorldCoords(mx, my);
@@ -264,11 +265,11 @@ class Grid extends LevelObject with HasMatrix, Connectible {
     void placeTower(int x, int y, Tower tower) {
         final GridCell cell = getCell(x, y);
         if (cell == null) { throw Exception("invalid cell $x,$y"); }
-        final Math.Point<num> worldCoords = cell.getWorldPosition();
+        final B.Vector2 worldCoords = cell.getWorldPosition();
         final double rot = cell.getWorldRotation();
         tower
-            ..pos_x = worldCoords.x
-            ..pos_y = worldCoords.y
+            ..posVector.x = worldCoords.x
+            ..posVector.y = worldCoords.y
             ..rot_angle = rot
             ..turretAngle = rot
             ..prevTurretAngle = rot;
@@ -319,27 +320,5 @@ class GridCell extends LevelObject {
         } else if (this.state == GridCellState.blocked) {
             setClear();
         }
-    }
-
-    @override
-    void draw2D(CanvasRenderingContext2D ctx) {
-        if (this.state == GridCellState.hole) { return; }
-
-        ctx.strokeStyle = "#606060";
-
-        switch(this.state) {
-            case GridCellState.clear:
-                ctx.fillStyle = "#EEEEEE";
-                break;
-            case GridCellState.blocked:
-                ctx.fillStyle = "#808080";
-                break;
-            default:
-                ctx.fillStyle = "#EEEEEE";
-        }
-
-        const double o = -Grid.cellSize * 0.5;
-        ctx.fillRect(o, o, Grid.cellSize, Grid.cellSize);
-        ctx.strokeRect(o, o, Grid.cellSize, Grid.cellSize);
     }
 }

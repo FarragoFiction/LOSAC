@@ -1,11 +1,12 @@
 import "dart:html";
 
 import "package:CommonLib/Utility.dart";
+import "package:CubeLib/CubeLib.dart" as B;
 
 import "../engine/entity.dart";
 import "../level/levelobject.dart";
 import "../renderer/2d/matrix.dart";
-import "../renderer/2d/vector.dart";
+import "../utility/extensions.dart";
 
 class MoverEntity extends LevelObject with Entity, HasMatrix {
     double speedMultiplier = 1.0;
@@ -13,10 +14,10 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     double speed;
     double get derivedSpeed => baseSpeed * speedMultiplier;
 
-    Vector velocity = new Vector.zero();
-    Vector previousPos;
+    B.Vector2 velocity = B.Vector2.Zero();
+    B.Vector2 previousPos = B.Vector2.Zero();
     double previousRot;
-    Vector drawPos;
+    B.Vector2 drawPos = B.Vector2.Zero();
     double drawRot;
 
     /// Used in calculateBounds to override the main [LevelObject] rotated bounds code
@@ -32,25 +33,31 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     }
 
     void applyVelocity(num dt) {
-        if (this.velocity.length == 0) { return; }
-        this.previousPos = this.posVector;
-        this.posVector += this.velocity * dt;
+        if (this.velocity.length() == 0) { return; }
+        this.previousPos.setFrom(this.posVector);
+        this.posVector.addInPlace(this.velocity * dt);
     }
 
     @override
     void renderUpdate([num interpolation = 0]) {
-        previousPos ??= posVector;
+        previousPos ??= posVector.clone();
         previousRot ??= rot_angle;
 
-        final double dx = this.pos_x - previousPos.x;
-        final double dy = this.pos_y - previousPos.y;
-        drawPos = new Vector(previousPos.x + dx * interpolation, previousPos.y + dy * interpolation);
+        final double dx = this.posVector.x - previousPos.x;
+        final double dy = this.posVector.y - previousPos.y;
+        drawPos.set(previousPos.x + dx * interpolation, previousPos.y + dy * interpolation);
 
         final double da = angleDiff(rot_angle, previousRot);
         drawRot = previousRot + da * interpolation;
+
+        if (this.mesh != null) {
+            this.mesh
+                ..position.set(drawPos.x, drawPos.y, 0)
+                ..rotation.z = drawRot;
+        }
     }
 
-    @override
+    /*@override
     void drawToCanvas(CanvasRenderingContext2D ctx) {
         if (hidden) { return; }
         ctx.save();
@@ -68,9 +75,9 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
         }
 
         ctx.restore();
-    }
+    }*/
 
-    @override
+    /*@override
     void drawUIToCanvas(CanvasRenderingContext2D ctx, double scaleFactor) {
         if (hidden || !drawUI) { return; }
         ctx.save();
@@ -86,9 +93,9 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
         }
 
         ctx.restore();
-    }
+    }*/
 
     // this greatly simplifies the bounding boxes for moving objects, which is probably a good thing...
     @override
-    Rectangle<num> calculateBounds() => new Rectangle<num>(this.pos_x-boundsSize/2, this.pos_y-boundsSize/2, boundsSize, boundsSize);
+    Rectangle<num> calculateBounds() => new Rectangle<num>(this.posVector.x-boundsSize/2, this.posVector.y-boundsSize/2, boundsSize, boundsSize);
 }

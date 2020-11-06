@@ -2,8 +2,9 @@ import "dart:math" as Math;
 
 import "package:CommonLib/Random.dart";
 import "package:CommonLib/Utility.dart";
+import "package:CubeLib/CubeLib.dart" as B;
 
-import "../../renderer/2d/vector.dart";
+import "../../utility/extensions.dart";
 import "../../utility/towerutils.dart";
 import "../enemy.dart";
 import "../newtonianmover.dart";
@@ -19,7 +20,7 @@ class ChaserProjectile extends Projectile with NewtonianMover {
     double hitArea;
 
     @override
-    double get speed => this.velocity.length;
+    double get speed => this.velocity.length();
 
     // NewtonianMover getter overrides
     @override
@@ -33,9 +34,9 @@ class ChaserProjectile extends Projectile with NewtonianMover {
     @override
     double get velocityAngleTransferLateral => type.velocityAngleTransferLateral;
 
-    ChaserProjectile(Tower parent, Enemy target, Vector targetPos) : super.impl(parent, target, targetPos) {
-        this.posVector = this.parent.posVector;
-        this.previousPos = this.parent.posVector;
+    ChaserProjectile(Tower parent, Enemy target, B.Vector2 targetPos) : super.impl(parent, target, targetPos) {
+        this.posVector.setFrom(this.parent.posVector);
+        this.previousPos.setFrom(this.parent.posVector);
         if (parent.towerType.turreted) {
             this.rot_angle = parent.turretAngle;
         } else {
@@ -54,14 +55,14 @@ class ChaserProjectile extends Projectile with NewtonianMover {
         super.logicUpdate(dt);
 
         if (type.lockOn && this.target != null && !target.dead) {
-            final Vector tPos = TowerUtils.intercept(this.posVector, this.target.posVector, this.target.velocity, this.velocity.length);
+            final B.Vector2 tPos = TowerUtils.intercept(this.posVector, this.target.posVector, this.target.velocity, this.velocity.length());
             this.targetPos = tPos == null ? this.target.posVector : tPos;
         }
 
-        final Vector toTarget = this.targetPos - this.posVector;
-        final Vector angDir = new Vector(1, 0).applyMatrix(matrix);
+        final B.Vector2 toTarget = this.targetPos - this.posVector;
+        final B.Vector2 angDir = new B.Vector2(1, 0)..applyMatrixInPlace(matrix);
 
-        final double angDotTarget = angDir.dot(toTarget.norm());
+        final double angDotTarget = angDir.dot(toTarget.normalized());
         final double angDiff = angleDiff(rot_angle, toTarget.angle);
 
         final double turnFactor = 0.15 + 0.85 * (1 - angDotTarget.clamp(0, 1));
@@ -79,8 +80,8 @@ class ChaserProjectile extends Projectile with NewtonianMover {
 
         this.torque(dt * turn);
 
-        final double dx = targetPos.x - pos_x;
-        final double dy = targetPos.y - pos_y;
+        final double dx = targetPos.x - posVector.x;
+        final double dy = targetPos.y - posVector.y;
         if (dx*dx + dy*dy <= hitArea*hitArea) {
             this.kill();
             this.impact();
@@ -113,5 +114,5 @@ class ChaserWeaponType extends WeaponType {
     ChaserWeaponType(TowerType towerType) : super(towerType);
 
     @override
-    Projectile spawnProjectile(Tower parent, Enemy target, Vector targetPos) => new ChaserProjectile(parent, target, targetPos);
+    Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos) => new ChaserProjectile(parent, target, targetPos);
 }

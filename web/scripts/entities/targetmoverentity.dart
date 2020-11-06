@@ -1,13 +1,14 @@
 import "dart:math" as Math;
 
 import "package:CommonLib/Utility.dart";
+import "package:CubeLib/CubeLib.dart" as B;
 
-import "../renderer/2d/vector.dart";
+import "../utility/extensions.dart";
 import "moverentity.dart";
 
 class TargetMoverEntity extends MoverEntity {
 
-    Vector targetPos;
+    B.Vector2 targetPos;
     double stoppingThreshold = 5.0;
     double turnRate = 1.0;
     double turnThreshold = Math.pi *0.51;
@@ -33,8 +34,8 @@ class TargetMoverEntity extends MoverEntity {
             return;
         }
 
-        final Vector targetOffset = targetPos - this.posVector;
-        final double targetAngle = targetOffset.angle;//Math.atan2(targetOffset.y, targetOffset.x) + Math.pi * 0.5;
+        final B.Vector2 targetOffset = targetPos - this.posVector;
+        final double targetAngle = targetOffset.angle;
 
         debugTargetAngle = targetAngle;
 
@@ -67,12 +68,12 @@ class TargetMoverEntity extends MoverEntity {
     }
 
     void updateVelocityFromHeading(num dt) {
-        this.velocity = new Vector(1,0).applyMatrix(this.matrix) * this.speed;
+        this.velocity..set(1,0)..applyMatrixInPlace(this.matrix)..scaleInPlace(this.speed);
     }
 
     bool closeToPos(double x, double y, double distance) {
-        final double dx = x - this.pos_x;
-        final double dy = y - this.pos_y;
+        final double dx = x - this.posVector.x;
+        final double dy = y - this.posVector.y;
         return dx*dx + dy*dy <= distance*distance;
     }
 

@@ -40,13 +40,7 @@ abstract class Engine {
         if (started) { return; }
         started = true;
 
-        currentFrame = window.requestAnimationFrame((num timestamp) {
-            this.graphicsUpdate();
-            lastFrameTime = timestamp;
-            lastFpsUpdate = timestamp;
-            framesThisSecond = 0;
-            currentFrame = window.requestAnimationFrame(mainLoop);
-        });
+        renderer.runRenderLoop(mainLoop);
     }
 
     void stop() {
@@ -55,15 +49,8 @@ abstract class Engine {
         window.cancelAnimationFrame(currentFrame);
     }
 
-    void mainLoop([num timestamp = 0]) {
-        final double frameTime = timestamp - lastFrameTime;
-
+    void mainLoop(double frameTime) {
         delta += frameTime;
-        lastFrameTime = timestamp;
-
-        /*if (frameTime > timeStep) {
-
-        }*/
 
         int stepsThisFrame = 0;
         while (delta >= logicStep) {
@@ -80,7 +67,7 @@ abstract class Engine {
 
         this.graphicsUpdate(delta / logicStep);
 
-        if (timestamp >= lastFpsUpdate + 1000) {
+        /*if (timestamp >= lastFpsUpdate + 1000) {
             fps = 0.5 * framesThisSecond + 0.5 * fps;
             lastFpsUpdate = timestamp;
             framesThisSecond = 0;
@@ -88,9 +75,9 @@ abstract class Engine {
                 fpsElement.text = fps.round().toString();
             }
         }
-        framesThisSecond++;
+        framesThisSecond++;*/
 
-        currentFrame = window.requestAnimationFrame(mainLoop);
+        //currentFrame = window.requestAnimationFrame(mainLoop);
     }
 
     void logicUpdate([num dt = 0]) {
@@ -104,7 +91,13 @@ abstract class Engine {
                 o.logicUpdate(updateTime);
             }
         }
-        entities.removeWhere((Entity e) => e.dead);
+        entities.removeWhere((Entity e) {
+            if (e.dead) {
+                this.renderer.removeRenderable(e);
+                return true;
+            }
+            return false;
+        });
     }
 
     void graphicsUpdate([num interpolation = 0]) {
@@ -117,6 +110,7 @@ abstract class Engine {
     void addEntity(Entity entity) {
         entity.engine = this;
         this._entityQueue.add(entity);
+        this.renderer.addRenderable(entity);
     }
 
     void setLevel(Level level) {
