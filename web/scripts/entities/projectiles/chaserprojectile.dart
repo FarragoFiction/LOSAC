@@ -35,12 +35,12 @@ class ChaserProjectile extends Projectile with NewtonianMover {
     double get velocityAngleTransferLateral => type.velocityAngleTransferLateral;
 
     ChaserProjectile(Tower parent, Enemy target, B.Vector2 targetPos) : super.impl(parent, target, targetPos) {
-        this.posVector.setFrom(this.parent.posVector);
-        this.previousPos.setFrom(this.parent.posVector);
+        this.position.setFrom(this.parent.position);
+        this.previousPos.setFrom(this.parent.position);
         if (parent.towerType.turreted) {
             this.rot_angle = parent.turretAngle;
         } else {
-            this.rot_angle = (targetPos - parent.posVector).angle;
+            this.rot_angle = (targetPos - parent.position).angle;
         }
         if (type.spread > 0) {
             this.rot_angle += (_random.nextDouble(type.spread) - type.spread * 0.5) * Math.pi * 2;
@@ -55,11 +55,11 @@ class ChaserProjectile extends Projectile with NewtonianMover {
         super.logicUpdate(dt);
 
         if (type.lockOn && this.target != null && !target.dead) {
-            final B.Vector2 tPos = TowerUtils.intercept(this.posVector, this.target.posVector, this.target.velocity, this.velocity.length());
-            this.targetPos = tPos == null ? this.target.posVector : tPos;
+            final B.Vector2 tPos = TowerUtils.intercept(this.position, this.target.position, this.target.velocity, this.velocity.length());
+            this.targetPos = tPos == null ? this.target.position : tPos;
         }
 
-        final B.Vector2 toTarget = this.targetPos - this.posVector;
+        final B.Vector2 toTarget = this.targetPos - this.position;
         final B.Vector2 angDir = new B.Vector2(1, 0)..applyMatrixInPlace(matrix);
 
         final double angDotTarget = angDir.dot(toTarget.normalized());
@@ -80,8 +80,8 @@ class ChaserProjectile extends Projectile with NewtonianMover {
 
         this.torque(dt * turn);
 
-        final double dx = targetPos.x - posVector.x;
-        final double dy = targetPos.y - posVector.y;
+        final double dx = targetPos.x - position.x;
+        final double dy = targetPos.y - position.y;
         if (dx*dx + dy*dy <= hitArea*hitArea) {
             this.kill();
             this.impact();

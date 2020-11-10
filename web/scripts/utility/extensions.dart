@@ -4,7 +4,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 
 import "../renderer/2d/matrix.dart";
 
-extension VectorRotation on B.Vector2 {
+extension Vector2Extras on B.Vector2 {
     void setFrom(B.Vector2 other) => this.set(other.x, other.y);
 
     double get angle => Math.atan2(y, x);
@@ -47,5 +47,11 @@ extension VectorRotation on B.Vector2 {
         final num y = matrix.sin * this.y + matrix.cos * this.x;
 
         this.set(x, y);
+    }
+}
+
+extension Vector3Extras on B.Vector3 {
+    void setFromGameCoords(B.Vector2 loc, double height) {
+        this.set(-loc.x, height, loc.y);
     }
 }

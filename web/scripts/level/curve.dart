@@ -6,6 +6,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
+import '../renderer/3d/models/curvemeshprovider.dart';
 import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
@@ -110,8 +111,8 @@ class Curve extends LevelObject with Connectible {
             for (int i = 1; i < vertices.length; i++) {
                 v2 = vertices[i];
 
-                final B.Vector2 v1pos = new B.Vector2(v1.posVector.x, v1.posVector.y);
-                final B.Vector2 v2pos = new B.Vector2(v2.posVector.x, v2.posVector.y);
+                final B.Vector2 v1pos = new B.Vector2(v1.position.x, v1.position.y);
+                final B.Vector2 v2pos = new B.Vector2(v2.position.x, v2.position.y);
                 final B.Vector2 o1 = v1.handle2pos + v1pos;
                 final B.Vector2 o2 = v2.handle1pos + v2pos;
 
@@ -131,12 +132,12 @@ class Curve extends LevelObject with Connectible {
 
             for(int i=0; i<segments.length; i++) {
                 final CurveSegment seg = segments[i];
-                final B.Vector2 pos = seg.posVector;
+                final B.Vector2 pos = seg.position;
                 double mult = 1.0;
 
                 if (i != 0 && i != segments.length - 1) {
-                    final B.Vector2 v1 = (pos - segments[i - 1].posVector).normalize();
-                    final B.Vector2 v2 = (segments[i + 1].posVector - pos).normalize();
+                    final B.Vector2 v1 = (pos - segments[i - 1].position).normalize();
+                    final B.Vector2 v2 = (segments[i + 1].position - pos).normalize();
                     final double dot = v1.dot(v2);
                     mult = Math.sqrt(2 / (dot + 1));
                 }
@@ -172,7 +173,7 @@ class Curve extends LevelObject with Connectible {
         B.Vector2 norm = (p1 + p2 + p3 + p4).normalize();
         norm = new B.Vector2(-norm.y, norm.x);
 
-        return new CurveSegment()..posVector.x = point.x..posVector.y = point.y..norm = norm..parentObject=this;
+        return new CurveSegment()..position.setFrom(point)..norm = norm..parentObject=this;
     }
 
     @override
@@ -186,7 +187,7 @@ class Curve extends LevelObject with Connectible {
             seg = segments[i];
 
             final PathNode node = new PathNode()
-                ..posVector = seg.getWorldPosition()
+                ..position.setFrom(seg.getWorldPosition())
                 ..pathObject = this;
             seg.node = node;
             nodes.add(node);
@@ -240,12 +241,12 @@ class Curve extends LevelObject with Connectible {
         final B.Vector2 newCentreWorld = new B.Vector2(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
         final B.Vector2 offset = getLocalPositionFromWorld(newCentreWorld);
 
-        this.posVector += offset;
+        this.position.addInPlace(offset);
         for (final LevelObject obj in subObjects) {
-            obj.posVector -= offset;
+            obj.position.subtractInPlace(offset);
         }
         for (final CurveSegment segment in segments) {
-            segment.posVector -= offset;
+            segment.position.subtractInPlace(offset);
         }
     }
 
@@ -254,7 +255,7 @@ class Curve extends LevelObject with Connectible {
         final List<B.Vector2> points = <B.Vector2>[];
 
         for (final CurveSegment segment in segments) {
-            final B.Vector2 vpos = segment.posVector;
+            final B.Vector2 vpos = segment.position;
             points.add(vpos + segment.norm * width * segment.cornerMultiplier);
             points.add(vpos - segment.norm * width * segment.cornerMultiplier);
         }

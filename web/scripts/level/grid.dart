@@ -6,6 +6,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "../entities/tower.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
+import '../renderer/3d/models/gridmeshprovider.dart';
 import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
@@ -35,8 +36,8 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 final int id = y * xSize + x;
 
                 final GridCell cell = new GridCell(this)
-                    ..posVector.x = x * cellSize - ox
-                    ..posVector.y = y * cellSize - oy;
+                    ..position.set(x * cellSize - ox, y * cellSize - oy)
+                    ..makeBoundsDirty();
 
                 this.cells[id] = cell;
             }
@@ -59,8 +60,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 // up
                 if (y == 0 || cells[id - xSize].state == GridCellState.hole) {
                     final Connector c = new ConnectorPositive()
-                        ..posVector.x = cell.posVector.x
-                        ..posVector.y = cell.posVector.y - cellSize*0.5
+                        ..position.set(cell.position.x, cell.position.y - cellSize*0.5)
                         ..rot_angle = -Math.pi * 0.5;
                     cell.up = c;
                     addSubObject(c);
@@ -69,8 +69,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 // down
                 if (y == ySize-1 || cells[id + xSize].state == GridCellState.hole) {
                     final Connector c = new ConnectorPositive()
-                        ..posVector.x = cell.posVector.x
-                        ..posVector.y = cell.posVector.y + cellSize*0.5
+                        ..position.set(cell.position.x, cell.position.y + cellSize*0.5)
                         ..rot_angle = Math.pi * 0.5;
                     cell.down = c;
                     addSubObject(c);
@@ -79,8 +78,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 // left
                 if (x == 0 || cells[id - 1].state == GridCellState.hole) {
                     final Connector c = new ConnectorPositive()
-                        ..posVector.x = cell.posVector.x - cellSize*0.5
-                        ..posVector.y = cell.posVector.y
+                        ..position.set(cell.position.x - cellSize*0.5, cell.position.y)
                         ..rot_angle = Math.pi;
                     cell.left = c;
                     addSubObject(c);
@@ -89,8 +87,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 // right
                 if (x == xSize-1 || cells[id + 1].state == GridCellState.hole) {
                     final Connector c = new ConnectorPositive()
-                        ..posVector.x = cell.posVector.x + cellSize*0.5
-                        ..posVector.y = cell.posVector.y
+                        ..position.set(cell.position.x + cellSize*0.5, cell.position.y)
                         ..rot_angle = 0;
                     cell.right = c;
                     addSubObject(c);
@@ -146,7 +143,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                 final PathNode node = new PathNode()
                     ..pathObject = this
                     ..validShortcut = true
-                    ..posVector = cell.getWorldPosition()
+                    ..position.setFrom(cell.getWorldPosition())
                     ..blocked = cell.state == GridCellState.blocked;
 
                 _cellsFromNodes[node] = cell;
@@ -268,8 +265,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
         final B.Vector2 worldCoords = cell.getWorldPosition();
         final double rot = cell.getWorldRotation();
         tower
-            ..posVector.x = worldCoords.x
-            ..posVector.y = worldCoords.y
+            ..position.setFrom(worldCoords)
             ..rot_angle = rot
             ..turretAngle = rot
             ..prevTurretAngle = rot;

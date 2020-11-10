@@ -92,8 +92,8 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
 
     /// used for resetting enemies when they leak, not normal movement
     void setPositionTo(B.Vector2 pos, double angle) {
-        posVector.setFrom(pos);
-        previousPos = null;
+        position.setFrom(pos);
+        previousPos.setFrom(pos);
         rot_angle = angle;
         previousRot = null;
         targetPos = null;
@@ -107,7 +107,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
     double get boundsSize => enemyType.size;
 
     void updateTarget(num dt) {
-        final int nodeId = this.engine.level.domainMap.getVal(this.posVector.x, this.posVector.y);
+        final int nodeId = this.engine.level.domainMap.getVal(this.position.x, this.position.y);
         if (nodeId == 0) {
             this.currentNode = null;
             this.targetNode = null;
@@ -116,14 +116,14 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
             final PathNode node = this.engine.level.pathNodes[nodeId-1];
             this.currentNode = node;
             if (node.targetNode == null) {
-                this.targetPos = node.posVector;
+                this.targetPos = node.position;
                 this.targetNode = node;
             } else {
-                this.targetPos = node.targetNode.posVector;
+                this.targetPos = node.targetNode.position;
                 this.targetNode = node.targetNode;
             }
             if (engine is Game && node is ExitNode) {
-                if (closeToPos(node.posVector.x, node.posVector.y, this.stoppingThreshold + 1)) {
+                if (closeToPos(node.position.x, node.position.y, this.stoppingThreshold + 1)) {
                     final Game game = engine;
                     game.leakEnemy(this);
                 }
@@ -140,8 +140,8 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
             } else {
                 // if the current and target differ, find the fraction of the path between the two and interpolate!
 
-                final B.Vector2 currentToTarget = targetNode.posVector - currentNode.posVector;
-                final B.Vector2 currentToPos = this.posVector - currentNode.posVector;
+                final B.Vector2 currentToTarget = targetNode.position - currentNode.position;
+                final B.Vector2 currentToPos = this.position - currentNode.position;
 
                 final double dot = currentToPos.normalized().dot(currentToTarget.normalized());
                 final double fraction = (dot * currentToPos.length()) / currentToTarget.length();

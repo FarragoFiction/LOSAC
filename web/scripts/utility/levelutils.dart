@@ -16,7 +16,7 @@ abstract class LevelUtils {
     }*/
 
     static bool isLineClear(DomainMap domainMap, List<PathNode> pathNodes, PathNode fromNode, PathNode toNode) {
-        final Set<int> trace = domainMap.valuesAlongLine(fromNode.posVector.x, fromNode.posVector.y, toNode.posVector.x, toNode.posVector.y, 50);
+        final Set<int> trace = domainMap.valuesAlongLine(fromNode.position.x, fromNode.position.y, toNode.position.x, toNode.position.y, 50);
 
         if (trace.contains(0)) { return false; }
 

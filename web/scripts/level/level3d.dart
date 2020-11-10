@@ -64,9 +64,9 @@ class Level3D extends Level with Renderable3D {
                 size = 8;
             }
 
-            ctx.fillRect(node.posVector.x * scaleFactor - size/2, node.posVector.y * scaleFactor - size/2, size, size);
+            ctx.fillRect(node.position.x * scaleFactor - size/2, node.position.y * scaleFactor - size/2, size, size);
 
-            ctx.fillText(node.distanceToExitFraction.toStringAsFixed(3), node.posVector.x * scaleFactor + size, node.posVector.y * scaleFactor - 5);
+            ctx.fillText(node.distanceToExitFraction.toStringAsFixed(3), node.position.x * scaleFactor + size, node.position.y * scaleFactor - 5);
 
             ctx.restore();
 
@@ -75,8 +75,8 @@ class Level3D extends Level with Renderable3D {
 
                 ctx
                     ..beginPath()
-                    ..lineTo(node.posVector.x * scaleFactor, node.posVector.y * scaleFactor)
-                    ..lineTo(other.posVector.x * scaleFactor, other.posVector.y * scaleFactor)
+                    ..lineTo(node.position.x * scaleFactor, node.position.y * scaleFactor)
+                    ..lineTo(other.position.x * scaleFactor, other.position.y * scaleFactor)
                     ..stroke();
             }
         }
@@ -108,8 +108,8 @@ class Level3D extends Level with Renderable3D {
                 ctx.lineWidth = 2;
             }
 
-            final B.Vector2 pos = node.posVector;
-            final B.Vector2 tpos = node.targetNode.posVector;
+            final B.Vector2 pos = node.position;
+            final B.Vector2 tpos = node.targetNode.position;
 
             ctx
                 ..beginPath()

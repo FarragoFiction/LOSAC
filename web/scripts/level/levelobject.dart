@@ -4,18 +4,24 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "package:collection/collection.dart";
 
 import "../renderer/2d/bounds.dart";
+import '../renderer/2d/extendedvectors.dart';
 import "../renderer/2d/matrix.dart";
+import "../renderer/3d/models/meshprovider.dart";
 import "../renderer/3d/renderable3d.dart";
 import "../utility/extensions.dart";
 
 class SimpleLevelObject with Renderable3D {
-    B.Vector2 posVector = B.Vector2.Zero();
+    B.Vector2 position = B.Vector2.Zero();
+
+    MeshProvider<dynamic> meshProvider;
 
     @override
     void generateMesh() {
-        this.mesh = B.MeshBuilder.CreateBox("Object ${this.hashCode}", new B.MeshBuilderCreateBoxOptions(size: 10));
-        this.mesh.material = this.renderer.defaultMaterial;
-        this.mesh.position.set(this.posVector.x, 0, this.posVector.y);
+        if (this.meshProvider != null) {
+            this.mesh = this.meshProvider.provide(this);
+        } else {
+            this.mesh = this.renderer.defaultMeshProvider.provide(this);
+        }
     }
 }
 
@@ -32,6 +38,10 @@ class LevelObject extends SimpleLevelObject {
     Rectangle<num> _bounds;
     bool dirtyBounds = true;
 
+    // ignore this complaint, we need this to be the subtype for bounds dirtying
+    @override
+    B.Vector2 position = new Vector2WithCallback(0, 0);
+
     Rectangle<num> get bounds {
         if (dirtyBounds) {
             recalculateBounds();
@@ -39,8 +49,11 @@ class LevelObject extends SimpleLevelObject {
         return _bounds;
     }
 
-
     LevelObject() : rot_angle = 0 {
+        // set the callback on creation... if we don't do this immediately it'll die on first set
+        final Vector2WithCallback v = this.position;
+        v.callback = (B.Vector2 v) => this.makeBoundsDirty();
+
         subObjects = new UnmodifiableSetView<LevelObject>(_subObjects);
         initMixins();
     }
@@ -81,7 +94,7 @@ class LevelObject extends SimpleLevelObject {
     }
 
     B.Vector2 getWorldPosition([B.Vector2 offset]) {
-        final B.Vector2 pos = this.posVector.clone();
+        final B.Vector2 pos = this.position.clone();
 
         if (offset != null) {
             pos.addInPlace(offset.rotate(this.rot_angle));
@@ -103,7 +116,7 @@ class LevelObject extends SimpleLevelObject {
             }
 
             pos.applyMatrixInPlace(rot);
-            pos.addInPlace(o.posVector);
+            pos.addInPlace(o.position);
         }
 
         return pos;
@@ -147,6 +160,12 @@ class LevelObject extends SimpleLevelObject {
             _bounds = calculateBounds();
             dirtyBounds = false;
         }
+    }
+
+    @override
+    void generateMesh() {
+        super.generateMesh();
+        this.mesh?.rotation?.y = this.rot_angle;
     }
 
     Rectangle<num> calculateBounds() => rectBounds(this, 10,10);

@@ -90,13 +90,13 @@ abstract class TowerUtils {
     }
 
     static B.Vector2 interceptEnemy(Tower tower, Enemy enemy) {
-        if (enemy.speed <= 0) { return enemy.posVector; }
+        if (enemy.speed <= 0) { return enemy.position; }
 
-        final B.Vector2 tPos = tower.posVector;
+        final B.Vector2 tPos = tower.position;
 
-        B.Vector2 pos = enemy.posVector;
+        B.Vector2 pos = enemy.position;
         PathNode nextNode = enemy.targetNode;
-        B.Vector2 targetOffset = nextNode.posVector - pos;
+        B.Vector2 targetOffset = nextNode.position - pos;
         num targetDistance = targetOffset.length();
         B.Vector2 dir = targetOffset / targetDistance;
         double timeOffset = 0;
@@ -114,9 +114,9 @@ abstract class TowerUtils {
             }
 
             timeOffset += timeToNode;
-            pos = nextNode.posVector;
+            pos = nextNode.position;
             nextNode = nextNode.targetNode;
-            targetOffset = nextNode.posVector - pos;
+            targetOffset = nextNode.position - pos;
             targetDistance = targetOffset.length();
             dir = targetOffset / targetDistance;
 

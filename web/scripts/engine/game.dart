@@ -31,12 +31,12 @@ class Game extends Engine {
         enemy
             ..originSpawner = spawner
             ..rot_angle = spawner.rot_angle
-            ..posVector.setFrom(spawner.node.posVector);
+            ..position.setFrom(spawner.node.position);
         this.addEntity(enemy);
     }
 
     void leakEnemy(Enemy enemy) {
-        enemy.setPositionTo(enemy.originSpawner.posVector, enemy.originSpawner.rot_angle);
+        enemy.setPositionTo(enemy.originSpawner.position, enemy.originSpawner.rot_angle);
     }
 
     @override

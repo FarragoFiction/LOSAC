@@ -34,17 +34,17 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
     void applyVelocity(num dt) {
         if (this.velocity.length() == 0) { return; }
-        this.previousPos.setFrom(this.posVector);
-        this.posVector.addInPlace(this.velocity * dt);
+        this.previousPos.setFrom(this.position);
+        this.position.addInPlace(this.velocity * dt);
     }
 
     @override
     void renderUpdate([num interpolation = 0]) {
-        previousPos ??= posVector.clone();
+        previousPos ??= position.clone();
         previousRot ??= rot_angle;
 
-        final double dx = this.posVector.x - previousPos.x;
-        final double dy = this.posVector.y - previousPos.y;
+        final double dx = this.position.x - previousPos.x;
+        final double dy = this.position.y - previousPos.y;
         drawPos.set(previousPos.x + dx * interpolation, previousPos.y + dy * interpolation);
 
         final double da = angleDiff(rot_angle, previousRot);
@@ -52,8 +52,8 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
         if (this.mesh != null) {
             this.mesh
-                ..position.set(drawPos.x, 0, drawPos.y)
-                ..rotation.y = -drawRot;
+                ..position.setFromGameCoords(drawPos, 0)
+                ..rotation.y = drawRot;
         }
     }
 
@@ -97,5 +97,5 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
     // this greatly simplifies the bounding boxes for moving objects, which is probably a good thing...
     @override
-    Rectangle<num> calculateBounds() => new Rectangle<num>(this.posVector.x-boundsSize/2, this.posVector.y-boundsSize/2, boundsSize, boundsSize);
+    Rectangle<num> calculateBounds() => new Rectangle<num>(this.position.x-boundsSize/2, this.position.y-boundsSize/2, boundsSize, boundsSize);
 }

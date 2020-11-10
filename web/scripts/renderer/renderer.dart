@@ -11,8 +11,13 @@ abstract class Renderer {
     Element container;
 
     void draw([double interpolation]) {}
-    void addRenderable(Object entity) {}
-    void removeRenderable(Object entity) {}
+    void addRenderable(Object object) {}
+    void addRenderables(Iterable<Object> objects) {
+        for (final Object object in objects) {
+            this.addRenderable(object);
+        }
+    }
+    void removeRenderable(Object object) {}
 
     void runRenderLoop(RenderLoopFunction loop);
 

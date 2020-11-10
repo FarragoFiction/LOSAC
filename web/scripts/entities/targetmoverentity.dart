@@ -34,7 +34,7 @@ class TargetMoverEntity extends MoverEntity {
             return;
         }
 
-        final B.Vector2 targetOffset = targetPos - this.posVector;
+        final B.Vector2 targetOffset = targetPos - this.position;
         final double targetAngle = targetOffset.angle;
 
         debugTargetAngle = targetAngle;
@@ -72,8 +72,8 @@ class TargetMoverEntity extends MoverEntity {
     }
 
     bool closeToPos(double x, double y, double distance) {
-        final double dx = x - this.posVector.x;
-        final double dy = y - this.posVector.y;
+        final double dx = x - this.position.x;
+        final double dy = y - this.position.y;
         return dx*dx + dy*dy <= distance*distance;
     }
 

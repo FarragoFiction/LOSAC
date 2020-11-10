@@ -5,7 +5,9 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "package:js/js.dart" as JS;
 
 import "../../engine/entity.dart";
+import '../../level/levelobject.dart';
 import "../renderer.dart";
+import 'models/meshprovider.dart';
 import 'renderable3d.dart';
 
 class Renderer3D extends Renderer {
@@ -18,6 +20,7 @@ class Renderer3D extends Renderer {
     Set<Renderable3D> renderList = <Renderable3D>{};
 
     B.Material defaultMaterial;
+    MeshProvider<SimpleLevelObject> defaultMeshProvider;
 
     Renderer3D(CanvasElement this.canvas) {
         this.babylon = new B.Engine(this.canvas, false);
@@ -30,13 +33,14 @@ class Renderer3D extends Renderer {
             ..maxZ = 5000
             ..attachControl(canvas);*/
 
-        this.camera = new B.ArcRotateCamera("Camera", Math.pi/2, Math.pi/2, 10, new B.Vector3(0,0,0), scene)
+        this.camera = new B.ArcRotateCamera("Camera", Math.pi/2, 0, 1000, new B.Vector3(0,0,0), scene)
             ..maxZ = 5000.0
             ..attachControl(canvas, true);
 
         this.scene.addLight(new B.DirectionalLight("sun", new B.Vector3(1,-5,1), scene));
 
         this.defaultMaterial = new B.StandardMaterial("defaultMaterial", scene);
+        this.defaultMeshProvider = new MeshProvider<SimpleLevelObject>(this);
     }
 
     @override
@@ -52,11 +56,11 @@ class Renderer3D extends Renderer {
     }
 
     @override
-    void addRenderable(Object entity) {
-        if (entity is Renderable3D) {
-            this.renderList.add(entity);
+    void addRenderable(Object object) {
+        if (object is Renderable3D) {
+            this.renderList.add(object);
 
-            final Renderable3D renderable = entity;
+            final Renderable3D renderable = object;
             renderable.renderer = this;
             if (renderable.mesh == null) {
                 renderable.generateMesh();
@@ -68,11 +72,11 @@ class Renderer3D extends Renderer {
         }
     }
     @override
-    void removeRenderable(Object entity) {
-        if (entity is Renderable3D) {
-            this.renderList.remove(entity);
+    void removeRenderable(Object object) {
+        if (object is Renderable3D) {
+            this.renderList.remove(object);
 
-            final Renderable3D renderable = entity;
+            final Renderable3D renderable = object;
             if (renderable.mesh != null) {
                 this.scene.removeMesh(renderable.mesh);
                 renderable.mesh.dispose();
@@ -93,7 +97,7 @@ class Renderer3D extends Renderer {
     @override
     void moveTo(num x, num y) {
         final B.ArcRotateCamera c = this.camera;
-        c.target.set(x, 0, y);
+        c.target.set(-x, 0, y);
     }
 
     @override

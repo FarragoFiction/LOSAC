@@ -16,8 +16,9 @@ mixin TerrainCollider on MoverEntity {
         final B.Vector2 projected = this.velocity * dt;
 
         if (this.engine.level == null) {
-            this.previousPos.setFrom(this.posVector);
-            this.posVector += projected;
+            this.previousPos.setFrom(this.position);
+            this.position.addInPlace(projected);
+            this.makeBoundsDirty();
             return;
         }
 
@@ -36,14 +37,14 @@ mixin TerrainCollider on MoverEntity {
                 final int id = dMap.getValLocal(x, y);
                 if (id == 0) {
                     col++;
-                    vc.addInPlace(dMap.getWorldCoords(x, y) - this.posVector);
+                    vc.addInPlace(dMap.getWorldCoords(x, y) - this.position);
                     continue;
                 }
 
                 final PathNode node = this.engine.level.pathNodes[id-1];
                 if (node.isolated || node.blocked) {
                     col++;
-                    vc.addInPlace(dMap.getWorldCoords(x, y) - this.posVector);
+                    vc.addInPlace(dMap.getWorldCoords(x, y) - this.position);
                 }
             }
         }
@@ -55,8 +56,8 @@ mixin TerrainCollider on MoverEntity {
             projected.subtractInPlace(dir * dir.dot(this.velocity.normalized()));
         }
 
-        this.previousPos.setFrom(this.posVector);
-        this.posVector.addInPlace(projected);
+        this.previousPos.setFrom(this.position);
+        this.position.addInPlace(projected);
     }
 
     Set<PathNode> getNodesAtPos() {

@@ -29,7 +29,7 @@ class SpatialHash<T extends SpatialHashable> {
 	void insert(T col) {
 		if (col.spatialHash == null || col.spatialHash == this) {
 			final Rectangle<num> bounds = col.bounds;
-			
+
 			if (col.spatialHash == this) {
 				final Rectangle<num> oldBounds = this.objects[col];
 				if (bounds == oldBounds) {
@@ -171,6 +171,9 @@ class SpatialHashKey {
 	bool operator ==(dynamic other) {
 		return (other is SpatialHashKey) && other._hash == this._hash;
 	}
+
+	@override
+	String toString() => "($x,$y)";
 }
 
 mixin SpatialHashable<T> on LevelObject {

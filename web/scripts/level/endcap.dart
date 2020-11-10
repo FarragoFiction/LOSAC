@@ -4,6 +4,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
+import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import "grid.dart";
@@ -16,7 +17,7 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
     Connector connector;
 
     EndCap() {
-        final Connector c = new ConnectorNeutral()..posVector.x = Grid.cellSize * 0.5;
+        final Connector c = new ConnectorNeutral()..position.x = Grid.cellSize * 0.5..makeBoundsDirty();
         this.connector = c;
         this.addSubObject(c);
     }
@@ -49,7 +50,7 @@ class SpawnerObject extends EndCap<SpawnNode> {
     Iterable<PathNode> generatePathNodes() {
         final SpawnNode n = new SpawnNode();
 
-        n.posVector = this.getWorldPosition();
+        n.position.setFrom(this.getWorldPosition());
 
         this.node = n;
         n.pathObject = this;
@@ -78,7 +79,7 @@ class ExitObject extends EndCap<ExitNode> {
     Iterable<PathNode> generatePathNodes() {
         final ExitNode n = new ExitNode();
 
-        n.posVector = this.getWorldPosition();
+        n.position.setFrom(this.getWorldPosition());
 
         this.node = n;
         n.pathObject = this;

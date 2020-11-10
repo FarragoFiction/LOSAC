@@ -59,8 +59,8 @@ mixin NewtonianMover on MoverEntity {
         final double absdot = angDotVel.abs();
 
         //super.applyVelocity(dt);
-        this.previousPos.setFrom(this.posVector);
-        this.posVector.addInPlace(this.velocity.scale(this._newtFrictionMult * absdot + this._newtLateralFrictionMult * (1-absdot)));
+        this.previousPos.setFrom(this.position);
+        this.position.addInPlace(this.velocity.scale(this._newtFrictionMult * absdot + this._newtLateralFrictionMult * (1-absdot)));
 
         //print("v: dot: $angDotVel");
         //print(velocity);

@@ -115,6 +115,7 @@ abstract class Engine {
 
     void setLevel(Level level) {
         this.level = level;
+        this.renderer.addRenderables(this.level.objects);
     }
 
     //input

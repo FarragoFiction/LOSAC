@@ -40,13 +40,13 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
             targetAngle = turretAngle;
         } else if (targets.length == 1) {
             // we have one target, the angle is simple
-            final B.Vector2 offset = (getTargetLocation(targets.first) - this.posVector);
+            final B.Vector2 offset = (getTargetLocation(targets.first) - this.position);
             targetAngle = Math.atan2(offset.y, offset.x);
         } else {
             // we have many targets... oh boy
             B.Vector2 offset = B.Vector2.Zero();
             for (final Enemy target in targets) {
-                offset.addInPlace((getTargetLocation(target) - this.posVector).normalize());
+                offset.addInPlace((getTargetLocation(target) - this.position).normalize());
             }
             offset = offset.normalize();
             targetAngle = Math.atan2(offset.y, offset.x);
@@ -142,7 +142,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
 
     B.Vector2 getTargetLocation(Enemy enemy) {
         if (!this.towerType.leadTargets) {
-            return enemy.posVector.clone();
+            return enemy.position.clone();
         }
 
         //final Vector v = TowerUtils.intercept(this.posVector, enemy.posVector, Vector(0, -enemy.speed).applyMatrix(enemy.matrix), towerType.projectileSpeed);
@@ -152,20 +152,20 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
             return v;
         } else {
             //print("cannot reach");
-            return enemy.posVector.clone();
+            return enemy.position.clone();
         }
     }
 
     void evaluateTargets() {
         final Game game = this.engine;
-        final Set<Enemy> possibleTargets = game.enemySelector.queryRadius(posVector.x, posVector.y, towerType.leadTargets ? towerType.weapon.range * towerType.leadingRangeGraceFactor : towerType.weapon.range).where((Enemy e) => !e.dead).toSet();
+        final Set<Enemy> possibleTargets = game.enemySelector.queryRadius(position.x, position.y, towerType.leadTargets ? towerType.weapon.range * towerType.leadingRangeGraceFactor : towerType.weapon.range).where((Enemy e) => !e.dead).toSet();
 
         if (towerType.leadTargets) {
             final double checkRange = towerType.weapon.range * towerType.weapon.range;
             final double checkRangeLeading = checkRange * towerType.leadingRangeGraceFactor * towerType. leadingRangeGraceFactor;
             possibleTargets.retainWhere((Enemy target) {
-                final B.Vector2 diff = target.posVector - this.posVector;
-                final B.Vector2 diffLeading = getTargetLocation(target) - this.posVector;
+                final B.Vector2 diff = target.position - this.position;
+                final B.Vector2 diffLeading = getTargetLocation(target) - this.position;
 
                 final double diffInLeading = diffLeading.x*diffLeading.x + diffLeading.y*diffLeading.y;
                 final double diffIn = diff.x*diff.x + diff.y*diff.y;
@@ -272,8 +272,8 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
                 ctx
                     ..fillStyle = "#30FF30"
                     ..strokeStyle = "#30FF30";
-                final double ex = (e.posVector.x - posVector.x) * scaleFactor;
-                final double ey = (e.posVector.y - posVector.y) * scaleFactor;
+                final double ex = (e.position.x - position.x) * scaleFactor;
+                final double ey = (e.position.y - position.y) * scaleFactor;
 
                 ctx.fillRect(ex - 2, ey - 2, 4, 4);
                 ctx
@@ -288,8 +288,8 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
                         ..strokeStyle = "#FF90FF";
                     final B.Vector2 lv = this.getTargetLocation(e);
 
-                    final double lx = (lv.x - posVector.x) * scaleFactor;
-                    final double ly = (lv.y - posVector.y) * scaleFactor;
+                    final double lx = (lv.x - position.x) * scaleFactor;
+                    final double ly = (lv.y - position.y) * scaleFactor;
 
                     ctx.fillRect(lx - 2, ly - 2, 4, 4);
                     ctx

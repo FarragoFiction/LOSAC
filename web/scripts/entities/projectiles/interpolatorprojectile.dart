@@ -14,12 +14,12 @@ class InterpolatorProjectile extends Projectile {
     double travelSpeed = 1.0;
 
     InterpolatorProjectile(Tower parent, Enemy target, B.Vector2 targetPos) : super.impl(parent, target, targetPos) {
-        this.posVector.setFrom(this.parent.posVector);
-        this.previousPos.setFrom(this.parent.posVector);
-        this.rot_angle = (targetPos - parent.posVector).angle;
+        this.position.setFrom(this.parent.position);
+        this.previousPos.setFrom(this.parent.position);
+        this.rot_angle = (targetPos - parent.position).angle;
         this.previousRot = rot_angle;
 
-        this.travelSpeed = parent.towerType.weapon.projectileSpeed / (targetPos - this.posVector).length();
+        this.travelSpeed = parent.towerType.weapon.projectileSpeed / (targetPos - this.position).length();
         this.maxAge = 2 / travelSpeed; // 2 because we're hedging bets here, it should never be more than 1/travelSpeed in practice;
     }
 
@@ -36,12 +36,12 @@ class InterpolatorProjectile extends Projectile {
     void applyVelocity(num dt) {
         travelFraction += travelSpeed * dt;
 
-        this.previousPos = this.posVector;
+        this.previousPos = this.position;
 
-        this.posVector = parent.posVector + (targetPos - parent.posVector) * travelFraction;
+        this.position.setFrom(parent.position + (targetPos - parent.position) * travelFraction);
 
         this.previousRot = this.rot_angle;
-        this.rot_angle = (posVector - previousPos).angle;
+        this.rot_angle = (position - previousPos).angle;
     }
 }
 

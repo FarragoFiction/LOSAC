@@ -15,6 +15,8 @@ import "level/grid.dart";
 import "level/level.dart";
 import "level/level3d.dart";
 import "pathfinder/pathfinder.dart";
+import 'renderer/3d/models/curvemeshprovider.dart';
+import 'renderer/3d/models/gridmeshprovider.dart';
 import "renderer/3d/renderer3d.dart";
 import "renderer/renderer.dart";
 import "utility/extensions.dart";
@@ -30,6 +32,8 @@ Future<void> main() async {
     final DivElement fpsElement = new DivElement();
     document.body.append(fpsElement);
 
+    final Renderer renderer = new Renderer3D(testCanvas);
+
     final Pathfinder pathfinder = new Pathfinder();
     final Level testLevel = new Level3D();
 
@@ -44,7 +48,14 @@ Future<void> main() async {
 
     // grid
 
-    final Grid testGrid = new Grid(6, 10)..posVector.x = 500..posVector.y = 400..rot_angle = 0.1;
+    final GridMeshProvider gridMeshProvider = new DebugGridMeshProvider(renderer);
+    final CurveMeshProvider curveMeshProvider = new DebugCurveMeshProvider(renderer);
+    final EndCapMeshProvider endCapMeshProvider = new DebugEndCapMeshProvider(renderer);
+
+    final Grid testGrid = new Grid(6, 10)
+        ..position.set(500,400)
+        ..rot_angle = 0.1
+        ..meshProvider = gridMeshProvider;
 
     List<GridCell> cells = testGrid.getCells(0, 4, 1, 5);
     for (final GridCell c in cells) {
@@ -66,20 +77,24 @@ Future<void> main() async {
 
     // side grid
 
-    final Grid sideGrid = new Grid(4,1)..posVector.x = 200..posVector.y = 160..rot_angle = 0.75;
+    final Grid sideGrid = new Grid(4,1)
+        ..position.set(200, 160)
+        ..rot_angle = 0.75
+        ..meshProvider = gridMeshProvider;
     sideGrid.updateConnectors();
     testLevel.objects.add(sideGrid);
 
     // curve
 
     final Curve testPath = new Curve()
+        ..meshProvider = curveMeshProvider
         //..renderVertices=true
         //..renderSegments = true
     ;
 
-    testPath.addVertex(new CurveVertex()..posVector.x = 50..posVector.y=30..rot_angle = -0.3..handle2 = 60);
-    testPath.addVertex(new CurveVertex()..posVector.x = 220..posVector.y=40..rot_angle = 0.9..handle1 = 60..handle2 = 60);
-    testPath.addVertex(new CurveVertex()..posVector.x = 280..posVector.y=180..rot_angle = 0.5..handle1 = 50);
+    testPath.addVertex(new CurveVertex()..position.set(50, 30)..rot_angle = -0.3..handle2 = 60);
+    testPath.addVertex(new CurveVertex()..position.set(220, 40)..rot_angle = 0.9..handle1 = 60..handle2 = 60);
+    testPath.addVertex(new CurveVertex()..position.set(280, 180)..rot_angle = 0.5..handle1 = 50);
 
     testPath.updateConnectors();
     testPath.endConnector.connectAndOrient(testGrid.getCell(0, 0).left);
@@ -92,7 +107,8 @@ Future<void> main() async {
 
     // entrances and exit
 
-    final ExitObject testExit = new ExitObject();//..pos_x=500..pos_y=500;
+    final ExitObject testExit = new ExitObject()
+        ..meshProvider = endCapMeshProvider;//..pos_x=500..pos_y=500;
 
     testExit.connector.connectAndOrient(testPath.startConnector);
     //testPath.startConnector.connectAndOrient(testExit.connector);
@@ -103,7 +119,8 @@ Future<void> main() async {
 
     testLevel.objects.add(testExit);
 
-    final SpawnerObject testSpawner1 = new SpawnerObject();
+    final SpawnerObject testSpawner1 = new SpawnerObject()
+        ..meshProvider = endCapMeshProvider;
     testSpawner1.connector.connectAndOrient(testGrid.getCell(0, 9).down);
     testLevel.objects.add(testSpawner1);
 
@@ -128,7 +145,7 @@ Future<void> main() async {
     final Point<num> towerCoord = testGrid.getCell(0, 8).getWorldPosition();
     testTower..pos_x = towerCoord.x..pos_y = towerCoord.y;*/
     
-    final Renderer renderer = new Renderer3D(testCanvas);
+
 
     final Game game = new Game(renderer)
         ..pathfinder = pathfinder

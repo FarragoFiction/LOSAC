@@ -43,13 +43,13 @@ abstract class Projectile extends MoverEntity {
             final double hotspot = projectileType.areaOfEffectHotspot; // full damage fraction of radius
             final double splash = projectileType.areaOfEffectNonTargetMultiplier; // non-main-target damage multiplier
             final Game game = this.engine;
-            final Set<Enemy> targets = game.enemySelector.queryRadius(posVector.x, posVector.y, radius);
+            final Set<Enemy> targets = game.enemySelector.queryRadius(position.x, position.y, radius);
 
             if (hotspot < 1) {
                 // if there is falloff to consider
                 for (final Enemy enemy in targets) {
-                    final double dx = enemy.posVector.x - this.posVector.x;
-                    final double dy = enemy.posVector.y - this.posVector.y;
+                    final double dx = enemy.position.x - this.position.x;
+                    final double dy = enemy.position.y - this.position.y;
                     final double dSquared = dx*dx + dy*dy;
 
                     if (dSquared <= radius * radius * hotspot * hotspot) {
