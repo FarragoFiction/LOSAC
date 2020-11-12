@@ -12,6 +12,9 @@ mixin Connectible on LevelObject implements PathNodeObject {
     bool drawConnectors = false;
 
     @override
+    bool generateLevelHeightData = true;
+
+    @override
     void initMixins() {
         super.initMixins();
         connectors = this.subObjects.whereType();
@@ -110,12 +113,14 @@ abstract class Connector extends LevelObject {
         final B.Vector2 rotatedPos = this.position.rotate(angleOffset);
         final B.Vector2 movePos = targetPos - rotatedPos;
 
-
         final B.Vector2 finalPos = this.getLocalPositionFromWorld(movePos) + this.parentObject.position + this.position;
         final double finalAngle = this.parentObject.rot_angle + angleOffset;
 
+        final double targetHeight = target.getWorldZPosition();
+
         this.parentObject.rot_angle = finalAngle;
         this.parentObject.position.setFrom(finalPos);
+        this.parentObject.zPosition = targetHeight;
     }
 }
 

@@ -15,4 +15,13 @@ mixin Entity on LevelObject {
     void kill() {
         this.dead = true;
     }
+
+    @override
+    double getModelZPosition() {
+        double z = super.getModelZPosition();
+        if (this.level != null) {
+            z += this.level.levelHeightMap.getVal(this.position.x, this.position.y);
+        }
+        return z;
+    }
 }

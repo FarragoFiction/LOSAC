@@ -9,9 +9,11 @@ import "../renderer/2d/matrix.dart";
 import "../renderer/3d/models/meshprovider.dart";
 import "../renderer/3d/renderable3d.dart";
 import "../utility/extensions.dart";
+import "level.dart";
 
 class SimpleLevelObject with Renderable3D {
     B.Vector2 position = B.Vector2.Zero();
+    double zPosition = 0;
 
     MeshProvider<dynamic> meshProvider;
 
@@ -23,6 +25,11 @@ class SimpleLevelObject with Renderable3D {
             this.mesh = this.renderer.defaultMeshProvider.provide(this);
         }
     }
+
+    @override
+    double getModelZPosition() => zPosition;
+
+    Level get level => this.renderer?.engine?.level;
 }
 
 class LevelObject extends SimpleLevelObject {
@@ -144,6 +151,17 @@ class LevelObject extends SimpleLevelObject {
 
         return angle - parentRot;
     }
+
+    double getWorldZPosition() {
+        double z = this.zPosition;
+        if (this.parentObject != null) {
+            z += this.parentObject.getWorldZPosition();
+        }
+        return z;
+    }
+
+    @override
+    double getModelZPosition() => getWorldZPosition();
 
     void makeBoundsDirty() {
         this.dirtyBounds = true;

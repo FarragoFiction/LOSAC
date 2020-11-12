@@ -3,6 +3,7 @@ import "dart:html";
 import "../renderer/2d/bounds.dart";
 import "connectible.dart";
 import "domainmap.dart";
+import "levelheightmap.dart";
 import "levelobject.dart";
 import "pathnode.dart";
 
@@ -17,6 +18,7 @@ class Level {
     ExitNode exit;
 
     DomainMap domainMap;
+    LevelHeightMap levelHeightMap;
     Rectangle<num> bounds;
 
     Level() {
@@ -71,17 +73,19 @@ class Level {
         }
     }
 
-    void buildDomainMap() {
+    void buildDataMaps() {
         this.bounds = outerBounds(objects.map((LevelObject o) => o.bounds));
 
         domainMap = new DomainMap(bounds.left, bounds.top, bounds.width, bounds.height);
+        levelHeightMap = new LevelHeightMap(bounds.left, bounds.top, bounds.width, bounds.height);
 
         for (final Connectible object in connectibles) {
             final Rectangle<num> bounds = object.bounds;
 
-            final DomainMapRegion boundsRegion = domainMap.subRegionForBounds(bounds);
+            final DomainMapRegion domainRegion = domainMap.subRegionForBounds(bounds);
+            final LevelHeightMapRegion heightRegion = levelHeightMap.subRegionForBounds(bounds);
 
-            object.fillDomainMap(boundsRegion);
+            object.fillDataMaps(domainRegion, heightRegion);
         }
     }
 

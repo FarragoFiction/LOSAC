@@ -10,7 +10,6 @@ mixin Renderable3D {
     Renderer3D renderer;
     B.AbstractMesh mesh;
 
-    void generateMesh() {
-
-    }
+    void generateMesh() {}
+    double getModelZPosition() => 0;
 }

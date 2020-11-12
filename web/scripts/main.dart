@@ -54,6 +54,7 @@ Future<void> main() async {
 
     final Grid testGrid = new Grid(6, 10)
         ..position.set(500,400)
+        ..zPosition = 50
         ..rot_angle = 0.1
         ..meshProvider = gridMeshProvider;
 
@@ -131,8 +132,10 @@ Future<void> main() async {
     // send node data, evaluate connectivity
     await pathfinder.transferNodeData(testLevel);
 
-    testLevel.buildDomainMap();
+    testLevel.buildDataMaps();
     //testLevel.domainMap.updateDebugCanvas();
+    testLevel.levelHeightMap.updateDebugCanvas();
+    document.body.append(testLevel.levelHeightMap.debugCanvas);
 
     await pathfinder.transferDomainMap(testLevel);
     await pathfinder.recalculatePathData(testLevel);

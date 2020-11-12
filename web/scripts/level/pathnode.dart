@@ -1,14 +1,17 @@
 import "dart:math" as Math;
 
 import "domainmap.dart";
+import 'levelheightmap.dart';
 import "levelobject.dart";
 
 /// Interface for LevelObjects which provide PathNodes
 abstract class PathNodeObject {
+    bool generateLevelHeightData = true;
+
     Iterable<PathNode> generatePathNodes();
     void connectPathNodes();
     void clearPathNodes();
-    void fillDomainMap(DomainMapRegion map);
+    void fillDataMaps(DomainMapRegion domainMap, LevelHeightMapRegion heightMap);
 }
 
 class PathNode extends SimpleLevelObject {

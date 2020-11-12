@@ -10,6 +10,7 @@ import '../renderer/3d/models/curvemeshprovider.dart';
 import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
+import 'levelheightmap.dart';
 import "levelobject.dart";
 import "pathnode.dart";
 
@@ -264,7 +265,7 @@ class Curve extends LevelObject with Connectible {
     }
 
     @override
-    void fillDomainMap(DomainMapRegion map) {
+    void fillDataMaps(DomainMapRegion domainMap, LevelHeightMapRegion heightMap) {
 
         final List<List<B.Vector2>> polys = new List<List<B.Vector2>>.generate(segments.length, (int i) => new List<B.Vector2>(4));
 
@@ -311,7 +312,7 @@ class Curve extends LevelObject with Connectible {
         for (int i=0; i<segments.length; i++) {
             final CurveSegment seg = segments[i];
             final List<B.Vector2> worldPoly = polys[i];
-            final List<B.Vector2> poly = worldPoly.map((B.Vector2 v) => map.getLocalCoords(v.x, v.y)).toList();
+            final List<B.Vector2> poly = worldPoly.map((B.Vector2 v) => domainMap.getLocalCoords(v.x, v.y)).toList();
 
             final int top = Math.min(Math.min(poly[0].y, poly[1].y), Math.min(poly[2].y, poly[3].y)).floor();
             final int bottom = Math.max(Math.max(poly[0].y, poly[1].y), Math.max(poly[2].y, poly[3].y)).ceil();
@@ -349,7 +350,7 @@ class Curve extends LevelObject with Connectible {
 
                     for (int i=0; i<nodes; i+=2) {
                         for (int pixelX = nodeX[i]; pixelX<=nodeX[i+1]; pixelX++) {
-                            map.setVal(pixelX, y, seg.node.id);
+                            domainMap.setVal(pixelX, y, seg.node.id);
                         }
                     }
                 }

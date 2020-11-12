@@ -8,6 +8,7 @@ import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import "grid.dart";
+import 'levelheightmap.dart';
 import "levelobject.dart";
 import "pathnode.dart";
 
@@ -28,16 +29,19 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
     Rectangle<num> calculateBounds() => rectBounds(this, Grid.cellSize, Grid.cellSize);
 
     @override
-    void fillDomainMap(DomainMapRegion map) {
+    void fillDataMaps(DomainMapRegion domainMap, LevelHeightMapRegion heightMap) {
         B.Vector2 mWorld, local;
         const double size = Grid.cellSize * 0.5;
-        for (int my = 0; my < map.height; my++) {
-            for (int mx = 0; mx < map.width; mx++) {
-                mWorld = map.getWorldCoords(mx, my);
+        for (int my = 0; my < domainMap.height; my++) {
+            for (int mx = 0; mx < domainMap.width; mx++) {
+                mWorld = domainMap.getWorldCoords(mx, my);
                 local = this.getLocalPositionFromWorld(mWorld);
 
                 if (local.x >= -size && local.x < size && local.y >= -size && local.y < size) {
-                    map.setVal(mx, my, this.node.id);
+                    domainMap.setVal(mx, my, this.node.id);
+                    if (this.generateLevelHeightData) {
+                        heightMap.setVal(mx, my, this.zPosition);
+                    }
                 }
             }
         }

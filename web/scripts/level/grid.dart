@@ -10,6 +10,7 @@ import '../renderer/3d/models/gridmeshprovider.dart';
 import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
+import 'levelheightmap.dart';
 import "levelobject.dart";
 import "pathnode.dart";
 
@@ -144,6 +145,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
                     ..pathObject = this
                     ..validShortcut = true
                     ..position.setFrom(cell.getWorldPosition())
+                    ..zPosition = this.zPosition
                     ..blocked = cell.state == GridCellState.blocked;
 
                 _cellsFromNodes[node] = cell;
@@ -245,15 +247,18 @@ class Grid extends LevelObject with HasMatrix, Connectible {
     }
 
     @override
-    void fillDomainMap(DomainMapRegion map) {
+    void fillDataMaps(DomainMapRegion domainMap, LevelHeightMapRegion heightMap) {
         B.Vector2 mWorld, local;
-        for (int my = 0; my < map.height; my++) {
-            for (int mx = 0; mx < map.width; mx++) {
-                mWorld = map.getWorldCoords(mx, my);
+        for (int my = 0; my < domainMap.height; my++) {
+            for (int mx = 0; mx < domainMap.width; mx++) {
+                mWorld = domainMap.getWorldCoords(mx, my);
                 local = this.getLocalPositionFromWorld(mWorld);
                 final GridCell cell = getCellFromCoords(local.x, local.y);
                 if (cell != null && cell.node != null) {
-                    map.setVal(mx, my, cell.node.id);
+                    domainMap.setVal(mx, my, cell.node.id);
+                    if (this.generateLevelHeightData) {
+                        heightMap.setVal(mx, my, this.zPosition);
+                    }
                 }
             }
         }

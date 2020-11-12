@@ -28,7 +28,7 @@ class DebugGridMeshProvider extends GridMeshProvider {
         }
 
         mesh
-            ..position.setFromGameCoords(grid.position, 0)
+            ..position.setFromGameCoords(grid.position, grid.getModelZPosition())
             ..rotation.y = grid.rot_angle;
 
         return mesh;
@@ -78,7 +78,7 @@ class DebugEndCapMeshProvider extends EndCapMeshProvider {
             outline.addChild(arrow);
         }
 
-        outline.position.setFromGameCoords(cap.position, 0);
+        outline.position.setFromGameCoords(cap.position, cap.zPosition);
         return outline;
     }
 }
