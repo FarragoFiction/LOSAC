@@ -20,6 +20,7 @@ import 'renderer/3d/models/gridmeshprovider.dart';
 import "renderer/3d/renderer3d.dart";
 import "renderer/renderer.dart";
 import "utility/extensions.dart";
+import "utility/levelutils.dart";
 
 Future<void> main() async {
     print("LOSAC yo");
@@ -94,7 +95,7 @@ Future<void> main() async {
     ;
 
     testPath.addVertex(new CurveVertex()..position.set(50, 30)..rot_angle = -0.3..handle2 = 60);
-    testPath.addVertex(new CurveVertex()..position.set(220, 40)..rot_angle = 0.9..handle1 = 60..handle2 = 60);
+    testPath.addVertex(new CurveVertex()..position.set(220, 40)..zPosition = 100..rot_angle = 0.9..handle1 = 60..handle2 = 60);
     testPath.addVertex(new CurveVertex()..position.set(280, 180)..rot_angle = 0.5..handle1 = 50);
 
     testPath.updateConnectors();
@@ -201,9 +202,62 @@ Future<void> main() async {
 
     v = new B.Vector2(1,0).rotate(Math.pi * 0.5);
     print(v);
+
+    testInverseBilinear();
 }
 
 /*bool testCallback(String key, KeyEventType type, bool shift, bool control, bool alt) {
     print("key: $key, shift: $shift, type: $type");
     return false;
 }*/
+
+void testInverseBilinear() {
+    const int w = 80;
+    const int h = 80;
+
+    final CanvasElement testCanvas = new CanvasElement(width:w, height:h);
+    final CanvasRenderingContext2D ctx = testCanvas.context2D;
+
+    /*final B.Vector2 a = new B.Vector2(20,30);
+    final B.Vector2 b = new B.Vector2(350,90);
+    final B.Vector2 c = new B.Vector2(300,260);
+    final B.Vector2 d = new B.Vector2(60,380);*/
+
+
+    final B.Vector2 a = new B.Vector2(20,20);
+    final B.Vector2 b = new B.Vector2(40,20);
+    final B.Vector2 c = new B.Vector2(40,40);
+    final B.Vector2 d = new B.Vector2(20,40);
+
+    final ImageData idata = ctx.getImageData(0, 0, w, h);
+    int i;
+    B.Vector2 uv;
+    final B.Vector2 coord = B.Vector2.Zero();
+    for (int y=0; y<h;y++) {
+        for (int x=0;x<w;x++) {
+            i = (y * w + x) * 4;
+
+            coord.set(x, y);
+            uv = LevelUtils.inverseBilinear(coord,a,b,c,d);
+
+            int red = 0;
+            int green = 0;
+            int blue = 0;
+            int alpha = 0;
+
+            if (uv.x >= 0) {
+                red = (uv.x * 255).round();
+                green = (uv.y * 255).round();
+                alpha = 255;
+            }
+
+            idata.data[i] = red;
+            idata.data[i+1] = green;
+            idata.data[i+2] = blue;
+            idata.data[i+3] = alpha;
+        }
+    }
+    ctx.putImageData(idata, 0, 0);
+
+    document.body.append(testCanvas);
+}

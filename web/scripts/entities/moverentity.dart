@@ -17,7 +17,7 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     B.Vector2 velocity = B.Vector2.Zero();
     B.Vector2 previousPos = B.Vector2.Zero();
     double previousRot;
-    B.Vector2 drawPos = B.Vector2.Zero();
+    B.Vector2 drawPos;
     double drawRot;
 
     /// Used in calculateBounds to override the main [LevelObject] rotated bounds code
@@ -42,6 +42,7 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     void renderUpdate([num interpolation = 0]) {
         previousPos ??= position.clone();
         previousRot ??= rot_angle;
+        drawPos ??= position.clone();
 
         final double dx = this.position.x - previousPos.x;
         final double dy = this.position.y - previousPos.y;
@@ -55,6 +56,16 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
                 ..position.setFromGameCoords(drawPos, this.getModelZPosition())
                 ..rotation.y = drawRot;
         }
+    }
+
+    @override
+    double getModelZPosition() {
+        drawPos ??= position.clone();
+        double z = this.getWorldZPosition();
+        if (this.level != null) {
+            z += this.level.levelHeightMap.getSmoothVal(this.drawPos.x, this.drawPos.y);
+        }
+        return z;
     }
 
     /*@override

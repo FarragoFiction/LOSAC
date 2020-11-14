@@ -23,7 +23,7 @@ class DebugCurveMeshProvider extends CurveMeshProvider {
 
             for(int i=0; i<curve.segments.length; i++) {
                 final CurveSegment seg = curve.segments[i];
-                final B.Vector3 pos = new B.Vector3()..setFromGameCoords(seg.position, 0);
+                final B.Vector3 pos = new B.Vector3()..setFromGameCoords(seg.position, seg.zPosition);
 
                 final B.Vector3 offset = (new B.Vector3()..setFromGameCoords(seg.norm, 0)) * curve.width * seg.cornerMultiplier;
 

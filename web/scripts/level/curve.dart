@@ -8,6 +8,7 @@ import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import '../renderer/3d/models/curvemeshprovider.dart';
 import "../utility/extensions.dart";
+import "../utility/levelutils.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import 'levelheightmap.dart';
@@ -112,10 +113,10 @@ class Curve extends LevelObject with Connectible {
             for (int i = 1; i < vertices.length; i++) {
                 v2 = vertices[i];
 
-                final B.Vector2 v1pos = new B.Vector2(v1.position.x, v1.position.y);
-                final B.Vector2 v2pos = new B.Vector2(v2.position.x, v2.position.y);
-                final B.Vector2 o1 = v1.handle2pos + v1pos;
-                final B.Vector2 o2 = v2.handle1pos + v2pos;
+                final B.Vector3 v1pos = new B.Vector3(v1.position.x, v1.zPosition, v1.position.y);
+                final B.Vector3 v2pos = new B.Vector3(v2.position.x, v2.zPosition, v2.position.y);
+                final B.Vector3 o1 = v1.handle2pos + v1pos;
+                final B.Vector3 o2 = v2.handle1pos + v2pos;
 
                 final double maxlength = v1.handle2pos.length() + v2.handle1pos.length() + (o2-o1).length();
 
@@ -155,26 +156,27 @@ class Curve extends LevelObject with Connectible {
         return Math.sqrt(segs * segs * 0.6 + minSegments * minSegments).ceil();
     }
 
-    CurveSegment bezier(double fraction, B.Vector2 v1, B.Vector2 v1handle, B.Vector2 v2, B.Vector2 v2handle) {
+    CurveSegment bezier(double fraction, B.Vector3 v1, B.Vector3 v1handle, B.Vector3 v2, B.Vector3 v2handle) {
         final double t = fraction;
         final double nt = 1 - t;
 
-        final B.Vector2 b1 = v1 * nt*nt*nt;
-        final B.Vector2 b2 = v1handle * 3*nt*nt*t;
-        final B.Vector2 b3 = v2handle * 3*nt*t*t;
-        final B.Vector2 b4 = v2 * t*t*t;
+        final B.Vector3 b1 = v1 * nt*nt*nt;
+        final B.Vector3 b2 = v1handle * 3*nt*nt*t;
+        final B.Vector3 b3 = v2handle * 3*nt*t*t;
+        final B.Vector3 b4 = v2 * t*t*t;
 
-        final B.Vector2 point = b1+b2+b3+b4;
+        final B.Vector3 point = b1+b2+b3+b4;
 
-        final B.Vector2 p1 = v1 * -3*nt*nt;
-        final B.Vector2 p2 = v1handle * 3 * (1 - 4*t + 3*t*t);
-        final B.Vector2 p3 = v2handle * 3 * (2*t - 3*t*t);
-        final B.Vector2 p4 = v2 * 3*t*t;
+        final B.Vector3 p1 = v1 * -3*nt*nt;
+        final B.Vector3 p2 = v1handle * 3 * (1 - 4*t + 3*t*t);
+        final B.Vector3 p3 = v2handle * 3 * (2*t - 3*t*t);
+        final B.Vector3 p4 = v2 * 3*t*t;
 
-        B.Vector2 norm = (p1 + p2 + p3 + p4).normalize();
+        final B.Vector3 total = p1 + p2 + p3 + p4;
+        B.Vector2 norm = new B.Vector2(total.x,total.z).normalize();
         norm = new B.Vector2(-norm.y, norm.x);
 
-        return new CurveSegment()..position.setFrom(point)..norm = norm..parentObject=this;
+        return new CurveSegment()..position.set(point.x, point.z)..zPosition = point.y..norm = norm..parentObject=this;
     }
 
     @override
@@ -189,6 +191,7 @@ class Curve extends LevelObject with Connectible {
 
             final PathNode node = new PathNode()
                 ..position.setFrom(seg.getWorldPosition())
+                ..zPosition = seg.zPosition
                 ..pathObject = this;
             seg.node = node;
             nodes.add(node);
@@ -334,23 +337,49 @@ class Curve extends LevelObject with Connectible {
                         j = i;
                     }
 
-                    int i=0;
-                    while (i < nodes-1) {
-                        if (nodeX[i] > nodeX[i+1]) {
-                            final int swap = nodeX[i];
-                            nodeX[i] = nodeX[i+1];
-                            nodeX[i+1] = swap;
-                            if(i != 0) {
-                                i--;
+                    int k=0;
+                    while (k < nodes-1) {
+                        if (nodeX[k] > nodeX[k+1]) {
+                            final int swap = nodeX[k];
+                            nodeX[k] = nodeX[k+1];
+                            nodeX[k+1] = swap;
+                            if(k != 0) {
+                                k--;
                             }
                         } else {
-                            i++;
+                            k++;
                         }
                     }
 
-                    for (int i=0; i<nodes; i+=2) {
-                        for (int pixelX = nodeX[i]; pixelX<=nodeX[i+1]; pixelX++) {
+                    for (int l=0; l<nodes; l+=2) {
+                        for (int pixelX = nodeX[l]; pixelX<=nodeX[l+1]; pixelX++) {
                             domainMap.setVal(pixelX, y, seg.node.id);
+
+                            if (this.generateLevelHeightData) {
+                                final B.Vector2 uv = LevelUtils.inverseBilinear(new B.Vector2(pixelX,y), poly[1], poly[0], poly[3], poly[2]);
+                                if (uv.y >= 0) { // make sure the UV isn't broken by coord weirdness
+                                    double height = segments[i].zPosition;
+                                    if (i == 0) {
+                                        // first segment, thin, just interpolate up
+                                        final double s = uv.y * 0.5;
+                                        height = (segments[i+1].zPosition * s) + (segments[i].zPosition * (1 - s));
+                                    } else if (i == segments.length-1) {
+                                        // last segment, thin, just interpolate down
+                                        final double s = 0.5 - uv.y * 0.5;
+                                        height = (segments[i-1].zPosition * s) + (segments[i].zPosition * (1 - s));
+                                    } else {
+                                        // all the other segments, interpolate both ways
+                                        if (uv.y < 0.5) {
+                                            final double s = 0.5 - uv.y;
+                                            height = (segments[i - 1].zPosition * s) + (segments[i].zPosition * (1 - s));
+                                        } else if (uv.y > 0.5) {
+                                            final double s = uv.y - 0.5;
+                                            height = (segments[i + 1].zPosition * s) + (segments[i].zPosition * (1 - s));
+                                        }
+                                    }
+                                    heightMap.setVal(pixelX, y, height);
+                                }
+                            }
                         }
                     }
                 }
@@ -367,10 +396,11 @@ class CurveSegment extends LevelObject {
 }
 
 class CurveVertex extends LevelObject with HasMatrix {
+    double slope = 0.0;
     double _handle1 = 10.0;
     double _handle2 = 10.0;
-    B.Vector2 _handle1pos;
-    B.Vector2 _handle2pos;
+    B.Vector3 _handle1pos;
+    B.Vector3 _handle2pos;
 
     double get handle1 => _handle1;
     set handle1(double val) {
@@ -392,12 +422,16 @@ class CurveVertex extends LevelObject with HasMatrix {
         _handle2pos = null;
     }
 
-    B.Vector2 get handle1pos {
-        _handle1pos ??= new B.Vector2(-handle1,0).applyMatrix(matrix);
+    B.Vector3 get handle1pos {
+        final double z = Math.tan(this.slope) * handle1;
+        final B.Vector2 xy = new B.Vector2(-handle1,0)..applyMatrixInPlace(matrix);
+        _handle1pos ??= new B.Vector3(xy.x, -z, xy.y);
         return _handle1pos;
     }
-    B.Vector2 get handle2pos {
-        _handle2pos ??= new B.Vector2(handle2,0)..applyMatrixInPlace(matrix);
+    B.Vector3 get handle2pos {
+        final double z = Math.tan(this.slope) * handle2;
+        final B.Vector2 xy = new B.Vector2(handle2,0)..applyMatrixInPlace(matrix);
+        _handle2pos ??= new B.Vector3(xy.x, z, xy.y);
         return _handle2pos;
     }
 
