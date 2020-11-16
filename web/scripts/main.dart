@@ -135,8 +135,8 @@ Future<void> main() async {
 
     testLevel.buildDataMaps();
     //testLevel.domainMap.updateDebugCanvas();
-    testLevel.levelHeightMap.updateDebugCanvas();
-    document.body.append(testLevel.levelHeightMap.debugCanvas);
+    //testLevel.levelHeightMap.updateDebugCanvas();
+    //document.body.append(testLevel.levelHeightMap.debugCanvas);
 
     await pathfinder.transferDomainMap(testLevel);
     await pathfinder.recalculatePathData(testLevel);
@@ -178,8 +178,7 @@ Future<void> main() async {
         game.addEntity(tower);
     }
 
-    final Rectangle<num> lb = testLevel.bounds;
-    renderer.moveTo((lb.left + lb.right)*0.5, (lb.top + lb.bottom)*0.5);
+    renderer.centreOnObject(testLevel);
 
     //game.spawnEnemy(testEnemyType, testSpawner1);
     int n = 0;
@@ -192,18 +191,6 @@ Future<void> main() async {
     });
 
     //game.input.listen("A", testCallback, allowRepeats: false);
-
-    B.Vector2 v = new B.Vector2(1,0);
-    print("(1,0): ${v.angle}");
-    v = new B.Vector2(1,1);
-    print("(1,1): ${v.angle}");
-    v = new B.Vector2(0,1);
-    print("(0,1): ${v.angle}");
-
-    v = new B.Vector2(1,0).rotate(Math.pi * 0.5);
-    print(v);
-
-    testInverseBilinear();
 }
 
 /*bool testCallback(String key, KeyEventType type, bool shift, bool control, bool alt) {

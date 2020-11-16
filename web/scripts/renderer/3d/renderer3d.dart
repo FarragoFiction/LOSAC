@@ -4,8 +4,9 @@ import "dart:math" as Math;
 import "package:CubeLib/CubeLib.dart" as B;
 import "package:js/js.dart" as JS;
 
-import "../../engine/entity.dart";
+import "../../level/level.dart";
 import '../../level/levelobject.dart';
+import "../../utility/extensions.dart";
 import "../renderer.dart";
 import 'models/meshprovider.dart';
 import 'renderable3d.dart';
@@ -15,7 +16,7 @@ class Renderer3D extends Renderer {
 
     B.Engine babylon;
     B.Scene scene;
-    B.Camera camera;
+    B.ArcRotateCamera camera;
 
     Set<Renderable3D> renderList = <Renderable3D>{};
 
@@ -35,7 +36,8 @@ class Renderer3D extends Renderer {
 
         this.camera = new B.ArcRotateCamera("Camera", Math.pi/2, 0, 1000, new B.Vector3(0,0,0), scene)
             ..maxZ = 5000.0
-            ..attachControl(canvas, true);
+            ..allowUpsideDown = false
+        ;
 
         this.scene.addLight(new B.DirectionalLight("sun", new B.Vector3(1,-5,1), scene));
 
@@ -86,7 +88,20 @@ class Renderer3D extends Renderer {
 
     @override
     void click(MouseEvent e) {
-        // TODO: implement click
+        final B.Ray ray = scene.createPickingRay(scene.pointerX, scene.pointerY, B.Matrix.Identity(), camera);
+
+        // pick models first
+        final B.PickingInfo pick = scene.pickWithRay(ray);
+
+        if (pick.hit) {
+            print("mesh:");
+            print(pick.pickedMesh);
+
+            final MeshInfo info = pick.pickedMesh?.metadata;
+
+            final B.Vector2 worldPos = pick.pickedPoint.toGameCoords();
+            this.engine.click(new Point<num>(worldPos.x,worldPos.y), info?.owner);
+        }
     }
 
     @override
@@ -101,19 +116,24 @@ class Renderer3D extends Renderer {
     }
 
     @override
-    void onMouseDown(MouseEvent e) {
-        // TODO: implement onMouseDown
+    void centreOnObject(Object object) {
+        if (object is LevelObject) {
+            final Math.Rectangle<num> bounds = object.bounds;
+            this.moveTo((bounds.left + bounds.right)*0.5, (bounds.top + bounds.bottom)*0.5);
+        } else if (object is Level) {
+            final Math.Rectangle<num> bounds = object.bounds;
+            this.moveTo((bounds.left + bounds.right)*0.5, (bounds.top + bounds.bottom)*0.5);
+        }
     }
 
     @override
-    void onMouseMove(MouseEvent e) {
-        // TODO: implement onMouseMove
-    }
+    void onMouseDown(MouseEvent e) {}
 
     @override
-    void onMouseUp(MouseEvent e) {
-        // TODO: implement onMouseUp
-    }
+    void onMouseMove(MouseEvent e) {}
+
+    @override
+    void onMouseUp(MouseEvent e) {}
 
     @override
     void onMouseWheel(WheelEvent e) {
@@ -124,4 +144,8 @@ class Renderer3D extends Renderer {
     void destroy() {
         this.babylon.dispose();
     }
+}
+
+class MeshInfo {
+    SimpleLevelObject owner;
 }

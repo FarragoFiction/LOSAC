@@ -6,6 +6,7 @@ import "../entities/tower.dart";
 import "../level/endcap.dart";
 import "../level/grid.dart";
 import "../level/level.dart";
+import '../level/levelobject.dart';
 import "../level/pathnode.dart";
 import "../renderer/renderer.dart";
 import "../utility/extensions.dart";
@@ -51,10 +52,10 @@ class Game extends Engine {
     }
 
     @override
-    Future<void> click(Point<num> worldPos) async {
+    Future<void> click(Point<num> worldPos, SimpleLevelObject clickedObject) async {
         final PathNode node = level.getNodeFromPos(worldPos);
 
-        print("click! $worldPos $node");
+        print("click! $worldPos $node $clickedObject");
 
         if (node != null) {
             final PathNodeObject pathObj = node.pathObject;

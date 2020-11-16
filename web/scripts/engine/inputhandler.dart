@@ -1,5 +1,9 @@
 import "dart:html";
 
+import "package:CubeLib/CubeLib.dart" as B;
+import "package:js/js.dart" as JS;
+
+import "../renderer/3d/renderer3d.dart";
 import "engine.dart";
 
 enum ModifierKeyState {
@@ -15,103 +19,92 @@ enum KeyEventType {
     keyUp
 }
 
-class InputHandler {
+abstract class InputHandler {
     Engine engine;
 
     static const double dragDistance = 3;
-    static const double _dragDistanceSquared = dragDistance * dragDistance;
+    static const double dragDistanceSquared = dragDistance * dragDistance;
 
-    final Map<String, String> _codeToName = <String, String>{};
+    final Map<String, String> codeToName = <String, String>{};
     //final Map<String, String> _nameToCode = <String, String>{};
-    final Map<String, bool> _keyStates = <String, bool>{};
+    final Map<String, bool> keyStates = <String, bool>{};
 
-    final Set<_KeyPressCallbackHandler> _keyCallbacks = <_KeyPressCallbackHandler>{};
+    final Set<KeyPressCallbackHandler> keyCallbacks = <KeyPressCallbackHandler>{};
 
-    final Map<int, bool> _mouseStates = <int, bool>{};
-    Point<num> _mousePosPrev;
-    bool _dragging = false;
+    final Map<int, bool> mouseStates = <int, bool>{};
+    Point<num> mousePosPrev;
+    bool dragging = false;
 
-    bool get dragging => _dragging;
-
-    InputHandler(Engine this.engine) {
-        engine.container.onMouseDown.listen(_onMouseDown);
-        window.onMouseUp.listen(_onMouseUp);
-        window.onMouseMove.listen(_onMouseMove);
-        engine.container.onMouseWheel.listen(_onMouseWheel);
-
-        window.onKeyDown.listen(_onKeyDown);
-        window.onKeyUp.listen(_onKeyUp);
-    }
-
+    InputHandler(Engine this.engine);
 
     KeyCallbackToken listen(String key, KeyPressCallback callback, {bool allowRepeats = true, ModifierKeyState shift = ModifierKeyState.any, ModifierKeyState control = ModifierKeyState.unpressed, ModifierKeyState alt = ModifierKeyState.unpressed}) {
         final bool anyKey = key == null;
-        final _KeyPressCallbackHandler cb = new _KeyPressCallbackHandler(callback, key: key, anyKey: anyKey, allowsRepeats: allowRepeats, shift: shift, control: control, alt: alt);
-        this._keyCallbacks.add(cb);
+        final KeyPressCallbackHandler cb = new KeyPressCallbackHandler(callback, key: key, anyKey: anyKey, allowsRepeats: allowRepeats, shift: shift, control: control, alt: alt);
+        this.keyCallbacks.add(cb);
         return new KeyCallbackToken(this, cb);
     }
 
     KeyCallbackToken listenMultiple(Iterable<String> keys, KeyPressCallback callback, {bool allowRepeats = true, ModifierKeyState shift = ModifierKeyState.any, ModifierKeyState control = ModifierKeyState.unpressed, ModifierKeyState alt = ModifierKeyState.unpressed}) {
         final bool anyKey = keys == null;
-        final _KeyPressCallbackHandler cb = new _KeyPressCallbackHandler(callback, keys: keys, anyKey: anyKey, allowsRepeats: allowRepeats, shift: shift, control: control, alt: alt);
-        this._keyCallbacks.add(cb);
+        final KeyPressCallbackHandler cb = new KeyPressCallbackHandler(callback, keys: keys, anyKey: anyKey, allowsRepeats: allowRepeats, shift: shift, control: control, alt: alt);
+        this.keyCallbacks.add(cb);
         return new KeyCallbackToken(this, cb);
     }
 
     bool getKeyState(String code) {
-        if (_keyStates.containsKey(code)) {
-            return _keyStates[code];
+        if (keyStates.containsKey(code)) {
+            return keyStates[code];
         }
         return false;
     }
 
     bool getMouseState(int button) {
-        if (_mouseStates.containsKey(button)) {
-            return _mouseStates[button];
+        if (mouseStates.containsKey(button)) {
+            return mouseStates[button];
         }
         return false;
     }
 
     String _getKeyName(String code) {
-        if (!_codeToName.containsKey(code)) {
+        if (!codeToName.containsKey(code)) {
             if (code.startsWith("Key")) {
                 final String key = code.substring(3,4);
-                _codeToName[code] = key;
+                codeToName[code] = key;
                 //_nameToCode[key] = code;
             } else if (code.startsWith("Digit")) {
                 final String key = code.substring(5,6);
-                _codeToName[code] = key;
+                codeToName[code] = key;
                 //_nameToCode[key] = code;
-                _codeToName["Numpad$key"] = key;
+                codeToName["Numpad$key"] = key;
             } else if (code.startsWith("Numpad")) {
                 final String key = code.substring(6,7);
-                _codeToName[code] = key;
+                codeToName[code] = key;
                 //_nameToCode[key] = code;
-                _codeToName["Digit$key"] = key;
+                codeToName["Digit$key"] = key;
             } else {
-                _codeToName[code] = code;
+                codeToName[code] = code;
                 //_nameToCode[code] = code;
             }
         }
-        return _codeToName[code];
+        return codeToName[code];
     }
-    
+
     // #######################################################################################
     // Handlers
     // #######################################################################################
 
     void _onMouseDown(MouseEvent e) {
-        _mouseStates[e.button] = true;
+        mouseStates[e.button] = true;
         if (e.button == 0) {
-            _mousePosPrev = e.page;
+            mousePosPrev = e.page;
         }
         this.engine.renderer.onMouseDown(e);
     }
     void _onMouseUp(MouseEvent e) {
-        _mouseStates[e.button] = false;
+        mouseStates[e.button] = false;
         if (e.button == 0) {
-            if (_dragging) {
-                _dragging = false;
+            if (dragging) {
+                dragging = false;
             } else {
                 _click(e);
             }
@@ -121,21 +114,21 @@ class InputHandler {
         this.engine.renderer.onMouseUp(e);
     }
     void _onMouseMove(MouseEvent e) {
-        _mousePosPrev ??= e.page;
-        final Point<num> diff = e.page - _mousePosPrev;
+        mousePosPrev ??= e.page;
+        final Point<num> diff = e.page - mousePosPrev;
 
 
         if (getMouseState(0)) {
-            if (!_dragging) {
+            if (!dragging) {
                 final num len = diff.x * diff.x + diff.y * diff.y;
 
-                if (len >= _dragDistanceSquared) {
-                    _dragging = true;
+                if (len >= InputHandler.dragDistanceSquared) {
+                    dragging = true;
                 }
             }
 
-            if (_dragging) {
-                _mousePosPrev = e.page;
+            if (dragging) {
+                mousePosPrev = e.page;
                 _drag(e, diff);
             }
         }
@@ -160,7 +153,7 @@ class InputHandler {
         final String code = _getKeyName(e.code);
         final bool repeat = getKeyState(code) == true;
 
-        _keyStates[code] = true;
+        keyStates[code] = true;
 
         _processKeyEvent(e, repeat);
     }
@@ -170,7 +163,7 @@ class InputHandler {
 
         final String code = _getKeyName(e.code);
 
-        _keyStates[code] = false;
+        keyStates[code] = false;
 
         _processKeyEvent(e, false);
     }
@@ -189,7 +182,7 @@ class InputHandler {
 
         bool preventDefault = false;
 
-        for (final _KeyPressCallbackHandler cbh in _keyCallbacks) {
+        for (final KeyPressCallbackHandler cbh in keyCallbacks) {
             if (repeat && !cbh.allowsRepeats) { continue; }
             if (!cbh.anyKey && !cbh.triggerKeys.contains(key)) { continue; }
             if (!(cbh.shift == ModifierKeyState.any || (e.shiftKey && cbh.shift == ModifierKeyState.pressed) || ((!e.shiftKey) && cbh.shift == ModifierKeyState.unpressed))) { continue; }
@@ -206,9 +199,47 @@ class InputHandler {
     }
 }
 
+class InputHandler2D extends InputHandler {
+    InputHandler2D(Engine engine) : super(engine) {
+        engine.container.onMouseDown.listen(_onMouseDown);
+        window.onMouseUp.listen(_onMouseUp);
+        window.onMouseMove.listen(_onMouseMove);
+        engine.container.onMouseWheel.listen(_onMouseWheel);
+
+        window.onKeyDown.listen(_onKeyDown);
+        window.onKeyUp.listen(_onKeyUp);
+    }
+}
+
+class InputHandler3D extends InputHandler {
+    Renderer3D get renderer => this.engine.renderer;
+
+    InputHandler3D(Engine engine) : super(engine) {
+        renderer.scene.onKeyboardObservable.add(JS.allowInterop((B.KeyboardInfo info, B.EventState state) {
+            if (info.type == B.KeyboardEventTypes.KEYDOWN) {
+                this._onKeyDown(info.event);
+            } else if (info.type == B.KeyboardEventTypes.KEYUP) {
+                this._onKeyUp(info.event);
+            }
+        }));
+
+        renderer.scene.onPointerObservable.add(JS.allowInterop((B.PointerInfo info, B.EventState state) {
+            if (info.type == B.PointerEventTypes.POINTERDOWN) {
+                this._onMouseDown(info.event);
+            } else if (info.type == B.PointerEventTypes.POINTERUP) {
+                this._onMouseUp(info.event);
+            } else if (info.type == B.PointerEventTypes.POINTERMOVE) {
+                this._onMouseMove(info.event);
+            } else if (info.type == B.PointerEventTypes.POINTERWHEEL) {
+                this._onMouseWheel(info.event);
+            }
+        }));
+    }
+}
+
 typedef KeyPressCallback = bool Function(String key, KeyEventType type, bool shift, bool control, bool alt);
 
-class _KeyPressCallbackHandler {
+class KeyPressCallbackHandler {
     final ModifierKeyState shift;
     final ModifierKeyState control;
     final ModifierKeyState alt;
@@ -221,7 +252,7 @@ class _KeyPressCallbackHandler {
 
     KeyCallbackToken token;
 
-    _KeyPressCallbackHandler(KeyPressCallback this.callback, {String key, Iterable<String> keys, bool this.anyKey = false, bool this.allowsRepeats = true, ModifierKeyState this.shift = ModifierKeyState.any, ModifierKeyState this.control = ModifierKeyState.unpressed, ModifierKeyState this.alt = ModifierKeyState.unpressed}) {
+    KeyPressCallbackHandler(KeyPressCallback this.callback, {String key, Iterable<String> keys, bool this.anyKey = false, bool this.allowsRepeats = true, ModifierKeyState this.shift = ModifierKeyState.any, ModifierKeyState this.control = ModifierKeyState.unpressed, ModifierKeyState this.alt = ModifierKeyState.unpressed}) {
         if (!anyKey) {
             if (key == null && keys == null) {
                 throw ArgumentError("Invalid KeyPressCallback, must specify key or keys or have anyKey set true");
@@ -237,14 +268,14 @@ class _KeyPressCallbackHandler {
 }
 
 class KeyCallbackToken {
-    final _KeyPressCallbackHandler _callback;
+    final KeyPressCallbackHandler _callback;
     final InputHandler _handler;
 
     KeyEvent lastEvent;
 
-    KeyCallbackToken(InputHandler this._handler, _KeyPressCallbackHandler this._callback) {
+    KeyCallbackToken(InputHandler this._handler, KeyPressCallbackHandler this._callback) {
         _callback.token = this;
     }
 
-    void cancel() => _handler._keyCallbacks.remove(_callback);
+    void cancel() => _handler.keyCallbacks.remove(_callback);
 }

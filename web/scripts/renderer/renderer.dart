@@ -29,6 +29,7 @@ abstract class Renderer {
     void click(MouseEvent e);
 
     void moveTo(num x, num y);
+    void centreOnObject(Object object);
 
     void destroy();
 }

@@ -58,4 +58,8 @@ extension Vector3Extras on B.Vector3 {
     void setFromGameCoords(B.Vector2 loc, double height) {
         this.set(-loc.x, height, loc.y);
     }
+
+    B.Vector2 toGameCoords() {
+        return new B.Vector2(-x,z);
+    }
 }

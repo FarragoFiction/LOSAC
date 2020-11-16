@@ -1,6 +1,7 @@
 import "dart:html";
 
 import "../level/level.dart";
+import '../level/levelobject.dart';
 import "../pathfinder/pathfinder.dart";
 import "../renderer/renderer.dart";
 import "entity.dart";
@@ -33,7 +34,7 @@ abstract class Engine {
 
     Engine(Renderer this.renderer) {
         renderer.engine = this;
-        this.input = new InputHandler(this);
+        this.input = new InputHandler3D(this);
     }
 
     void start() {
@@ -120,6 +121,6 @@ abstract class Engine {
 
     //input
 
-    Future<void> click(Point<num> worldPos);
+    Future<void> click(Point<num> worldPos, SimpleLevelObject clickedObject);
 
 }
