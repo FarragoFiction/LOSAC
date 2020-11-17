@@ -33,6 +33,7 @@ abstract class InputHandler {
 
     final Map<int, bool> mouseStates = <int, bool>{};
     Point<num> mousePosPrev;
+    int dragButton; // null means no button, only drag one at a time
     bool dragging = false;
 
     InputHandler(Engine this.engine);
@@ -95,19 +96,19 @@ abstract class InputHandler {
 
     void _onMouseDown(MouseEvent e) {
         mouseStates[e.button] = true;
-        if (e.button == 0) {
+        if (dragButton == null) {
+            dragButton = e.button;
             mousePosPrev = e.page;
         }
         this.engine.renderer.onMouseDown(e);
     }
     void _onMouseUp(MouseEvent e) {
+        //print("up ${e.button}");
         mouseStates[e.button] = false;
-        if (e.button == 0) {
-            if (dragging) {
-                dragging = false;
-            } else {
-                _click(e);
-            }
+        if (dragging){// && e.button == dragButton) {
+            //print("undrag $dragButton");
+            dragButton = null;
+            dragging = false;
         } else {
             _click(e);
         }
@@ -117,20 +118,18 @@ abstract class InputHandler {
         mousePosPrev ??= e.page;
         final Point<num> diff = e.page - mousePosPrev;
 
+        if (!dragging && dragButton != null && mouseStates[dragButton]) {
+            final num len = diff.x * diff.x + diff.y * diff.y;
 
-        if (getMouseState(0)) {
-            if (!dragging) {
-                final num len = diff.x * diff.x + diff.y * diff.y;
-
-                if (len >= InputHandler.dragDistanceSquared) {
-                    dragging = true;
-                }
+            if (len >= InputHandler.dragDistanceSquared) {
+                //print("start drag $dragButton");
+                dragging = true;
             }
+        }
 
-            if (dragging) {
-                mousePosPrev = e.page;
-                _drag(e, diff);
-            }
+        if (dragging) {
+            mousePosPrev = e.page;
+            _drag(e, diff);
         }
 
         this.engine.renderer.onMouseMove(e);
@@ -140,10 +139,10 @@ abstract class InputHandler {
     }
 
     void _click(MouseEvent e) {
-        this.engine.renderer.click(e);
+        this.engine.renderer.click(e.button, e);
     }
     void _drag(MouseEvent e, Point<num> offset) {
-        this.engine.renderer.drag(e, offset);
+        this.engine.renderer.drag(dragButton, offset, e);
     }
 
     void _onKeyDown(KeyboardEvent e) {

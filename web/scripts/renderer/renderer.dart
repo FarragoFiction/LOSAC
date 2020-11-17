@@ -25,8 +25,8 @@ abstract class Renderer {
     void onMouseUp(MouseEvent e);
     void onMouseMove(MouseEvent e);
     void onMouseWheel(WheelEvent e);
-    void drag(MouseEvent e, Point<num> offset);
-    void click(MouseEvent e);
+    void drag(int button, Point<num> offset, MouseEvent e);
+    void click(int button, MouseEvent e);
 
     void moveTo(num x, num y);
     void centreOnObject(Object object);

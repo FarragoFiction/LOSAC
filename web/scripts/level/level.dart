@@ -1,4 +1,5 @@
 import "dart:html";
+import "dart:math" as Math;
 
 import "../renderer/2d/bounds.dart";
 import "connectible.dart";
@@ -19,6 +20,7 @@ class Level {
 
     DomainMap domainMap;
     LevelHeightMap levelHeightMap;
+    LevelHeightMap cameraHeightMap;
     Rectangle<num> bounds;
 
     Level() {
@@ -79,14 +81,20 @@ class Level {
         domainMap = new DomainMap(bounds.left, bounds.top, bounds.width, bounds.height);
         levelHeightMap = new LevelHeightMap(bounds.left, bounds.top, bounds.width, bounds.height);
 
+        final double diameter = Math.sqrt(bounds.width * bounds.width + bounds.height * bounds.height);
+        cameraHeightMap = new LevelHeightMap(bounds.left + (bounds.width * 0.5) - (diameter * 0.5), bounds.top + (bounds.height * 0.5) - (diameter * 0.5), diameter, diameter);
+
         for (final Connectible object in connectibles) {
             final Rectangle<num> bounds = object.bounds;
 
             final DomainMapRegion domainRegion = domainMap.subRegionForBounds(bounds);
-            final LevelHeightMapRegion heightRegion = levelHeightMap.subRegionForBounds(bounds);
+            final LevelHeightMapRegion heightRegion = cameraHeightMap.subRegionForBounds(bounds);
 
             object.fillDataMaps(domainRegion, heightRegion);
         }
+
+        levelHeightMap.copyDataFrom(cameraHeightMap);
+        cameraHeightMap.smoothCameraHeights();
     }
 
     PathNode getNodeFromPos(Point<num> pos) {

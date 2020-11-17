@@ -55,7 +55,7 @@ Future<void> main() async {
 
     final Grid testGrid = new Grid(6, 10)
         ..position.set(500,400)
-        ..zPosition = 50
+        //..zPosition = 50
         ..rot_angle = 0.1
         ..meshProvider = gridMeshProvider;
 
@@ -95,7 +95,9 @@ Future<void> main() async {
     ;
 
     testPath.addVertex(new CurveVertex()..position.set(50, 30)..rot_angle = -0.3..handle2 = 60);
-    testPath.addVertex(new CurveVertex()..position.set(220, 40)..zPosition = 100..rot_angle = 0.9..handle1 = 60..handle2 = 60);
+    testPath.addVertex(new CurveVertex()..position.set(220, 40)
+        //..zPosition = 100
+        ..rot_angle = 0.9..handle1 = 60..handle2 = 60);
     testPath.addVertex(new CurveVertex()..position.set(280, 180)..rot_angle = 0.5..handle1 = 50);
 
     testPath.updateConnectors();
@@ -133,10 +135,22 @@ Future<void> main() async {
     // send node data, evaluate connectivity
     await pathfinder.transferNodeData(testLevel);
 
+    final Renderer3D r3d = renderer;
+
     testLevel.buildDataMaps();
-    //testLevel.domainMap.updateDebugCanvas();
-    //testLevel.levelHeightMap.updateDebugCanvas();
-    //document.body.append(testLevel.levelHeightMap.debugCanvas);
+
+    testLevel.domainMap.updateDebugCanvas();
+    document.body.append(testLevel.domainMap.debugCanvas);
+    //r3d.createDataMapDebugModel(testLevel.domainMap);
+
+    testLevel.levelHeightMap.updateDebugCanvas();
+    document.body.append(testLevel.levelHeightMap.debugCanvas);
+    //r3d.createDataMapDebugModel(testLevel.levelHeightMap);
+
+    testLevel.cameraHeightMap.updateDebugCanvas();
+    document.body.append(testLevel.cameraHeightMap.debugCanvas);
+    r3d.createDataMapDebugModel(testLevel.cameraHeightMap);
+
 
     await pathfinder.transferDomainMap(testLevel);
     await pathfinder.recalculatePathData(testLevel);
@@ -179,6 +193,7 @@ Future<void> main() async {
     }
 
     renderer.centreOnObject(testLevel);
+    r3d.initCameraBounds(testLevel);
 
     //game.spawnEnemy(testEnemyType, testSpawner1);
     int n = 0;

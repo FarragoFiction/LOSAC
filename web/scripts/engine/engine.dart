@@ -79,6 +79,7 @@ abstract class Engine {
         framesThisSecond++;*/
 
         //currentFrame = window.requestAnimationFrame(mainLoop);
+
     }
 
     void logicUpdate([num dt = 0]) {

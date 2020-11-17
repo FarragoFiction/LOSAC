@@ -6,12 +6,13 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "datamap.dart";
 
 class LevelHeightMap extends DataMap<double, Float32List> {
-    factory LevelHeightMap(num x, num y, num levelWidth, num levelHeight) {
-        final int pos_x = (x - DataMap.cellSize * DataMap.cellBuffer).floor();
-        final int pos_y = (y - DataMap.cellSize * DataMap.cellBuffer).floor();
-        final int width = (levelWidth/DataMap.cellSize).ceil() + DataMap.cellBuffer * 2;
-        final int height = (levelHeight/DataMap.cellSize).ceil() + DataMap.cellBuffer * 2;
+    factory LevelHeightMap(num x, num y, num levelWidth, num levelHeight, [int buffer = DataMap.cellBuffer]) {
+        final int pos_x = (x - (x % DataMap.cellSize) - DataMap.cellSize * buffer).floor();
+        final int pos_y = (y - (y % DataMap.cellSize) - DataMap.cellSize * buffer).floor();
+        final int width = (levelWidth/DataMap.cellSize).ceil() + buffer * 2;
+        final int height = (levelHeight/DataMap.cellSize).ceil() + buffer * 2;
         final Float32List array = new Float32List(width*height);
+        for (int i=0; i<array.length; i++) { array[i] = 50.0; }
         return new LevelHeightMap.fromData(pos_x, pos_y, width, height, array);
     }
 
@@ -89,6 +90,10 @@ class LevelHeightMap extends DataMap<double, Float32List> {
 
         return (tl * rx + tr * ix) * ry + (bl * rx + br * ix) * iy;
         //return smooth.x * 100;
+    }
+
+    void smoothCameraHeights() {
+
     }
 }
 

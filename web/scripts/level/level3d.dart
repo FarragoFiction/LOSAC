@@ -9,7 +9,6 @@ import "pathnode.dart";
 
 class Level3D extends Level with Renderable3D {
 
-
     /*@override
     void drawUIToCanvas(CanvasRenderingContext2D ctx, double scaleFactor) {
         for (final LevelObject o in objects) {
