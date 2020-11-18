@@ -14,6 +14,7 @@ import "level/endcap.dart";
 import "level/grid.dart";
 import "level/level.dart";
 import "level/level3d.dart";
+import "level/terrain.dart";
 import "pathfinder/pathfinder.dart";
 import 'renderer/3d/models/curvemeshprovider.dart';
 import 'renderer/3d/models/gridmeshprovider.dart';
@@ -38,6 +39,10 @@ Future<void> main() async {
     final Pathfinder pathfinder = new Pathfinder();
     final Level testLevel = new Level3D();
 
+    final Terrain terrain = new Terrain();
+    renderer.addRenderable(terrain);
+    testLevel.terrain = terrain;
+
     // basic object test
 
     /*final LevelObject testObject = new LevelObject()..pos_x = 250..pos_y = 250..rot_angle = 0.5..scale=8.0;
@@ -55,8 +60,9 @@ Future<void> main() async {
 
     final Grid testGrid = new Grid(6, 10)
         ..position.set(500,400)
-        //..zPosition = 50
+        ..zPosition = 50
         ..rot_angle = 0.1
+        ..generateLevelHeightData = false
         ..meshProvider = gridMeshProvider;
 
     List<GridCell> cells = testGrid.getCells(0, 4, 1, 5);
@@ -96,7 +102,7 @@ Future<void> main() async {
 
     testPath.addVertex(new CurveVertex()..position.set(50, 30)..rot_angle = -0.3..handle2 = 60);
     testPath.addVertex(new CurveVertex()..position.set(220, 40)
-        //..zPosition = 100
+        ..zPosition = 100
         ..rot_angle = 0.9..handle1 = 60..handle2 = 60);
     testPath.addVertex(new CurveVertex()..position.set(280, 180)..rot_angle = 0.5..handle1 = 50);
 
@@ -139,17 +145,17 @@ Future<void> main() async {
 
     testLevel.buildDataMaps();
 
-    testLevel.domainMap.updateDebugCanvas();
-    document.body.append(testLevel.domainMap.debugCanvas);
+    //testLevel.domainMap.updateDebugCanvas();
+    //document.body.append(testLevel.domainMap.debugCanvas);
     //r3d.createDataMapDebugModel(testLevel.domainMap);
 
-    testLevel.levelHeightMap.updateDebugCanvas();
-    document.body.append(testLevel.levelHeightMap.debugCanvas);
+    //testLevel.levelHeightMap.updateDebugCanvas();
+    //document.body.append(testLevel.levelHeightMap.debugCanvas);
     //r3d.createDataMapDebugModel(testLevel.levelHeightMap);
 
     testLevel.cameraHeightMap.updateDebugCanvas();
     document.body.append(testLevel.cameraHeightMap.debugCanvas);
-    r3d.createDataMapDebugModel(testLevel.cameraHeightMap);
+    //r3d.createDataMapDebugModel(testLevel.cameraHeightMap);
 
 
     await pathfinder.transferDomainMap(testLevel);

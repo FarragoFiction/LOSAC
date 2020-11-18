@@ -64,6 +64,7 @@ abstract class DataMap<Data, Array extends List<Data>> {
     }
 
     B.Vector2 getLocalCoords(num x, num y) => new B.Vector2(((x - pos_x) / cellSize).floor(), ((y - pos_y) / cellSize).floor());
+    B.Vector2 getRawLocalCoords(num x, num y) => new B.Vector2(((x - pos_x) / cellSize), ((y - pos_y) / cellSize));
 
     DataMapRegion<Data,Array> subRegion(int x, int y, int w, int h);
     DataMapRegion<Data,Array> subRegionForBounds(Rectangle<num> bounds) {
@@ -189,6 +190,10 @@ class DataMapRegion<Data, Array extends List<Data>> {
 
     B.Vector2 getLocalCoords(double x, double y) {
         final B.Vector2 mapLocal = map.getLocalCoords(x, y);
+        return new B.Vector2(mapLocal.x - ox, mapLocal.y - oy);
+    }
+    B.Vector2 getRawLocalCoords(double x, double y) {
+        final B.Vector2 mapLocal = map.getRawLocalCoords(x, y);
         return new B.Vector2(mapLocal.x - ox, mapLocal.y - oy);
     }
 }

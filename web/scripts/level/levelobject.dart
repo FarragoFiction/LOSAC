@@ -24,12 +24,19 @@ class SimpleLevelObject with Renderable3D {
         } else {
             this.mesh = this.renderer.defaultMeshProvider.provide(this);
         }
+        this.updateMeshPosition();
     }
 
     @override
     double getModelZPosition() => zPosition;
 
     Level get level => this.renderer?.engine?.level;
+
+    void updateMeshPosition({B.Vector2 position, double height}) {
+        position ??= this.position;
+        height ??= this.getModelZPosition();
+        this.mesh?.position?.setFromGameCoords(position, height);
+    }
 }
 
 class LevelObject extends SimpleLevelObject {
@@ -180,11 +187,11 @@ class LevelObject extends SimpleLevelObject {
         }
     }
 
+    Rectangle<num> calculateBounds() => rectBounds(this, 10,10);
+
     @override
-    void generateMesh() {
-        super.generateMesh();
+    void updateMeshPosition({B.Vector2 position, double height}) {
+        super.updateMeshPosition(position: position, height: height);
         this.mesh?.rotation?.y = this.rot_angle;
     }
-
-    Rectangle<num> calculateBounds() => rectBounds(this, 10,10);
 }

@@ -167,7 +167,7 @@ class Renderer3D extends Renderer {
     void setCameraLocation(num x, num y) {
         camPos.set(x, y);
         if (this.engine?.level?.levelHeightMap != null) {
-            final double z = this.engine.level.levelHeightMap.getSmoothVal(x, y);
+            final double z = this.engine.level.cameraHeightMap.getSmoothVal(x, y);
             camera.target.set(-x, z, y);
         } else {
             camera.target.set(-x, 0, y);
@@ -196,7 +196,7 @@ class Renderer3D extends Renderer {
 
     @override
     void onMouseWheel(WheelEvent e) {
-        // TODO: implement onMouseWheel
+        this.camera.radius += e.deltaY;
     }
 
     @override

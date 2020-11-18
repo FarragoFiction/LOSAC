@@ -9,6 +9,7 @@ import "../renderer/2d/matrix.dart";
 import '../renderer/3d/models/gridmeshprovider.dart';
 import "../utility/extensions.dart";
 import "connectible.dart";
+import 'datamap.dart';
 import "domainmap.dart";
 import 'levelheightmap.dart';
 import "levelobject.dart";

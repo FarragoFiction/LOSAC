@@ -1,9 +1,12 @@
+import "dart:collection";
 import "dart:html";
 import 'dart:typed_data';
 
 import "package:CubeLib/CubeLib.dart" as B;
 
+import "../utility/extensions.dart";
 import "datamap.dart";
+import "terrain.dart";
 
 class LevelHeightMap extends DataMap<double, Float32List> {
     factory LevelHeightMap(num x, num y, num levelWidth, num levelHeight, [int buffer = DataMap.cellBuffer]) {
@@ -12,7 +15,7 @@ class LevelHeightMap extends DataMap<double, Float32List> {
         final int width = (levelWidth/DataMap.cellSize).ceil() + buffer * 2;
         final int height = (levelHeight/DataMap.cellSize).ceil() + buffer * 2;
         final Float32List array = new Float32List(width*height);
-        for (int i=0; i<array.length; i++) { array[i] = 50.0; }
+        //for (int i=0; i<array.length; i++) { array[i] = 50.0; } // debug fill
         return new LevelHeightMap.fromData(pos_x, pos_y, width, height, array);
     }
 
@@ -93,7 +96,93 @@ class LevelHeightMap extends DataMap<double, Float32List> {
     }
 
     void smoothCameraHeights() {
+        const double diagonalFactor = 1.415; // slightly more than root 2 by design
+        const double threshold = 5;
 
+        final Queue<Point<int>> open = new Queue<Point<int>>();
+
+        for(int y=0; y<height; y++) {
+            for (int x=0; x<width; x++) {
+                open.add(new Point<int>(x,y));
+
+                while (open.isNotEmpty) {
+                    final Point<int> p = open.removeFirst();
+
+                    final bool l = p.x > 0;
+                    final bool r = p.x < width - 1;
+                    final bool u = p.y > 0;
+                    final bool d = p.y < height - 1;
+
+                    final int id = p.y * width + p.x;
+                    final double orthogonal = array[id] - threshold;
+                    final double diagonal = array[id] - threshold * 1.4;
+
+                    if (l) {
+                        if (array[id-1] < orthogonal) {
+                            open.add(new Point<int>(p.x-1,p.y));
+                            array[id-1] = orthogonal;
+                        }
+
+                        if (u) {
+                            if (array[(id-1)-width] < diagonal) {
+                                open.add(new Point<int>(p.x-1,p.y-1));
+                                array[(id-1)-width] = diagonal;
+                            }
+                        }
+                        if (d) {
+                            if (array[(id-1)+width] < diagonal) {
+                                open.add(new Point<int>(p.x-1,p.y+1));
+                                array[(id-1)+width] = diagonal;
+                            }
+                        }
+                    }
+
+                    if (r) {
+                        if (array[id+1] < orthogonal) {
+                            open.add(new Point<int>(p.x+1,p.y));
+                            array[id+1] = orthogonal;
+                        }
+
+                        if (u) {
+                            if (array[(id+1)-width] < diagonal) {
+                                open.add(new Point<int>(p.x+1,p.y-1));
+                                array[(id+1)-width] = diagonal;
+                            }
+                        }
+                        if (d) {
+                            if (array[(id+1)+width] < diagonal) {
+                                open.add(new Point<int>(p.x+1,p.y+1));
+                                array[(id+1)+width] = diagonal;
+                            }
+                        }
+                    }
+
+                    if (u) {
+                        if (array[id-width] < orthogonal) {
+                            open.add(new Point<int>(p.x,p.y-1));
+                            array[id-width] = orthogonal;
+                        }
+                    }
+                    if (d) {
+                        if (array[id+width] < orthogonal) {
+                            open.add(new Point<int>(p.x,p.y+1));
+                            array[id+width] = orthogonal;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void processTerrain(Terrain terrain) {
+        for (int y=0; y<height; y++) {
+            for (int x=0; x<width; x++) {
+                final int id = y * width + x;
+                final B.Vector2 world = this.getWorldCoords(x, y);
+                final B.Vector3 render = B.Vector3.Zero()..setFromGameCoords(world, 0);
+                this.array[id] = terrain.groundMesh.getHeightAtCoordinates(render.x, render.z);
+            }
+        }
     }
 }
 

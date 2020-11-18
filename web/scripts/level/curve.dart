@@ -315,7 +315,7 @@ class Curve extends LevelObject with Connectible {
         for (int i=0; i<segments.length; i++) {
             final CurveSegment seg = segments[i];
             final List<B.Vector2> worldPoly = polys[i];
-            final List<B.Vector2> poly = worldPoly.map((B.Vector2 v) => domainMap.getLocalCoords(v.x, v.y)).toList();
+            final List<B.Vector2> poly = worldPoly.map((B.Vector2 v) => domainMap.getRawLocalCoords(v.x, v.y)).toList();
 
             final int top = Math.min(Math.min(poly[0].y, poly[1].y), Math.min(poly[2].y, poly[3].y)).floor();
             final int bottom = Math.max(Math.max(poly[0].y, poly[1].y), Math.max(poly[2].y, poly[3].y)).ceil();

@@ -27,9 +27,10 @@ class DebugGridMeshProvider extends GridMeshProvider {
             }
         }
 
-        mesh
+        /*mesh
             ..position.setFromGameCoords(grid.position, grid.getModelZPosition())
-            ..rotation.y = grid.rot_angle;
+            ..rotation.y = grid.rot_angle;*/
+        //grid.updateMeshPosition();
 
         return mesh;
     }

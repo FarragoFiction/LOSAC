@@ -7,6 +7,7 @@ import "domainmap.dart";
 import "levelheightmap.dart";
 import "levelobject.dart";
 import "pathnode.dart";
+import "terrain.dart";
 
 class Level {
 
@@ -22,6 +23,8 @@ class Level {
     LevelHeightMap levelHeightMap;
     LevelHeightMap cameraHeightMap;
     Rectangle<num> bounds;
+
+    Terrain terrain;
 
     Level() {
         connectibles = objects.whereType();
@@ -83,6 +86,10 @@ class Level {
 
         final double diameter = Math.sqrt(bounds.width * bounds.width + bounds.height * bounds.height);
         cameraHeightMap = new LevelHeightMap(bounds.left + (bounds.width * 0.5) - (diameter * 0.5), bounds.top + (bounds.height * 0.5) - (diameter * 0.5), diameter, diameter);
+
+        if (this.terrain != null) {
+            cameraHeightMap.processTerrain(terrain);
+        }
 
         for (final Connectible object in connectibles) {
             final Rectangle<num> bounds = object.bounds;

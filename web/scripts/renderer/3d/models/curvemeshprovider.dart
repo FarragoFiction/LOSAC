@@ -45,9 +45,10 @@ class DebugCurveMeshProvider extends CurveMeshProvider {
                 points: right
             )));
 
-            mesh
+            /*mesh
                 ..position.setFromGameCoords(curve.position, curve.getModelZPosition())
-                ..rotation.y = curve.rot_angle;
+                ..rotation.y = curve.rot_angle;*/
+            //curve.updateMeshPosition();
 
             return mesh;
         }
