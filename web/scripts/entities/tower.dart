@@ -8,6 +8,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "../engine/entity.dart";
 import "../engine/game.dart";
 import "../engine/spatialhash.dart";
+import "../level/grid.dart";
 import "../level/levelobject.dart";
 import "../renderer/2d/matrix.dart";
 import "../utility/towerutils.dart";
@@ -31,6 +32,8 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
     double prevTurretAngle = 0;
     double targetAngle = 0;
     double turretDrawAngle = 0;
+
+    GridCell gridCell;
 
     Tower(TowerType this.towerType);
 
@@ -306,5 +309,14 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
             ctx.fillStyle = "black";
             ctx.fillRect(-4, -4, 8, 8);
         }
+    }
+
+    @override
+    double getZPosition() {
+        double z = this.zPosition;
+        if (this.gridCell != null) {
+            z += this.gridCell.getZPosition();
+        }
+        return z;
     }
 }

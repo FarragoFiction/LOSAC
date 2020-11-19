@@ -115,7 +115,7 @@ class LevelHeightMap extends DataMap<double, Float32List> {
 
                     final int id = p.y * width + p.x;
                     final double orthogonal = array[id] - threshold;
-                    final double diagonal = array[id] - threshold * 1.4;
+                    final double diagonal = array[id] - threshold * diagonalFactor;
 
                     if (l) {
                         if (array[id-1] < orthogonal) {

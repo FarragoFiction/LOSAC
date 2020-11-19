@@ -116,7 +116,7 @@ abstract class Connector extends LevelObject {
         final B.Vector2 finalPos = this.getLocalPositionFromWorld(movePos) + this.parentObject.position + this.position;
         final double finalAngle = this.parentObject.rot_angle + angleOffset;
 
-        final double targetHeight = target.getWorldZPosition();
+        final double targetHeight = target.getZPosition();
 
         this.parentObject.rot_angle = finalAngle;
         this.parentObject.position.setFrom(finalPos);

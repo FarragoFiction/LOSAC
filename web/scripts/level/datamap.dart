@@ -1,9 +1,6 @@
 import "dart:html";
 import "dart:math" as Math;
-import "dart:typed_data";
 
-import "package:CommonLib/Colours.dart";
-import "package:CommonLib/Random.dart";
 import "package:CubeLib/CubeLib.dart" as B;
 
 abstract class DataMap<Data, Array extends List<Data>> {

@@ -16,8 +16,6 @@ class MeshProvider<T extends SimpleLevelObject> {
         final B.AbstractMesh mesh = B.MeshBuilder.CreateBox(getMeshName(owner), new B.MeshBuilderCreateBoxOptions(size: 10));
         mesh.metadata = new MeshInfo()..owner = owner;
         mesh.material = this.renderer.defaultMaterial;
-        //mesh.position.setFromGameCoords(owner.position, owner.getModelZPosition());
-        //owner.updateMeshPosition();
         return mesh;
     }
 }

@@ -32,8 +32,8 @@ class DebugCurveMeshProvider extends CurveMeshProvider {
 
                 mesh.addChild(B.LinesBuilder.CreateLines("segment", new B.LinesBuilderCreateLinesOptions(
                     points: <B.Vector3> [
-                        new B.Vector3(pos.x + offset.x, seg.node.getModelZPosition(), pos.z + offset.z),
-                        new B.Vector3(pos.x - offset.x, seg.node.getModelZPosition(), pos.z - offset.z),
+                        new B.Vector3(pos.x + offset.x, seg.node.getZPosition(), pos.z + offset.z),
+                        new B.Vector3(pos.x - offset.x, seg.node.getZPosition(), pos.z - offset.z),
                     ])
                 ));
             }
@@ -44,11 +44,6 @@ class DebugCurveMeshProvider extends CurveMeshProvider {
             mesh.addChild(B.LinesBuilder.CreateLines("cell", new B.LinesBuilderCreateLinesOptions(
                 points: right
             )));
-
-            /*mesh
-                ..position.setFromGameCoords(curve.position, curve.getModelZPosition())
-                ..rotation.y = curve.rot_angle;*/
-            //curve.updateMeshPosition();
 
             return mesh;
         }

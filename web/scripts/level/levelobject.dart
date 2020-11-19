@@ -27,14 +27,13 @@ class SimpleLevelObject with Renderable3D {
         this.updateMeshPosition();
     }
 
-    @override
-    double getModelZPosition() => zPosition;
-
     Level get level => this.renderer?.engine?.level;
+
+    double getZPosition() => this.zPosition;
 
     void updateMeshPosition({B.Vector2 position, double height}) {
         position ??= this.position;
-        height ??= this.getModelZPosition();
+        height ??= this.getZPosition();
         this.mesh?.position?.setFromGameCoords(position, height);
     }
 }
@@ -159,16 +158,14 @@ class LevelObject extends SimpleLevelObject {
         return angle - parentRot;
     }
 
-    double getWorldZPosition() {
+    @override
+    double getZPosition() {
         double z = this.zPosition;
         if (this.parentObject != null) {
-            z += this.parentObject.getWorldZPosition();
+            z += this.parentObject.getZPosition();
         }
         return z;
     }
-
-    @override
-    double getModelZPosition() => getWorldZPosition();
 
     void makeBoundsDirty() {
         this.dirtyBounds = true;

@@ -6,10 +6,8 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "../entities/tower.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
-import '../renderer/3d/models/gridmeshprovider.dart';
 import "../utility/extensions.dart";
 import "connectible.dart";
-import 'datamap.dart';
 import "domainmap.dart";
 import 'levelheightmap.dart';
 import "levelobject.dart";
@@ -271,6 +269,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
         final B.Vector2 worldCoords = cell.getWorldPosition();
         final double rot = cell.getWorldRotation();
         tower
+            ..gridCell = cell
             ..position.setFrom(worldCoords)
             ..rot_angle = rot
             ..turretAngle = rot

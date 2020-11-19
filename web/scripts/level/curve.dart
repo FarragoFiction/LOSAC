@@ -6,7 +6,6 @@ import "package:CubeLib/CubeLib.dart" as B;
 
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
-import '../renderer/3d/models/curvemeshprovider.dart';
 import "../utility/extensions.dart";
 import "../utility/levelutils.dart";
 import "connectible.dart";

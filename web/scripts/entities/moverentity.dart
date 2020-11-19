@@ -63,9 +63,9 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     }
 
     @override
-    double getModelZPosition() {
+    double getZPosition() {
         drawPos ??= position.clone();
-        double z = this.getWorldZPosition();
+        double z = this.zPosition;
         if (this.level != null) {
             z += this.level.levelHeightMap.getSmoothVal(this.drawPos.x, this.drawPos.y);
         }

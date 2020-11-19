@@ -17,8 +17,8 @@ mixin Entity on LevelObject {
     }
 
     @override
-    double getModelZPosition() {
-        double z = super.getModelZPosition();
+    double getZPosition() {
+        double z = super.getZPosition();
         if (this.level != null) {
             z += this.level.levelHeightMap.getSmoothVal(this.position.x, this.position.y);
         }

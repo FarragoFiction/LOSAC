@@ -136,6 +136,7 @@ abstract class InputHandler {
     }
     void _onMouseWheel(WheelEvent e) {
         this.engine.renderer.onMouseWheel(e);
+        e.preventDefault();
     }
 
     void _click(MouseEvent e) {
