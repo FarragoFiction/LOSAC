@@ -107,13 +107,13 @@ abstract class InputHandler {
     void _onMouseUp(MouseEvent e) {
         //print("up ${e.button}");
         mouseStates[e.button] = false;
-        if (dragging){// && e.button == dragButton) {
+        if (dragging){
             //print("undrag $dragButton");
-            dragButton = null;
             dragging = false;
         } else {
             _click(e);
         }
+        dragButton = null;
         this.engine.renderer.onMouseUp(e);
     }
     void _onMouseMove(MouseEvent e) {
