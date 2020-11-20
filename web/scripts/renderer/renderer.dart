@@ -1,7 +1,7 @@
 import "dart:html";
 
 import "../engine/engine.dart";
-import "../engine/entity.dart";
+import "../level/selectable.dart";
 
 typedef RenderLoopFunction = void Function(double frameTime);
 
@@ -27,6 +27,8 @@ abstract class Renderer {
     void onMouseWheel(WheelEvent e);
     void drag(int button, Point<num> offset, MouseEvent e);
     void click(int button, MouseEvent e);
+
+    Selectable getSelectableAtScreenPos([int x, int y]);
 
     void moveTo(num x, num y);
     void centreOnObject(Object object);

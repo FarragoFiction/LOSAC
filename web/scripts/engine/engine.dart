@@ -2,6 +2,7 @@ import "dart:html";
 
 import "../level/level.dart";
 import '../level/levelobject.dart';
+import '../level/selectable.dart';
 import "../pathfinder/pathfinder.dart";
 import "../renderer/renderer.dart";
 import "entity.dart";
@@ -22,11 +23,16 @@ abstract class Engine {
 
     double logicStep = 1000 / 20;
     static const int maxLogicStepsPerFrame = 250;
+    int selectionUpdateSteps = 0;
+    int stepsPerSelectionUpdate = 4;
 
     double fps = 60;
     int framesThisSecond = 0;
     num lastFpsUpdate = 0;
     Element fpsElement;
+
+    Selectable selected;
+    Selectable hovering;
 
     Pathfinder pathfinder;
 
@@ -100,6 +106,11 @@ abstract class Engine {
             }
             return false;
         });
+        /*selectionUpdateSteps++;
+        if (selectionUpdateSteps >= stepsPerSelectionUpdate) {
+            this.input.updateMouseOver();
+            selectionUpdateSteps = 0;
+        }*/
     }
 
     void graphicsUpdate([num interpolation = 0]) {
@@ -107,6 +118,11 @@ abstract class Engine {
             o.renderUpdate(interpolation);
         }
         renderer.draw(interpolation);
+        selectionUpdateSteps++;
+        if (selectionUpdateSteps >= stepsPerSelectionUpdate) {
+            this.hovering = renderer.getSelectableAtScreenPos();
+            selectionUpdateSteps = 0;
+        }
     }
 
     void addEntity(Entity entity) {

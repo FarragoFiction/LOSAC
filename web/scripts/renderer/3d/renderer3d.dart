@@ -6,12 +6,16 @@ import "package:js/js.dart" as JS;
 import "package:js/js_util.dart" as JsUtil;
 
 import "../../level/datamap.dart";
+import "../../level/grid.dart";
 import "../../level/level.dart";
 import '../../level/levelobject.dart';
+import '../../level/selectable.dart';
 import "../../utility/extensions.dart";
 import "../renderer.dart";
 import 'models/meshprovider.dart';
 import 'renderable3d.dart';
+
+typedef PickerPredicate = bool Function(B.AbstractMesh mesh);
 
 class Renderer3D extends Renderer {
     static const double _rotationRate = 0.01;
@@ -31,10 +35,22 @@ class Renderer3D extends Renderer {
     B.Material defaultMaterial;
     MeshProvider<SimpleLevelObject> defaultMeshProvider;
 
+    B.Mesh selectionIndicator;
+    PickerPredicate pickerPredicateInterop;
+    PickerPredicate gridPickerPredicateInterop;
+
     Renderer3D(CanvasElement this.canvas) {
         this.babylon = new B.Engine(this.canvas, false);
-        this.scene = new B.Scene(this.babylon);
+        this.scene = new B.Scene(this.babylon);//..constantlyUpdateMeshUnderPointer = true;
         this.container = this.canvas;
+
+        this.pickerPredicateInterop = JS.allowInterop(this.pickerPredicate);
+        this.gridPickerPredicateInterop = JS.allowInterop(this.gridPickerPredicate);
+
+        this.selectionIndicator = B.PlaneBuilder.CreatePlane("selection", B.PlaneBuilderCreatePlaneOptions(size:1))
+            ..rotation.x = Math.pi * 0.5
+            ..isVisible = false;
+        this.scene.addMesh(selectionIndicator);
 
         this.canvas.onContextMenu.listen((MouseEvent event) {
             event.preventDefault();
@@ -83,7 +99,20 @@ class Renderer3D extends Renderer {
 
     @override
     void draw([double interpolation = 0]) {
+        this.updateSelectionIndicator(interpolation);
         this.scene.render();
+    }
+
+    void updateSelectionIndicator(double interpolation) {
+        final Selectable hover = this.engine.hovering;
+        if (hover == null) {
+            this.selectionIndicator.isVisible = false;
+        } else {
+            this.selectionIndicator.isVisible = true;
+            this.selectionIndicator.position.setFromGameCoords(hover.getModelPosition(), hover.getZPosition() + 3.0);
+            this.selectionIndicator.rotation.y = hover.getModelRotation();
+            this.selectionIndicator.scaling.setAll(20);
+        }
     }
 
     @override
@@ -117,20 +146,12 @@ class Renderer3D extends Renderer {
 
     @override
     void click(int button, MouseEvent e) {
-        final B.Ray ray = scene.createPickingRay(scene.pointerX, scene.pointerY, B.Matrix.Identity(), camera);
+        final B.AbstractMesh picked = scene.meshUnderPointer;
 
-        // pick models first
-        final B.PickingInfo pick = scene.pickWithRay(ray);
-
-        if (pick.hit) {
-            print("mesh:");
-            print(pick.pickedMesh);
-
-            final MeshInfo info = pick.pickedMesh?.metadata;
-
-            final B.Vector2 worldPos = pick.pickedPoint.toGameCoords();
-            this.engine.click(new Point<num>(worldPos.x,worldPos.y), info?.owner);
+        if (picked != null) {
+            print(picked?.metadata?.owner);
         }
+
     }
 
     @override
@@ -232,6 +253,48 @@ class Renderer3D extends Renderer {
         ;
 
         scene.addMesh(plane);
+    }
+
+    @override
+    Selectable getSelectableAtScreenPos([int x, int y]) {
+        x ??= this.scene.pointerX;
+        y ??= this.scene.pointerY;
+
+        final B.Ray ray = scene.createPickingRay(x, y, null, camera);
+        final B.PickingInfo pick = scene.pickWithRay(ray, pickerPredicateInterop, true);
+
+        if (pick.pickedMesh == null) {
+            final B.PickingInfo gridPick = scene.pickWithRay(ray, gridPickerPredicateInterop, true);
+            if (gridPick.pickedMesh == null) {
+                return null;
+            } else if (gridPick.pickedMesh?.metadata?.owner is Grid) {
+                final Grid grid = gridPick.pickedMesh.metadata.owner;
+                return grid.getSelectable(gridPick.pickedPoint.toGameCoords());
+            }
+        } else if (pick.pickedMesh?.metadata?.owner is Selectable) {
+            final Selectable selectable = pick.pickedMesh.metadata.owner;
+            return selectable.getSelectable(pick.pickedPoint.toGameCoords());
+        }
+
+        return null;
+    }
+
+    bool pickerPredicate(B.AbstractMesh mesh) {
+
+        return mesh.isPickable &&
+            mesh.isVisible &&
+            mesh.isReady() &&
+            mesh.isEnabled() &&
+            (mesh?.metadata?.owner is Selectable) &&
+            !(mesh?.metadata?.owner is Grid);
+    }
+
+    bool gridPickerPredicate(B.AbstractMesh mesh) {
+        return mesh.isPickable &&
+            !mesh.isVisible &&
+            mesh.isReady() &&
+            mesh.isEnabled() &&
+            (mesh?.metadata?.owner is Grid);
     }
 }
 

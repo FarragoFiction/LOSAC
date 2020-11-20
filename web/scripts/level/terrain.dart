@@ -19,7 +19,7 @@ class Terrain extends SimpleLevelObject {
             minHeight: 0,
             maxHeight: 200,
             subdivisions: 512
-        ));
+        ))..isPickable = false;
 
         this.mesh.material = new B.StandardMaterial("terrain", renderer.scene)
             ..diffuseColor.set(0.25, 0.25, 0.25)

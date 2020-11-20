@@ -10,13 +10,14 @@ import "../engine/game.dart";
 import "../engine/spatialhash.dart";
 import "../level/grid.dart";
 import "../level/levelobject.dart";
+import "../level/selectable.dart";
 import "../renderer/2d/matrix.dart";
 import "../utility/towerutils.dart";
 import "enemy.dart";
 import "projectiles/projectile.dart";
 import "towertype.dart";
 
-class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
+class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, Selectable {
     final TowerType towerType;
 
     final Set<Enemy> targets = <Enemy>{};
@@ -34,6 +35,9 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower> {
     double turretDrawAngle = 0;
 
     GridCell gridCell;
+
+    @override
+    bool get selectable => true;
 
     Tower(TowerType this.towerType);
 

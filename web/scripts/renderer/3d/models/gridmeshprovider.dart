@@ -10,6 +10,23 @@ import "meshprovider.dart";
 
 abstract class GridMeshProvider extends MeshProvider<Grid> {
     GridMeshProvider(Renderer3D renderer) : super(renderer);
+
+    @override
+    B.AbstractMesh provide(Grid grid) {
+        final B.Mesh mesh = new B.Mesh(getMeshName(grid))..isPickable = false;
+
+        final B.Mesh pickPlane = B.PlaneBuilder.CreatePlane("pickPlane", new B.PlaneBuilderCreatePlaneOptions(
+            width: grid.xSize * Grid.cellSize,
+            height: grid.ySize * Grid.cellSize,
+        ))
+            ..rotation.x = Math.pi * 0.5
+            ..metadata = (new MeshInfo()..owner = grid)
+            ..isVisible = false
+        ;
+        mesh.addChild(pickPlane);
+
+        return mesh;
+    }
 }
 
 class DebugGridMeshProvider extends GridMeshProvider {
@@ -18,7 +35,7 @@ class DebugGridMeshProvider extends GridMeshProvider {
 
     @override
     B.AbstractMesh provide(Grid grid) {
-        final B.Mesh mesh = new B.Mesh(getMeshName(grid));
+        final B.Mesh mesh = super.provide(grid);
 
         for (final GridCell g in grid.cells) {
             if (g.state != GridCellState.hole) {
@@ -39,10 +56,11 @@ class DebugGridMeshProvider extends GridMeshProvider {
                 new B.Vector3( n,0,-n),
                 new B.Vector3(-n,0,-n),
             ]
-        ));
+        ))..isPickable = false;
     }
 }
 
+// ignore this lint
 class EndCapMeshProvider extends MeshProvider<EndCap> {
     EndCapMeshProvider(Renderer3D renderer) : super(renderer);
 }
@@ -64,7 +82,7 @@ class DebugEndCapMeshProvider extends EndCapMeshProvider {
                     new B.Vector3(size * 0.5,0, size),
                     new B.Vector3(size * 0.5,0,-size),
                 ]
-            ));
+            ))..isPickable = false;
 
             if (cap is ExitObject) {
                 arrow.rotation.y = Math.pi;

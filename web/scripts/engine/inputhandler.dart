@@ -3,6 +3,8 @@ import "dart:html";
 import "package:CubeLib/CubeLib.dart" as B;
 import "package:js/js.dart" as JS;
 
+import "../level/grid.dart";
+import "../level/selectable.dart";
 import "../renderer/3d/renderer3d.dart";
 import "engine.dart";
 
@@ -199,7 +201,7 @@ abstract class InputHandler {
     }
 }
 
-class InputHandler2D extends InputHandler {
+/*class InputHandler2D extends InputHandler {
     InputHandler2D(Engine engine) : super(engine) {
         engine.container.onMouseDown.listen(_onMouseDown);
         window.onMouseUp.listen(_onMouseUp);
@@ -209,10 +211,11 @@ class InputHandler2D extends InputHandler {
         window.onKeyDown.listen(_onKeyDown);
         window.onKeyUp.listen(_onKeyUp);
     }
-}
+}*/
 
 class InputHandler3D extends InputHandler {
     Renderer3D get renderer => this.engine.renderer;
+
 
     InputHandler3D(Engine engine) : super(engine) {
         renderer.scene.onKeyboardObservable.add(JS.allowInterop((B.KeyboardInfo info, B.EventState state) {

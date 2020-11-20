@@ -7,11 +7,12 @@ import "../engine/spatialhash.dart";
 import "../entities/targetmoverentity.dart";
 import "../level/endcap.dart";
 import "../level/pathnode.dart";
+import "../level/selectable.dart";
 import "../utility/extensions.dart";
 import "enemytype.dart";
 import "terraincollider.dart";
 
-class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollider {
+class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollider, Selectable {
 
     SpawnerObject originSpawner;
 
@@ -29,6 +30,9 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
         }
         return _progressToExit;
     }
+
+    @override
+    bool get selectable => true;
 
     final EnemyType enemyType;
 

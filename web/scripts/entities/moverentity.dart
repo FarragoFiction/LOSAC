@@ -137,4 +137,9 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
             this.mesh.rotation..x = roll..z = pitch;
         }
     }
+
+    @override
+    B.Vector2 getModelPosition() => drawPos;
+    @override
+    num getModelRotation() => drawRot;
 }

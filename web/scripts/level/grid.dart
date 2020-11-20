@@ -3,6 +3,7 @@ import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
 
+import "../engine/game.dart";
 import "../entities/tower.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
@@ -12,6 +13,7 @@ import "domainmap.dart";
 import 'levelheightmap.dart';
 import "levelobject.dart";
 import "pathnode.dart";
+import "selectable.dart";
 
 enum GridCellState {
     hole,
@@ -19,7 +21,7 @@ enum GridCellState {
     blocked
 }
 
-class Grid extends LevelObject with HasMatrix, Connectible {
+class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
     static const num cellSize = 50;
 
     final int xSize;
@@ -263,6 +265,19 @@ class Grid extends LevelObject with HasMatrix, Connectible {
         }
     }
 
+    @override
+    Selectable getSelectable(B.Vector2 loc) {
+        if (!(this.renderer.engine is Game)) {
+            return this;
+        }
+        final B.Vector2 local = this.getLocalPositionFromWorld(loc);
+        final GridCell cell = getCellFromCoords(local.x, local.y);
+        if (cell.state == GridCellState.hole) {
+            return null;
+        }
+        return cell;
+    }
+
     void placeTower(int x, int y, Tower tower) {
         final GridCell cell = getCell(x, y);
         if (cell == null) { throw Exception("invalid cell $x,$y"); }
@@ -277,7 +292,7 @@ class Grid extends LevelObject with HasMatrix, Connectible {
     }
 }
 
-class GridCell extends LevelObject {
+class GridCell extends LevelObject with Selectable {
     final Grid grid;
     GridCellState state = GridCellState.clear;
 

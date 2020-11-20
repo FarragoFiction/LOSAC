@@ -57,7 +57,7 @@ class Game extends Engine {
 
         print("click! $worldPos $node $clickedObject");
 
-        if (node != null) {
+        /*if (node != null) {
             final PathNodeObject pathObj = node.pathObject;
             print(pathObj);
 
@@ -75,7 +75,7 @@ class Game extends Engine {
                     print("NOPE");
                 }
             }
-        }
+        }*/
     }
 
     Future<bool> placementCheck(PathNode node) async {

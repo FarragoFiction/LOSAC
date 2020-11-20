@@ -16,6 +16,8 @@ class SimpleLevelObject with Renderable3D {
     double zPosition = 0;
 
     MeshProvider<dynamic> meshProvider;
+    
+    B.ActionManager testManager;
 
     @override
     void generateMesh() {
@@ -24,13 +26,17 @@ class SimpleLevelObject with Renderable3D {
         } else {
             this.mesh = this.renderer.defaultMeshProvider.provide(this);
         }
+
         this.updateMeshPosition();
     }
 
     Level get level => this.renderer?.engine?.level;
 
+    B.Vector2 getModelPosition() => this.position;
+    num getModelRotation() => 0;
     double getZPosition() => this.zPosition;
 
+    @override
     void updateMeshPosition({B.Vector2 position, double height}) {
         position ??= this.position;
         height ??= this.getZPosition();
@@ -134,6 +140,8 @@ class LevelObject extends SimpleLevelObject {
 
         return pos;
     }
+    @override
+    B.Vector2 getModelPosition() => getWorldPosition();
 
     B.Vector2 getLocalPositionFromWorld(B.Vector2 pos) {
         final B.Vector2 worldPos = this.getWorldPosition();
@@ -151,6 +159,8 @@ class LevelObject extends SimpleLevelObject {
 
         return rot;
     }
+    @override
+    num getModelRotation() => getWorldRotation();
 
     num getLocalRotationFromWorld(num angle) {
         final num parentRot = getWorldRotation() - this.rot_angle;
