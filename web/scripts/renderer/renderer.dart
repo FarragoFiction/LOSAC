@@ -19,6 +19,7 @@ abstract class Renderer {
     }
     void removeRenderable(Object object) {}
 
+    void initUiEventHandlers() {}
     void runRenderLoop(RenderLoopFunction loop);
 
     void onMouseDown(MouseEvent e);
@@ -28,10 +29,17 @@ abstract class Renderer {
     void drag(int button, Point<num> offset, MouseEvent e);
     void click(int button, MouseEvent e);
 
-    Selectable getSelectableAtScreenPos([int x, int y]);
+    SelectionInfo getSelectableAtScreenPos([int x, int y]);
 
     void moveTo(num x, num y);
     void centreOnObject(Object object);
 
     void destroy();
+}
+
+class SelectionInfo {
+    final Selectable selectable;
+    final Point<num> world;
+
+    SelectionInfo(Selectable this.selectable, Point<num> this.world);
 }

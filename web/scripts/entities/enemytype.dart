@@ -1,6 +1,9 @@
 import "dart:html";
 
 class EnemyType {
+    /// Localisation string identifier
+    /// Will resolve patterns such as "enemy.(this value).name"
+    String name = "default";
 
     double health = 100;
     double speed = 25;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import "dart:html";
 import "dart:math" as Math;
 
@@ -5,6 +6,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "package:js/js.dart" as JS;
 import "package:js/js_util.dart" as JsUtil;
 
+import '../../engine/engine.dart';
 import "../../level/datamap.dart";
 import "../../level/grid.dart";
 import "../../level/level.dart";
@@ -35,17 +37,28 @@ class Renderer3D extends Renderer {
     B.Material defaultMaterial;
     MeshProvider<SimpleLevelObject> defaultMeshProvider;
 
+    B.Mesh hoverIndicator;
     B.Mesh selectionIndicator;
     PickerPredicate pickerPredicateInterop;
     PickerPredicate gridPickerPredicateInterop;
 
+    StreamSubscription<Event> resizeHandler;
+
     Renderer3D(CanvasElement this.canvas) {
         this.babylon = new B.Engine(this.canvas, false);
+        this.canvas.draggable = false;
+        this.updateCanvasSize();
+
         this.scene = new B.Scene(this.babylon);//..constantlyUpdateMeshUnderPointer = true;
         this.container = this.canvas;
 
         this.pickerPredicateInterop = JS.allowInterop(this.pickerPredicate);
         this.gridPickerPredicateInterop = JS.allowInterop(this.gridPickerPredicate);
+
+        this.hoverIndicator = B.PlaneBuilder.CreatePlane("hover", B.PlaneBuilderCreatePlaneOptions(size:1))
+            ..rotation.x = Math.pi * 0.5
+            ..isVisible = false;
+        this.scene.addMesh(hoverIndicator);
 
         this.selectionIndicator = B.PlaneBuilder.CreatePlane("selection", B.PlaneBuilderCreatePlaneOptions(size:1))
             ..rotation.x = Math.pi * 0.5
@@ -81,6 +94,18 @@ class Renderer3D extends Renderer {
 
         this.defaultMaterial = new B.StandardMaterial("defaultMaterial", scene);
         this.defaultMeshProvider = new MeshProvider<SimpleLevelObject>(this);
+
+        this.resizeHandler = window.onResize.listen((Event event) { this.updateCanvasSize(); });
+    }
+
+    @override
+    void initUiEventHandlers() {
+        final dynamic manager = JsUtil.getProperty(this.scene, "_inputManager");
+        //window.console.log(manager);
+
+        manager.detachControl();
+        manager.attachControl(false,false,true, engine.uiController.container.parent);
+        manager.attachControl(true,true,false);
     }
 
     void initCameraBounds(Level level) {
@@ -103,15 +128,30 @@ class Renderer3D extends Renderer {
         this.scene.render();
     }
 
+    void updateCanvasSize() {
+        babylon.setSize(window.innerWidth, window.innerHeight);
+    }
+
     void updateSelectionIndicator(double interpolation) {
         final Selectable hover = this.engine.hovering;
-        if (hover == null) {
+        final Selectable selected = this.engine.selected;
+
+        if (hover == null || hover == selected) {
+            this.hoverIndicator.isVisible = false;
+        } else {
+            this.hoverIndicator.isVisible = true;
+            this.hoverIndicator.position.setFromGameCoords(hover.getModelPosition(), hover.getZPosition() + 3.0);
+            this.hoverIndicator.rotation.y = hover.getModelRotation();
+            this.hoverIndicator.scaling.setAll(20);
+        }
+
+        if (selected == null) {
             this.selectionIndicator.isVisible = false;
         } else {
             this.selectionIndicator.isVisible = true;
-            this.selectionIndicator.position.setFromGameCoords(hover.getModelPosition(), hover.getZPosition() + 3.0);
-            this.selectionIndicator.rotation.y = hover.getModelRotation();
-            this.selectionIndicator.scaling.setAll(20);
+            this.selectionIndicator.position.setFromGameCoords(selected.getModelPosition(), selected.getZPosition() + 3.0);
+            this.selectionIndicator.rotation.y = selected.getModelRotation();
+            this.selectionIndicator.scaling.setAll(25);
         }
     }
 
@@ -146,23 +186,23 @@ class Renderer3D extends Renderer {
 
     @override
     void click(int button, MouseEvent e) {
-        final B.AbstractMesh picked = scene.meshUnderPointer;
-
-        if (picked != null) {
-            print(picked?.metadata?.owner);
+        final SelectionInfo selection = getSelectableAtScreenPos(e.offset.x, e.offset.y);
+        if (button == MouseButtons.left) {
+            engine.click(button, selection?.world, selection?.selectable);
+        } else {
+            engine.click(button, selection?.world, null);
         }
-
     }
 
     @override
     void drag(int button, Point<num> offset, MouseEvent e) {
-        if (button == 2) { // right mouse rotate
+        if (button == MouseButtons.right) {
             camera
                 ..alpha -= offset.x * _rotationRate
                 ..beta -= offset.y * _rotationRate
                 //..update()
             ;
-        } else if (button == 0) { // left mouse pan
+        } else if (button == MouseButtons.left) {
             final B.Vector2 direction = new B.Vector2(offset.y,offset.x)..rotateInPlace(camera.alpha);
             moveTo(camPos.x + direction.x * _panRate, camPos.y - direction.y * _panRate);
         }
@@ -223,6 +263,7 @@ class Renderer3D extends Renderer {
     @override
     void destroy() {
         this.babylon.dispose();
+        this.resizeHandler.cancel();
     }
 
     void createDataMapDebugModel<D,A extends List<D>>(DataMap<D,A> map) {
@@ -256,7 +297,7 @@ class Renderer3D extends Renderer {
     }
 
     @override
-    Selectable getSelectableAtScreenPos([int x, int y]) {
+    SelectionInfo getSelectableAtScreenPos([int x, int y]) {
         x ??= this.scene.pointerX;
         y ??= this.scene.pointerY;
 
@@ -269,11 +310,13 @@ class Renderer3D extends Renderer {
                 return null;
             } else if (gridPick.pickedMesh?.metadata?.owner is Grid) {
                 final Grid grid = gridPick.pickedMesh.metadata.owner;
-                return grid.getSelectable(gridPick.pickedPoint.toGameCoords());
+                final B.Vector2 world = gridPick.pickedPoint.toGameCoords();
+                return new SelectionInfo(grid.getSelectable(world), world.toPoint());
             }
         } else if (pick.pickedMesh?.metadata?.owner is Selectable) {
             final Selectable selectable = pick.pickedMesh.metadata.owner;
-            return selectable.getSelectable(pick.pickedPoint.toGameCoords());
+            final B.Vector2 world = pick.pickedPoint.toGameCoords();
+            return new SelectionInfo(selectable.getSelectable(world), world.toPoint());
         }
 
         return null;
@@ -301,3 +344,5 @@ class Renderer3D extends Renderer {
 class MeshInfo {
     SimpleLevelObject owner;
 }
+
+

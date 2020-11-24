@@ -30,6 +30,9 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
 
     final Map<PathNode, GridCell> _cellsFromNodes = <PathNode, GridCell>{};
 
+    @override
+    String get name => "grid";
+
     Grid(int this.xSize, int this.ySize) : cells = new List<GridCell>(xSize*ySize) {
         final double ox = (xSize - 1) * cellSize * 0.5;
         final double oy = (ySize - 1) * cellSize * 0.5;
@@ -275,7 +278,7 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
         if (cell.state == GridCellState.hole) {
             return null;
         }
-        return cell;
+        return cell.getSelectable(loc);
     }
 
     void placeTower(int x, int y, Tower tower) {
@@ -289,6 +292,7 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
             ..rot_angle = rot
             ..turretAngle = rot
             ..prevTurretAngle = rot;
+        cell.tower = tower;
     }
 }
 
@@ -297,11 +301,15 @@ class GridCell extends LevelObject with Selectable {
     GridCellState state = GridCellState.clear;
 
     PathNode node;
+    Tower tower;
 
     Connector up;
     Connector down;
     Connector left;
     Connector right;
+
+    @override
+    String get name => "gridcell";
 
     GridCell(Grid this.grid) {
         this.parentObject = grid;
@@ -336,5 +344,11 @@ class GridCell extends LevelObject with Selectable {
         } else if (this.state == GridCellState.blocked) {
             setClear();
         }
+    }
+
+    @override
+    Selectable getSelectable(B.Vector2 loc) {
+        if (this.tower != null) { return tower.getSelectable(loc); }
+        return this;
     }
 }

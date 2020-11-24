@@ -1,11 +1,48 @@
 html {
     background-color: #808080;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+}
+
+div.fullscreen {
+    width:100vw;
+    height:100vh;
+    top:0px;
+    left:0px;
+    position:absolute;
+
+    -webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+    user-select: none;
+}
+
+#uicontainer {
+    pointer-events:none;
+}
+
+#uicontainer>* {
+    pointer-events:auto;
 }
 
 canvas {
     background-color: white;
+    border: 0px none transparent;
 }
 
 .dragging {
     cursor:move;
 }
+
+.uibackground {
+    position:absolute;
+    background:#202020;
+    font-family: "courier new", "courier", monospace;
+    color: #E0E0E0;
+}
+
+.top { top: 0px; }
+.bottom { bottom:0px; }
+.left { left:0px; }
+.right { right:0px; }

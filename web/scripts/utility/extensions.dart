@@ -52,6 +52,8 @@ extension Vector2Extras on B.Vector2 {
     double cross(B.Vector2 other) {
         return (this.x * other.y) - (this.y * other.x);
     }
+
+    Math.Point<num> toPoint() => new Math.Point<num>(x,y);
 }
 
 extension Vector3Extras on B.Vector3 {

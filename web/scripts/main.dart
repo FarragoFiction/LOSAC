@@ -26,13 +26,13 @@ import "utility/levelutils.dart";
 Future<void> main() async {
     print("LOSAC yo");
 
-    final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600)..style.border="1px solid black";
+    final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600);//..style.border="1px solid black";
     //final CanvasRenderingContext2D ctx = testCanvas.context2D;
 
-    document.body.append(testCanvas);
+    querySelector("#canvascontainer").append(testCanvas);
 
-    final DivElement fpsElement = new DivElement();
-    document.body.append(fpsElement);
+    /*final DivElement fpsElement = new DivElement();
+    document.body.append(fpsElement);*/
 
     final Renderer renderer = new Renderer3D(testCanvas);
 
@@ -153,8 +153,8 @@ Future<void> main() async {
     //document.body.append(testLevel.levelHeightMap.debugCanvas);
     //r3d.createDataMapDebugModel(testLevel.levelHeightMap);
 
-    testLevel.cameraHeightMap.updateDebugCanvas();
-    document.body.append(testLevel.cameraHeightMap.debugCanvas);
+    //testLevel.cameraHeightMap.updateDebugCanvas();
+    //document.body.append(testLevel.cameraHeightMap.debugCanvas);
     //r3d.createDataMapDebugModel(testLevel.cameraHeightMap);
 
 
@@ -171,10 +171,10 @@ Future<void> main() async {
     
 
 
-    final Game game = new Game(renderer)
+    final Game game = new Game(renderer, querySelector("#uicontainer"))
         ..pathfinder = pathfinder
         ..setLevel(testLevel)
-        ..fpsElement = fpsElement
+        //..fpsElement = fpsElement
         ..start();
 
     //game.addEntity(testTower);

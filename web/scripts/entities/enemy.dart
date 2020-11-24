@@ -32,7 +32,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
     }
 
     @override
-    bool get selectable => true;
+    String get name => "enemy.${enemyType.name}";
 
     final EnemyType enemyType;
 

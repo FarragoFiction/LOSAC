@@ -105,6 +105,7 @@ class Level {
     }
 
     PathNode getNodeFromPos(Point<num> pos) {
+        if (pos == null) { return null; }
         final int id = domainMap.getVal(pos.x, pos.y);
         if (id != 0) {
             return pathNodes[id-1];

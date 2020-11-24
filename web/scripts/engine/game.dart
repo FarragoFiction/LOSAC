@@ -4,11 +4,12 @@ import "../entities/enemy.dart";
 import "../entities/enemytype.dart";
 import "../entities/tower.dart";
 import "../level/endcap.dart";
-import "../level/grid.dart";
 import "../level/level.dart";
-import '../level/levelobject.dart';
 import "../level/pathnode.dart";
+import '../level/selectable.dart';
 import "../renderer/renderer.dart";
+import '../ui/selectionwindow.dart';
+import '../ui/ui.dart';
 import "../utility/extensions.dart";
 import "engine.dart";
 import "spatialhash.dart";
@@ -18,7 +19,11 @@ class Game extends Engine {
     SpatialHash<Tower> towerSelector;
     SpatialHash<Enemy> enemySelector;
 
-    Game(Renderer renderer) : super(renderer);
+    UIComponent selectionWindow;
+
+    Game(Renderer renderer, Element uiContainer) : super(renderer, uiContainer) {
+        this.selectionWindow = uiController.addComponent(new SelectionWindow(uiController));
+    }
 
     @override
     void logicUpdate([num dt = 0]) {
@@ -52,12 +57,18 @@ class Game extends Engine {
     }
 
     @override
-    Future<void> click(Point<num> worldPos, SimpleLevelObject clickedObject) async {
-        final PathNode node = level.getNodeFromPos(worldPos);
+    Future<void> click(int button, Point<num> worldPos, Selectable clickedObject) async {
+        if (button == MouseButtons.left) {
+            this.selectObject(clickedObject);
+        } else if (button == MouseButtons.right) {
+            this.selectObject(null);
+        }
+
+        /*final PathNode node = level.getNodeFromPos(worldPos);
 
         print("click! $worldPos $node $clickedObject");
 
-        /*if (node != null) {
+        if (node != null) {
             final PathNodeObject pathObj = node.pathObject;
             print(pathObj);
 
@@ -97,5 +108,11 @@ class Game extends Engine {
         }
 
         return true;
+    }
+
+    @override
+    void selectObject(Selectable selectable) {
+        super.selectObject(selectable);
+        selectionWindow.updateAndPropagate();
     }
 }

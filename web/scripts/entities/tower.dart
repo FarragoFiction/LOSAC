@@ -37,7 +37,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
     GridCell gridCell;
 
     @override
-    bool get selectable => true;
+    String get name => "tower.${towerType.name}";
 
     Tower(TowerType this.towerType);
 

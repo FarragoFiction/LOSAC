@@ -5,6 +5,7 @@ import '../level/levelobject.dart';
 import '../level/selectable.dart';
 import "../pathfinder/pathfinder.dart";
 import "../renderer/renderer.dart";
+import '../ui/ui.dart';
 import "entity.dart";
 import "inputhandler.dart";
 
@@ -15,6 +16,7 @@ abstract class Engine {
     final Set<Entity> _entityQueue = <Entity>{};
 
     InputHandler input;
+    UIController uiController;
 
     bool started = false;
     int currentFrame = 0;
@@ -38,9 +40,11 @@ abstract class Engine {
 
     Element get container => renderer.container;
 
-    Engine(Renderer this.renderer) {
+    Engine(Renderer this.renderer, Element uiContainer) {
         renderer.engine = this;
         this.input = new InputHandler3D(this);
+        this.uiController = new UIController(this, uiContainer);
+        this.renderer.initUiEventHandlers();
     }
 
     void start() {
@@ -101,7 +105,7 @@ abstract class Engine {
         }
         entities.removeWhere((Entity e) {
             if (e.dead) {
-                this.renderer.removeRenderable(e);
+                this.removeEntity(e);
                 return true;
             }
             return false;
@@ -120,7 +124,7 @@ abstract class Engine {
         renderer.draw(interpolation);
         selectionUpdateSteps++;
         if (selectionUpdateSteps >= stepsPerSelectionUpdate) {
-            this.hovering = renderer.getSelectableAtScreenPos();
+            this.hovering = renderer.getSelectableAtScreenPos()?.selectable;
             selectionUpdateSteps = 0;
         }
     }
@@ -131,6 +135,13 @@ abstract class Engine {
         this.renderer.addRenderable(entity);
     }
 
+    void removeEntity(Entity entity) {
+        this.renderer.removeRenderable(entity);
+        if (entity == selected) {
+            this.selectObject(null);
+        }
+    }
+
     void setLevel(Level level) {
         this.level = level;
         this.renderer.addRenderables(this.level.objects);
@@ -138,6 +149,31 @@ abstract class Engine {
 
     //input
 
-    Future<void> click(Point<num> worldPos, SimpleLevelObject clickedObject);
+    Future<void> click(int button, Point<num> worldPos, Selectable clickedObject);
 
+    void selectObject(Selectable selectable) {
+        if (selected == null) {
+            if (selectable != null) {
+                // select object
+                this.selected = selectable;
+                //print("selected: $selectable");
+            }
+        } else {
+            if (selectable == null) {
+                // deselect
+                this.selected = null;
+                //print("deselect");
+            } else if (selectable != selected) {
+                // select other object
+                this.selected = selectable;
+                //print("selection changed: $selectable");
+            }
+        }
+    }
+}
+
+abstract class MouseButtons {
+    static const int left = 0;
+    static const int middle = 1;
+    static const int right = 2;
 }

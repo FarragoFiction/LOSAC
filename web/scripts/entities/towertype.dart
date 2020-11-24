@@ -10,7 +10,9 @@ class TowerType {
     static const double fireAngleFuzz = 0.01;
     static final TargetingStrategy<Enemy> defaultTargetingStrategy = new ProgressTargetingStrategy() + new StickyTargetingStrategy() * 0.1;
 
-
+    /// Localisation string
+    /// Will resolve patterns such as "tower.(this value).name"
+    String name = "default";
 
     /// Does this tower have a turret?
     bool turreted = false;
