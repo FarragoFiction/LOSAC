@@ -35,6 +35,10 @@ canvas {
     cursor:move;
 }
 
+.hovering>div>canvas {
+    cursor:pointer;
+}
+
 .uibackground {
     position:absolute;
     background:#202020;

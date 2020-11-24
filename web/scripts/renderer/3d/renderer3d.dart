@@ -44,12 +44,14 @@ class Renderer3D extends Renderer {
 
     StreamSubscription<Event> resizeHandler;
 
+    Element pointerElement;
+
     Renderer3D(CanvasElement this.canvas) {
         this.babylon = new B.Engine(this.canvas, false);
         this.canvas.draggable = false;
         this.updateCanvasSize();
 
-        this.scene = new B.Scene(this.babylon);//..constantlyUpdateMeshUnderPointer = true;
+        this.scene = new B.Scene(this.babylon);
         this.container = this.canvas;
 
         this.pickerPredicateInterop = JS.allowInterop(this.pickerPredicate);
@@ -103,9 +105,23 @@ class Renderer3D extends Renderer {
         final dynamic manager = JsUtil.getProperty(this.scene, "_inputManager");
         //window.console.log(manager);
 
+        this.pointerElement = engine.uiController.container.parent;
+
         manager.detachControl();
-        manager.attachControl(false,false,true, engine.uiController.container.parent);
+        manager.attachControl(false,false,true, pointerElement);
         manager.attachControl(true,true,false);
+    }
+
+    void updatePointer() {
+        if (engine.input.dragging) {
+            pointerElement.classes.remove("hovering");
+            pointerElement.classes.add("dragging");
+        } else if (engine.hovering != null) {
+            pointerElement.classes.add("hovering");
+        } else {
+            pointerElement.classes.remove("dragging");
+            pointerElement.classes.remove("hovering");
+        }
     }
 
     void initCameraBounds(Level level) {
@@ -126,6 +142,8 @@ class Renderer3D extends Renderer {
     void draw([double interpolation = 0]) {
         this.updateSelectionIndicator(interpolation);
         this.scene.render();
+
+        this.updatePointer();
     }
 
     void updateCanvasSize() {
