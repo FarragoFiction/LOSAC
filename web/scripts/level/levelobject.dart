@@ -2,9 +2,9 @@ import "dart:html";
 
 import "package:CubeLib/CubeLib.dart" as B;
 import "package:collection/collection.dart";
+import "package:js/js.dart" as JS;
 
 import "../renderer/2d/bounds.dart";
-import '../renderer/2d/extendedvectors.dart';
 import "../renderer/2d/matrix.dart";
 import "../renderer/3d/models/meshprovider.dart";
 import "../renderer/3d/renderable3d.dart";
@@ -59,7 +59,7 @@ class LevelObject extends SimpleLevelObject {
 
     // ignore this complaint, we need this to be the subtype for bounds dirtying
     @override
-    B.Vector2 position = new Vector2WithCallback(0, 0);
+    B.Vector2 position = new B.Vector2WithCallback(0, 0);
 
     Rectangle<num> get bounds {
         if (dirtyBounds) {
@@ -70,8 +70,8 @@ class LevelObject extends SimpleLevelObject {
 
     LevelObject() : rot_angle = 0 {
         // set the callback on creation... if we don't do this immediately it'll die on first set
-        final Vector2WithCallback v = this.position;
-        v.callback = (B.Vector2 v) => this.makeBoundsDirty();
+        final B.Vector2WithCallback v = this.position;
+        v.extension_setCallback(JS.allowInterop((B.Vector2 v) => this.makeBoundsDirty()));
 
         subObjects = new UnmodifiableSetView<LevelObject>(_subObjects);
         initMixins();

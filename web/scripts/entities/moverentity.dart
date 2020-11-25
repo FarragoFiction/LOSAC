@@ -59,7 +59,7 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
         final double da = angleDiff(rot_angle, previousRot);
         drawRot = previousRot + da * interpolation;
 
-        this.updateMeshPosition(position: drawPos);
+        this.updateMeshPosition(position: drawPos, rotation:drawRot);
     }
 
     @override
@@ -115,7 +115,7 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     Rectangle<num> calculateBounds() => new Rectangle<num>(this.position.x-boundsSize/2, this.position.y-boundsSize/2, boundsSize, boundsSize);
 
     @override
-    void updateMeshPosition({B.Vector2 position, double height}) {
+    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {
         super.updateMeshPosition(position: position, height: height);
 
         if (this.mesh == null || this.level == null) { return; }
@@ -134,7 +134,9 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
             final double pitch = Math.atan2(front-back, this.boundsSize * 2);
 
-            this.mesh.rotation..x = roll..z = pitch;
+            rotation ??= rot_angle;
+
+            this.mesh.rotation..x = roll..y = rotation..z = pitch;
         }
     }
 
