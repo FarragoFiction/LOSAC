@@ -277,7 +277,7 @@ class PathWorker extends WorkerBase {
 void main() {
     new PathWorker();
     
-    WorkerGlobalScope.instance.importScripts("packages/CubeLib/js/babylon.js");
+    WorkerGlobalScope.instance.importScripts("../../packages/CubeLib/js/babylon.js");
 
 
     final B.Vector3 a = new B.Vector3(1,0,0);

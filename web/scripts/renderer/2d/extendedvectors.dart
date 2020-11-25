@@ -2,7 +2,7 @@
 import "package:CommonLib/Utility.dart";
 import "package:CubeLib/CubeLib.dart" as B;
 
-class ExtendableVector2 implements B.Vector2 {
+abstract class ExtendableVector2 implements B.Vector2 {
     B.Vector2 _v;
 
     ExtendableVector2(num x, num y) {
