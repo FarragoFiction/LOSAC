@@ -26,7 +26,7 @@ class Curve extends LevelObject with Connectible {
 
     final List<CurveSegment> segments = <CurveSegment>[];
 
-    Curve() : super() {
+    Curve() {
         this.vertices = new UnmodifiableListView<CurveVertex>(_vertices);
         this.drawUI = false;
     }

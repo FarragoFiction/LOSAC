@@ -104,10 +104,6 @@ abstract class Connector extends LevelObject {
 
         this.connect(target);
 
-        print("target position, target parent position");
-        print("${target.position.x},${target.position.y}");
-        print("${target.parentObject.position.x},${target.parentObject.position.y}");
-
         final B.Vector2 targetPos = target.getWorldPosition();
         final num targetAngle = target.getWorldRotation() + Math.pi;
         final num thisAngle = this.getWorldRotation();
@@ -125,13 +121,6 @@ abstract class Connector extends LevelObject {
         this.parentObject.rot_angle = finalAngle;
         this.parentObject.position.setFrom(finalPos);
         this.parentObject.zPosition = targetHeight;
-
-        try {
-            throw Exception("Let's get a trace: Connecting $this on ${this.parentObject} to $target on ${target.parentObject}");
-        } on Exception catch (e, trace) {
-            print(e);
-            print(trace);
-        }
     }
 }
 

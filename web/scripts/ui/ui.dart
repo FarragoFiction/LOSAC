@@ -16,11 +16,19 @@ class UIController {
         }
     }
 
+    void resize() {
+        for (final UIComponent comp in components) {
+            comp.resizeAndPropagate();
+        }
+    }
+
     UIComponent addComponent(UIComponent component) {
         this.components.add(component);
         this.container.append(component.element);
         return component;
     }
+
+    String localise(String key) => "[$key]";
 }
 
 abstract class UIComponent {
@@ -50,8 +58,18 @@ abstract class UIComponent {
 
     void update();
 
+    void resizeAndPropagate() {
+        this.update();
+        for (final UIComponent child in children) {
+            child.resizeAndPropagate();
+        }
+    }
+
+    void resize() {}
+
     Element createElementAndPropagate() {
         final Element element = this.createElement();
+        this.resize();
         for (final UIComponent child in children) {
             element.append(child.element);
         }
@@ -71,4 +89,6 @@ abstract class UIComponent {
         component.element?.remove();
         component.parent = null;
     }
+
+    String localise(String key) => controller.localise(key);
 }

@@ -35,6 +35,7 @@ Future<void> main() async {
     document.body.append(fpsElement);*/
 
     final Renderer renderer = new Renderer3D(testCanvas);
+    final Game game = new Game(renderer, querySelector("#uicontainer"));
 
     final Pathfinder pathfinder = new Pathfinder();
     final Level testLevel = new Level3D();
@@ -168,10 +169,8 @@ Future<void> main() async {
     //final Point<num> towerCoord = sideGrid.getCell(2, 0).getWorldPosition();
     final Point<num> towerCoord = testGrid.getCell(0, 8).getWorldPosition();
     testTower..pos_x = towerCoord.x..pos_y = towerCoord.y;*/
-    
 
-
-    final Game game = new Game(renderer, querySelector("#uicontainer"))
+    game
         ..pathfinder = pathfinder
         ..setLevel(testLevel)
         //..fpsElement = fpsElement

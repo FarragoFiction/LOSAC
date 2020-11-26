@@ -12,6 +12,8 @@ import "../level/grid.dart";
 import "../level/levelobject.dart";
 import "../level/selectable.dart";
 import "../renderer/2d/matrix.dart";
+import "../ui/selectionwindow.dart";
+import "../ui/ui.dart";
 import "../utility/towerutils.dart";
 import "enemy.dart";
 import "projectiles/projectile.dart";
@@ -323,4 +325,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
         }
         return z;
     }
+
+    /*@override
+    SelectionDisplay<Tower> createSelectionUI(UIController controller) => null;*/
 }

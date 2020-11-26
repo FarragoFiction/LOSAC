@@ -148,6 +148,7 @@ class Renderer3D extends Renderer {
 
     void updateCanvasSize() {
         babylon.setSize(window.innerWidth, window.innerHeight);
+        engine?.uiController?.resize();
     }
 
     void updateSelectionIndicator(double interpolation) {

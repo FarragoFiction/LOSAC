@@ -24,6 +24,11 @@ div.fullscreen {
 
 #uicontainer>* {
     pointer-events:auto;
+    position:absolute;
+}
+
+#uicontainer div {
+    position:absolute;
 }
 
 canvas {
@@ -40,7 +45,6 @@ canvas {
 }
 
 .uibackground {
-    position:absolute;
     background:#202020;
     font-family: "courier new", "courier", monospace;
     color: #E0E0E0;
@@ -50,3 +54,17 @@ canvas {
 .bottom { bottom:0px; }
 .left { left:0px; }
 .right { right:0px; }
+
+.SelectionWindow {
+    transition: bottom 0.15s;
+    transition-timing-function: ease-in-out;
+}
+
+.SelectionDisplay {
+    width: 300px;
+    height: 150px;
+}
+
+.BuildList {
+
+}

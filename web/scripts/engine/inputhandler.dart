@@ -3,8 +3,6 @@ import "dart:html";
 import "package:CubeLib/CubeLib.dart" as B;
 import "package:js/js.dart" as JS;
 
-import "../level/grid.dart";
-import "../level/selectable.dart";
 import "../renderer/3d/renderer3d.dart";
 import "engine.dart";
 

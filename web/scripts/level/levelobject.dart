@@ -113,19 +113,13 @@ class LevelObject extends SimpleLevelObject {
     }
 
     B.Vector2 getWorldPosition([B.Vector2 offset]) {
-        print("honk: $this");
-
         final B.Vector2 pos = this.position.clone();
-
-        print("pos1: ${pos.x},${pos.y}");
 
         if (offset != null) {
             pos.addInPlace(offset.rotate(this.rot_angle));
         }
 
         if (this.parentObject == null) { return pos; }
-
-        print("pos2: ${pos.x},${pos.y}");
 
         RotationMatrix rot;
         LevelObject o = this;
@@ -141,14 +135,8 @@ class LevelObject extends SimpleLevelObject {
             }
 
             pos.applyMatrixInPlace(rot);
-            print("pos3: ${pos.x},${pos.y}");
-            print("o: $o");
-            print("o.position: ${o.position.x},${o.position.y}");
             pos.addInPlace(o.position);
-            print("pos4: ${pos.x},${pos.y}");
         }
-
-        print("pos5: ${pos.x},${pos.y}");
         return pos;
     }
     @override

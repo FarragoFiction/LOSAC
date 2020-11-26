@@ -8,6 +8,8 @@ import "../entities/targetmoverentity.dart";
 import "../level/endcap.dart";
 import "../level/pathnode.dart";
 import "../level/selectable.dart";
+import '../ui/selectionwindow.dart';
+import "../ui/ui.dart";
 import "../utility/extensions.dart";
 import "enemytype.dart";
 import "terraincollider.dart";
@@ -36,7 +38,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
 
     final EnemyType enemyType;
 
-    Enemy(EnemyType this.enemyType) : health = enemyType.health, super() {
+    Enemy(EnemyType this.enemyType) : health = enemyType.health {
         this.baseSpeed = enemyType.speed;
         this.turnRate = enemyType.turnRate;
     }
@@ -164,4 +166,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
         this.health -= amount;
         //print("$this, $amount");
     }
+
+    /*@override
+    SelectionDisplay<Enemy> createSelectionUI(UIController controller) => null;*/
 }

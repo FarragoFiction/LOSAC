@@ -1,7 +1,6 @@
 import "dart:html";
 
 import "../level/level.dart";
-import '../level/levelobject.dart';
 import '../level/selectable.dart';
 import "../pathfinder/pathfinder.dart";
 import "../renderer/renderer.dart";
@@ -110,11 +109,8 @@ abstract class Engine {
             }
             return false;
         });
-        /*selectionUpdateSteps++;
-        if (selectionUpdateSteps >= stepsPerSelectionUpdate) {
-            this.input.updateMouseOver();
-            selectionUpdateSteps = 0;
-        }*/
+
+        this.uiController.update();
     }
 
     void graphicsUpdate([num interpolation = 0]) {
@@ -156,17 +152,14 @@ abstract class Engine {
             if (selectable != null) {
                 // select object
                 this.selected = selectable;
-                //print("selected: $selectable");
             }
         } else {
             if (selectable == null) {
                 // deselect
                 this.selected = null;
-                //print("deselect");
             } else if (selectable != selected) {
                 // select other object
                 this.selected = selectable;
-                //print("selection changed: $selectable");
             }
         }
     }

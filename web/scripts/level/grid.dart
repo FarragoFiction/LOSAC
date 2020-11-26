@@ -7,6 +7,8 @@ import "../engine/game.dart";
 import "../entities/tower.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
+import "../ui/selectionwindow.dart";
+import "../ui/ui.dart";
 import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
@@ -294,6 +296,9 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
             ..prevTurretAngle = rot;
         cell.tower = tower;
     }
+
+    @override
+    SelectionDisplay<Grid> createSelectionUI(UIController controller) => null;
 }
 
 class GridCell extends LevelObject with Selectable {
@@ -351,4 +356,7 @@ class GridCell extends LevelObject with Selectable {
         if (this.tower != null) { return tower.getSelectable(loc); }
         return this;
     }
+
+    @override
+    SelectionDisplay<GridCell> createSelectionUI(UIController controller) => new GridCellSelectionDisplay(controller);
 }

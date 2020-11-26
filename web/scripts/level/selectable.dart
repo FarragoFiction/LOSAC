@@ -1,6 +1,8 @@
 
 import "package:CubeLib/CubeLib.dart" as B;
 
+import '../ui/selectionwindow.dart';
+import '../ui/ui.dart';
 import 'levelobject.dart';
 
 mixin Selectable on SimpleLevelObject {
@@ -9,4 +11,6 @@ mixin Selectable on SimpleLevelObject {
     String get name;
 
     Selectable getSelectable(B.Vector2 loc) => this;
+
+    SelectionDisplay<Selectable> createSelectionUI(UIController controller) => new SelectionDisplay<Selectable>(controller);
 }

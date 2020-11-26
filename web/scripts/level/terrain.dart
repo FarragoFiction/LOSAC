@@ -7,9 +7,7 @@ class Terrain extends SimpleLevelObject {
 
     B.GroundMesh get groundMesh => mesh;
 
-    Terrain() {
-
-    }
+    Terrain();
 
     @override
     void generateMesh() {
