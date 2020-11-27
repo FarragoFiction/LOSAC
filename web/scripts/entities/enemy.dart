@@ -8,7 +8,6 @@ import "../entities/targetmoverentity.dart";
 import "../level/endcap.dart";
 import "../level/pathnode.dart";
 import "../level/selectable.dart";
-import '../ui/selectionwindow.dart';
 import "../ui/ui.dart";
 import "../utility/extensions.dart";
 import "enemytype.dart";

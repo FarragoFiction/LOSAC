@@ -7,7 +7,6 @@ import "../engine/game.dart";
 import "../entities/tower.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
-import "../ui/selectionwindow.dart";
 import "../ui/ui.dart";
 import "../utility/extensions.dart";
 import "connectible.dart";

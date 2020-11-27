@@ -1,11 +1,12 @@
 import "dart:html";
 import "dart:math" as Math;
 
+import "../engine/registry.dart";
 import "../targeting/strategies.dart";
 import "enemy.dart";
 import "projectiles/projectile.dart";
 
-class TowerType {
+class TowerType with Registerable {
     /// "close enough" angle delta for turrets - within this, we are considered to be pointing at the target
     static const double fireAngleFuzz = 0.01;
     static final TargetingStrategy<Enemy> defaultTargetingStrategy = new ProgressTargetingStrategy() + new StickyTargetingStrategy() * 0.1;
@@ -57,4 +58,9 @@ class TowerType {
             ..fill()
             ..fillRect(0, -w*0.5, 25, w);
     }
+
+    @override
+    String getRegistrationKey() => name;
+
+    String getDisplayName() => "tower.$name.name";
 }

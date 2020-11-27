@@ -1,7 +1,6 @@
 
 import "package:CubeLib/CubeLib.dart" as B;
 
-import '../ui/selectionwindow.dart';
 import '../ui/ui.dart';
 import 'levelobject.dart';
 

@@ -32,6 +32,7 @@ abstract class InputHandler {
     final Set<KeyPressCallbackHandler> keyCallbacks = <KeyPressCallbackHandler>{};
 
     final Map<int, bool> mouseStates = <int, bool>{};
+    Point<num> mousePos;
     Point<num> mousePosPrev;
     int dragButton; // null means no button, only drag one at a time
     bool dragging = false;
@@ -117,6 +118,8 @@ abstract class InputHandler {
     void _onMouseMove(MouseEvent e) {
         mousePosPrev ??= e.page;
         final Point<num> diff = e.page - mousePosPrev;
+
+        mousePos = e.page;
 
         if (!dragging && dragButton != null && mouseStates[dragButton]) {
             final num len = diff.x * diff.x + diff.y * diff.y;

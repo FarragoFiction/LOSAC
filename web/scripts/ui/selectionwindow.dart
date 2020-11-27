@@ -1,7 +1,7 @@
 import "dart:html";
 
 import '../entities/enemy.dart';
-import '../entities/tower.dart';
+import '../entities/towertype.dart';
 import '../level/grid.dart';
 import "../level/selectable.dart";
 import 'ui.dart';
@@ -78,5 +78,23 @@ class SelectionDisplay<Type extends Selectable> extends UIComponent {
 
 class GridCellSelectionDisplay extends SelectionDisplay<GridCell> {
 
-    GridCellSelectionDisplay(UIController controller) : super(controller);
+    ButtonGrid grid;
+
+    GridCellSelectionDisplay(UIController controller) : super(controller) {
+        this.grid = new ButtonGrid(controller);
+        this.addChild(grid);
+
+        for(final TowerType tower in controller.engine.towerTypeRegistry.whereValue((TowerType tested) => true)) {
+            grid.addButton(new BuildButton(controller, tower));
+        }
+    }
+
+    @override
+    void resize() {
+        grid.element
+            ..style.top = "0px"
+            ..style.left = "100%"
+            ..style.maxWidth = "${window.innerWidth - grid.element.offset.left}px"
+        ;
+    }
 }

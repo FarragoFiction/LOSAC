@@ -1,5 +1,6 @@
 import "dart:html";
 
+import "../entities/towertype.dart";
 import "../level/level.dart";
 import '../level/selectable.dart';
 import "../pathfinder/pathfinder.dart";
@@ -7,12 +8,15 @@ import "../renderer/renderer.dart";
 import '../ui/ui.dart';
 import "entity.dart";
 import "inputhandler.dart";
+import "registry.dart";
 
 abstract class Engine {
     Renderer renderer;
     Level level;
     Set<Entity> entities = <Entity>{};
     final Set<Entity> _entityQueue = <Entity>{};
+
+    final Registry<TowerType> towerTypeRegistry = new Registry<TowerType>();
 
     InputHandler input;
     UIController uiController;
@@ -43,6 +47,7 @@ abstract class Engine {
         renderer.engine = this;
         this.input = new InputHandler3D(this);
         this.uiController = new UIController(this, uiContainer);
+        this.uiController.addComponent(new TooltipComponent(uiController));
         this.renderer.initUiEventHandlers();
     }
 

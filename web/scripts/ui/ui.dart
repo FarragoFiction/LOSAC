@@ -2,6 +2,11 @@ import "dart:html";
 
 import "../engine/engine.dart";
 
+export "button.dart";
+export "buttongrid.dart";
+export "selectionwindow.dart";
+export "tooltip.dart";
+
 class UIController {
     final Engine engine;
     final Element container;
@@ -25,10 +30,23 @@ class UIController {
     UIComponent addComponent(UIComponent component) {
         this.components.add(component);
         this.container.append(component.element);
+        component.resizeAndPropagate();
         return component;
     }
 
     String localise(String key) => "[$key]";
+
+    UIComponent queryComponentAtCoords(Point<num> coords, [bool Function(UIComponent c) test]) {
+        for (final UIComponent component in components) {
+            if (component.hasElement) {
+                final UIComponent picked = component.queryComponentAtCoords(coords, test);
+                if (picked != null) {
+                    return picked;
+                }
+            }
+        }
+        return null;
+    }
 }
 
 abstract class UIComponent {
@@ -38,9 +56,12 @@ abstract class UIComponent {
     Element get element {
         if (_element == null) {
             this._element = this.createElementAndPropagate();
+
         }
         return this._element;
     }
+
+    bool get hasElement => _element != null;
 
     UIComponent parent;
     final Set<UIComponent> children = <UIComponent>{};
@@ -59,7 +80,9 @@ abstract class UIComponent {
     void update();
 
     void resizeAndPropagate() {
-        this.update();
+        if (this.element != null) {
+            this.resize();
+        }
         for (final UIComponent child in children) {
             child.resizeAndPropagate();
         }
@@ -69,7 +92,7 @@ abstract class UIComponent {
 
     Element createElementAndPropagate() {
         final Element element = this.createElement();
-        this.resize();
+
         for (final UIComponent child in children) {
             element.append(child.element);
         }
@@ -78,10 +101,14 @@ abstract class UIComponent {
 
     Element createElement();
 
-    void addChild(UIComponent component) {
+    UIComponent addChild(UIComponent component) {
         this.children.add(component);
         component.parent = this;
-        this._element?.append(component.element);
+        if (this._element != null) {
+            this._element.append(component.element);
+            this.resizeAndPropagate();
+        }
+        return component;
     }
 
     void removeChild(UIComponent component) {
@@ -91,4 +118,19 @@ abstract class UIComponent {
     }
 
     String localise(String key) => controller.localise(key);
+
+    UIComponent queryComponentAtCoords(Point<num> coords, [bool Function(UIComponent c) test]) {
+        for (final UIComponent child in children) {
+            if (child.hasElement) {
+                final UIComponent picked = child.queryComponentAtCoords(coords, test);
+                if (picked != null) {
+                    return picked;
+                }
+            }
+        }
+        if (this.element.getBoundingClientRect().containsPoint(coords) && ((test == null) || test(this))) {
+            return this;
+        }
+        return null;
+    }
 }

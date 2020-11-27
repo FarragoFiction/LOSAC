@@ -1,3 +1,4 @@
+import "dart:html";
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
@@ -63,5 +64,47 @@ extension Vector3Extras on B.Vector3 {
 
     B.Vector2 toGameCoords() {
         return new B.Vector2(-x,z);
+    }
+}
+
+extension ElementExtras on Element {
+    int get totalWidth {
+        final CssStyleDeclaration computed = this.getComputedStyle();
+
+        int handler(String s) => 0;
+
+        final String cLeft = computed.marginLeft;
+        final String cRight = computed.marginRight;
+
+        int left = 0, right = 0;
+
+        if (!cLeft.isEmpty) {
+            left = int.parse(cLeft.substring(0, cLeft.length - 2), onError: handler);
+        }
+        if (!cRight.isEmpty) {
+            right = int.parse(cRight.substring(0, cRight.length - 2), onError: handler);
+        }
+
+        return this.offsetWidth + left + right;
+    }
+
+    int get totalHeight {
+        final CssStyleDeclaration computed = this.getComputedStyle();
+
+        int handler(String s) => 0;
+
+        final String cTop = computed.marginTop;
+        final String cBottom = computed.marginBottom;
+
+        int top = 0, bottom = 0;
+
+        if (!cTop.isEmpty) {
+            top = int.parse(cTop.substring(0, cTop.length - 2), onError: handler);
+        }
+        if (!cBottom.isEmpty) {
+            bottom = int.parse(cBottom.substring(0, cBottom.length - 2), onError: handler);
+        }
+
+        return this.offsetHeight + top + bottom;
     }
 }

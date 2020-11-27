@@ -164,6 +164,7 @@ Future<void> main() async {
 
     final EnemyType testEnemyType = new EnemyType();
     final TowerType testTowerType = new TowerType();
+    game.towerTypeRegistry.register(testTowerType);
 
     /*final Tower testTower = new Tower(testTowerType);
     //final Point<num> towerCoord = sideGrid.getCell(2, 0).getWorldPosition();
