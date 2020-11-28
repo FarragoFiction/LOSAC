@@ -44,6 +44,7 @@ class SelectionWindow extends UIComponent {
 
         this.display = disp;
         display.selected = this.selected;
+        display.postSelect();
         this.addChild(display);
 
         element.style.bottom = "";
@@ -72,6 +73,9 @@ class SelectionDisplay<Type extends Selectable> extends UIComponent {
         ;
     }
 
+    /// called after selection is set
+    Future<void> postSelect() async {}
+
     @override
     void update() {}
 }
@@ -79,14 +83,25 @@ class SelectionDisplay<Type extends Selectable> extends UIComponent {
 class GridCellSelectionDisplay extends SelectionDisplay<GridCell> {
 
     ButtonGrid grid;
+    bool blockChecked = false;
+    bool placementAllowed = false;
 
     GridCellSelectionDisplay(UIController controller) : super(controller) {
         this.grid = new ButtonGrid(controller);
         this.addChild(grid);
 
         for(final TowerType tower in controller.engine.towerTypeRegistry.whereValue((TowerType tested) => true)) {
-            grid.addButton(new BuildButton(controller, tower));
+            grid.addButton(new BuildButton(controller, this, tower));
         }
+    }
+
+    @override
+    Future<void> postSelect() async {
+        placementAllowed = await engine.placementCheck(selected.node);
+        blockChecked = true;
+        print("placement allowed: $placementAllowed");
+
+        update();
     }
 
     @override

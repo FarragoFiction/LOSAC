@@ -53,8 +53,10 @@ abstract class UIComponent {
     final UIController controller;
     Element _element;
 
+    bool disposed = false;
+
     Element get element {
-        if (_element == null) {
+        if (_element == null && !disposed) {
             this._element = this.createElementAndPropagate();
 
         }
@@ -120,6 +122,7 @@ abstract class UIComponent {
     String localise(String key) => controller.localise(key);
 
     UIComponent queryComponentAtCoords(Point<num> coords, [bool Function(UIComponent c) test]) {
+        if(disposed) { return null; }
         for (final UIComponent child in children) {
             if (child.hasElement) {
                 final UIComponent picked = child.queryComponentAtCoords(coords, test);
@@ -132,5 +135,13 @@ abstract class UIComponent {
             return this;
         }
         return null;
+    }
+
+    void dispose() {
+        this.disposed = true;
+        this.element.remove();
+        for (final UIComponent child in children) {
+            child.dispose();
+        }
     }
 }

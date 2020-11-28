@@ -1,7 +1,9 @@
 import "dart:html";
 
+import "../entities/enemy.dart";
 import "../entities/towertype.dart";
 import "../level/level.dart";
+import "../level/pathnode.dart";
 import '../level/selectable.dart';
 import "../pathfinder/pathfinder.dart";
 import "../renderer/renderer.dart";
@@ -167,6 +169,27 @@ abstract class Engine {
                 this.selected = selectable;
             }
         }
+    }
+
+    Future<bool> placementCheck(PathNode node) async {
+        final Set<PathNode> unreachables = new Set<PathNode>.from(await pathfinder.connectivityCheck(level, flipTests: <PathNode>[node]));
+
+        for (final PathNode p in level.spawners) {
+            if (unreachables.contains(p)) {
+                return false;
+            }
+        }
+
+        for (final Enemy enemy in this.entities.whereType()) {
+            final Set<PathNode> enemyNodes = enemy.getNodesAtPos();
+            for (final PathNode node in enemyNodes) {
+                if (unreachables.contains(node)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
 

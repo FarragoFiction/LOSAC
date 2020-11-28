@@ -1,6 +1,8 @@
 import "dart:html";
 import "dart:math" as Math;
 
+import "package:CubeLib/CubeLib.dart" as B;
+
 import "../engine/registry.dart";
 import "../targeting/strategies.dart";
 import "enemy.dart";
@@ -14,6 +16,8 @@ class TowerType with Registerable {
     /// Localisation string
     /// Will resolve patterns such as "tower.(this value).name"
     String name = "default";
+    /// Does this tower block the path of enemies?
+    bool blocksPath = true;
 
     /// Does this tower have a turret?
     bool turreted = false;
@@ -28,6 +32,8 @@ class TowerType with Registerable {
     double fireAngle = 1.5;
 
     WeaponType weapon;
+
+    B.Mesh mesh;
 
     TowerType() {
         weapon = new ChaserWeaponType(this);

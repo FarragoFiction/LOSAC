@@ -89,26 +89,7 @@ class Game extends Engine {
         }*/
     }
 
-    Future<bool> placementCheck(PathNode node) async {
-        final Set<PathNode> unreachables = new Set<PathNode>.from(await pathfinder.connectivityCheck(level, flipTests: <PathNode>[node]));
 
-        for (final PathNode p in level.spawners) {
-            if (unreachables.contains(p)) {
-                return false;
-            }
-        }
-
-        for (final Enemy enemy in this.entities.whereType()) {
-            final Set<PathNode> enemyNodes = enemy.getNodesAtPos();
-            for (final PathNode node in enemyNodes) {
-                if (unreachables.contains(node)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
 
     @override
     void selectObject(Selectable selectable) {

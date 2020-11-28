@@ -7,6 +7,7 @@ import "package:js/js.dart" as JS;
 import "package:js/js_util.dart" as JsUtil;
 
 import '../../engine/engine.dart';
+import "../../entities/towertype.dart";
 import "../../level/datamap.dart";
 import "../../level/grid.dart";
 import "../../level/level.dart";
@@ -36,6 +37,11 @@ class Renderer3D extends Renderer {
 
     B.Material defaultMaterial;
     MeshProvider<SimpleLevelObject> defaultMeshProvider;
+
+    B.Material towerPreviewMaterial;
+    B.Mesh towerPreviewMesh;
+    TowerType towerPreviewType;
+    GridCell towerPreviewCell;
 
     B.Mesh hoverIndicator;
     B.Mesh selectionIndicator;
@@ -96,6 +102,14 @@ class Renderer3D extends Renderer {
 
         this.defaultMaterial = new B.StandardMaterial("defaultMaterial", scene);
         this.defaultMeshProvider = new MeshProvider<SimpleLevelObject>(this);
+
+        this.towerPreviewMaterial = new B.StandardMaterial("towerPreviewMaterial", scene)
+            ..diffuseColor.set(0.25, 0.5, 0.25)
+            ..emissiveColor.set(0.0, 0.5, 0.0)
+            ..specularColor.set(0, 0, 0)
+            ..alpha = 0.5
+            //..alphaMode = B.Engine.ALPHA_MAXIMIZED
+        ;
 
         this.resizeHandler = window.onResize.listen((Event event) { this.updateCanvasSize(); });
     }
@@ -166,6 +180,7 @@ class Renderer3D extends Renderer {
 
         if (selected == null) {
             this.selectionIndicator.isVisible = false;
+            this.clearTowerPreview();
         } else {
             this.selectionIndicator.isVisible = true;
             this.selectionIndicator.position.setFromGameCoords(selected.getModelPosition(), selected.getZPosition() + 3.0);
@@ -282,7 +297,7 @@ class Renderer3D extends Renderer {
     @override
     void destroy() {
         this.babylon.dispose();
-        this.resizeHandler.cancel();
+        resizeHandler.cancel();
     }
 
     void createDataMapDebugModel<D,A extends List<D>>(DataMap<D,A> map) {
@@ -358,6 +373,33 @@ class Renderer3D extends Renderer {
             mesh.isEnabled() &&
             (mesh?.metadata?.owner is Grid);
     }
+
+    void updateTowerPreview(TowerType type, GridCell cell) {
+        if (type == towerPreviewType && cell == towerPreviewCell) { return; }
+
+        if (type == null || cell == null) {
+            towerPreviewMesh?.dispose();
+            towerPreviewMesh = null;
+            towerPreviewCell = null;
+            towerPreviewType = null;
+        } else {
+            if (towerPreviewMesh == null || towerPreviewType != type) {
+                towerPreviewMesh?.dispose();
+
+                B.Mesh mesh = type.mesh;
+                mesh ??= defaultMeshProvider.provide(null);
+
+                towerPreviewMesh = mesh..material = towerPreviewMaterial;
+            }
+
+            towerPreviewMesh.position.setFromGameCoords(cell.getWorldPosition(), cell.getZPosition());
+            towerPreviewMesh.rotation.y = cell.getWorldRotation();
+
+            towerPreviewType = type;
+            towerPreviewCell = cell;
+        }
+    }
+    void clearTowerPreview() => updateTowerPreview(null, null);
 }
 
 class MeshInfo {
