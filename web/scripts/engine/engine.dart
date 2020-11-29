@@ -6,6 +6,7 @@ import "../level/level.dart";
 import "../level/pathnode.dart";
 import '../level/selectable.dart';
 import "../pathfinder/pathfinder.dart";
+import "../renderer/3d/renderer3d.dart";
 import "../renderer/renderer.dart";
 import '../ui/ui.dart';
 import "entity.dart";
@@ -13,7 +14,7 @@ import "inputhandler.dart";
 import "registry.dart";
 
 abstract class Engine {
-    Renderer renderer;
+    Renderer3D renderer;
     Level level;
     Set<Entity> entities = <Entity>{};
     final Set<Entity> _entityQueue = <Entity>{};
@@ -45,7 +46,7 @@ abstract class Engine {
 
     Element get container => renderer.container;
 
-    Engine(Renderer this.renderer, Element uiContainer) {
+    Engine(Renderer3D this.renderer, Element uiContainer) {
         renderer.engine = this;
         this.input = new InputHandler3D(this);
         this.uiController = new UIController(this, uiContainer);
@@ -134,6 +135,7 @@ abstract class Engine {
 
     void addEntity(Entity entity) {
         entity.engine = this;
+        entity.level = this.level;
         this._entityQueue.add(entity);
         this.renderer.addRenderable(entity);
     }
@@ -147,6 +149,7 @@ abstract class Engine {
 
     void setLevel(Level level) {
         this.level = level;
+        level.engine = this;
         this.renderer.addRenderables(this.level.objects);
     }
 
@@ -159,16 +162,22 @@ abstract class Engine {
             if (selectable != null) {
                 // select object
                 this.selected = selectable;
+                this.selected.onSelect();
             }
         } else {
             if (selectable == null) {
                 // deselect
+                this.selected?.onDeselect();
                 this.selected = null;
+
             } else if (selectable != selected) {
                 // select other object
+                this.selected?.onDeselect();
                 this.selected = selectable;
+                this.selected.onSelect();
             }
         }
+        renderer.clearTowerPreview();
     }
 
     Future<bool> placementCheck(PathNode node) async {

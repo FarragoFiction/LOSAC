@@ -1,12 +1,15 @@
 import 'dart:async';
 import "dart:html";
 import "dart:math" as Math;
+import "dart:typed_data";
 
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:LoaderLib/Loader.dart";
 import "package:js/js.dart" as JS;
 import "package:js/js_util.dart" as JsUtil;
 
 import '../../engine/engine.dart';
+import "../../entities/tower.dart";
 import "../../entities/towertype.dart";
 import "../../level/datamap.dart";
 import "../../level/grid.dart";
@@ -38,13 +41,22 @@ class Renderer3D extends Renderer {
     B.Material defaultMaterial;
     MeshProvider<SimpleLevelObject> defaultMeshProvider;
 
+    B.DepthRenderer depthRenderer;
+    B.Texture depthTexture;
+    B.Texture emptyTexture;
+
     B.Material towerPreviewMaterial;
-    B.Mesh towerPreviewMesh;
+    B.AbstractMesh towerPreviewMesh;
     TowerType towerPreviewType;
     GridCell towerPreviewCell;
 
-    B.Mesh hoverIndicator;
-    B.Mesh selectionIndicator;
+    B.Material rangeIndicatorMaterial;
+    B.Material rangePreviewMaterial;
+    B.AbstractMesh rangeIndicator;
+    B.AbstractMesh rangePreview;
+
+    B.AbstractMesh hoverIndicator;
+    B.AbstractMesh selectionIndicator;
     PickerPredicate pickerPredicateInterop;
     PickerPredicate gridPickerPredicateInterop;
 
@@ -52,7 +64,9 @@ class Renderer3D extends Renderer {
 
     Element pointerElement;
 
-    Renderer3D(CanvasElement this.canvas) {
+    Renderer3D(CanvasElement this.canvas);
+    @override
+    Future<void> initialise() async {
         this.babylon = new B.Engine(this.canvas, false);
         this.canvas.draggable = false;
         this.updateCanvasSize();
@@ -77,26 +91,25 @@ class Renderer3D extends Renderer {
             event.preventDefault();
         });
 
-        /*this.camera = new B.FreeCamera("Camera", B.Vector3(0,150,00), scene)
-            ..rotation.x = Math.pi * 0.5
-            ..upVector.set(0, 0, 1)
-            ..maxZ = 5000
-            ..attachControl(canvas);*/
-
         this.camera = new B.ArcRotateCamera("Camera", Math.pi/2, 0, 1000, new B.Vector3(0,0,0), scene)
             ..maxZ = 5000.0
             ..allowUpsideDown = false
-            //..attachControl(canvas, true, false, 1)
-            //..panningSensibility = 10
         ;
-        /*window.console.log(camera.inputs.attached);
-        final B.ArcRotateCameraPointersInput pointers = JsUtil.getProperty(camera.inputs.attached, "pointers");
-        window.console.log(pointers);
-        camera.panningAxis.set(1, 1, 1);
-        camera.inertia = 0;
-        camera.panningInertia = 0;
-        pointers.buttons.removeAt(0);*/
 
+        this.depthRenderer = scene.enableDepthRenderer(camera);
+        this.depthTexture = depthRenderer.getDepthMap();
+        /*this.emptyTexture = new B.RawTexture(new Uint8ClampedList.fromList(<int>[
+            0
+        ]), 1,1, B.Engine.TEXTUREFORMAT_LUMINANCE, scene, false, false, B.Texture.NEAREST_SAMPLINGMODE, B.Engine.TEXTURETYPE_UNSIGNED_BYTE)
+            ..wrapU = B.Texture.WRAP_ADDRESSMODE
+            ..wrapV = B.Texture.WRAP_ADDRESSMODE
+        ;*/
+        this.emptyTexture = new B.RawTexture(new Uint8ClampedList.fromList(<int>[
+            0,0,0,0
+        ]), 1,1, B.Engine.TEXTUREFORMAT_RGBA, scene, false, false, B.Texture.NEAREST_SAMPLINGMODE, B.Engine.TEXTURETYPE_UNSIGNED_BYTE)
+            ..wrapU = B.Texture.WRAP_ADDRESSMODE
+            ..wrapV = B.Texture.WRAP_ADDRESSMODE
+        ;
 
         this.scene.addLight(new B.DirectionalLight("sun", new B.Vector3(1,-5,1), scene));
 
@@ -108,8 +121,56 @@ class Renderer3D extends Renderer {
             ..emissiveColor.set(0.0, 0.5, 0.0)
             ..specularColor.set(0, 0, 0)
             ..alpha = 0.5
-            //..alphaMode = B.Engine.ALPHA_MAXIMIZED
         ;
+
+        this.rangePreviewMaterial = new B.StandardMaterial("rangePreviewMaterial", scene)
+            ..diffuseColor.set(0,0,0)
+            ..emissiveColor.set(0.0, 0.5, 0.0)
+            ..specularColor.set(0, 0, 0)
+            ..alpha = 0.5
+            ..backFaceCulling = false
+        ;
+        this.rangePreview = B.CylinderBuilder.CreateCylinder("rangePreview", B.CylinderBuilderCreateCylinderOptions(
+            diameter: 2,
+            height: 200,
+            tessellation: 24,
+        ), scene)
+            ..isVisible = false
+            ..material = rangePreviewMaterial
+        ;
+
+        /*this.rangeIndicatorMaterial = new B.StandardMaterial("rangeIndicatorMaterial", scene)
+            ..diffuseColor.set(0,0,0)
+            ..emissiveColor.set(0.75, 0.25, 0.25)
+            ..specularColor.set(0, 0, 0)
+            ..alpha = 0.5
+            ..backFaceCulling = false
+        ;*/
+        final String basicVert = await Loader.getResource("assets/shaders/basic.vert");
+        final String rangeFrag = await Loader.getResource("assets/shaders/range.frag");
+
+        this.rangeIndicatorMaterial = new B.ShaderMaterialWithAlphaTestTexture("rangeIndicatorMaterial", scene, B.ShaderMaterialShaderPath(
+            vertexSource: basicVert,
+            fragmentSource: rangeFrag
+        ), B.IShaderMaterialOptions(
+            needAlphaTesting: true,
+            attributes: <String>["position", "normal", "uv", "color"],
+            uniforms: <String>["world", "viewProjection", "worldViewProjection"],
+            samplers: <String>["depth"],
+            defines: <String>["#define INSTANCES"]
+        ),emptyTexture)
+            ..setTexture("depth", depthTexture)
+        ;
+        //this.rangeIndicator
+        B.Mesh r= B.CylinderBuilder.CreateCylinder("rangeIndicator", B.CylinderBuilderCreateCylinderOptions(
+            diameter: 2,
+            height: 200,
+            tessellation: 24,
+        ), scene)
+            ..isVisible = false
+            ..material = rangeIndicatorMaterial
+        ;
+        rangeIndicator = r.createInstance("aaaa");
 
         this.resizeHandler = window.onResize.listen((Event event) { this.updateCanvasSize(); });
     }
@@ -180,6 +241,7 @@ class Renderer3D extends Renderer {
 
         if (selected == null) {
             this.selectionIndicator.isVisible = false;
+            this.rangeIndicator.isVisible = false;
             this.clearTowerPreview();
         } else {
             this.selectionIndicator.isVisible = true;
@@ -382,6 +444,7 @@ class Renderer3D extends Renderer {
             towerPreviewMesh = null;
             towerPreviewCell = null;
             towerPreviewType = null;
+            rangePreview.isVisible = false;
         } else {
             if (towerPreviewMesh == null || towerPreviewType != type) {
                 towerPreviewMesh?.dispose();
@@ -394,6 +457,14 @@ class Renderer3D extends Renderer {
 
             towerPreviewMesh.position.setFromGameCoords(cell.getWorldPosition(), cell.getZPosition());
             towerPreviewMesh.rotation.y = cell.getWorldRotation();
+
+            if (type.weapon != null) {
+                rangePreview.position.setFrom(towerPreviewMesh.position);
+                rangePreview.scaling.set(type.weapon.range, 1, type.weapon.range);
+                rangePreview.isVisible = true;
+            } else {
+                rangePreview.isVisible = false;
+            }
 
             towerPreviewType = type;
             towerPreviewCell = cell;

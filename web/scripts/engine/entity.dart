@@ -1,4 +1,4 @@
-
+import "../level/level.dart";
 import "../level/levelobject.dart";
 import "engine.dart";
 

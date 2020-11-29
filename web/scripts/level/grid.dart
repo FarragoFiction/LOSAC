@@ -11,6 +11,7 @@ import "../ui/ui.dart";
 import "../utility/extensions.dart";
 import "connectible.dart";
 import "domainmap.dart";
+import "level.dart";
 import 'levelheightmap.dart';
 import "levelobject.dart";
 import "pathnode.dart";
@@ -282,18 +283,10 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
         return cell.getSelectable(loc);
     }
 
-    void placeTower(int x, int y, Tower tower) {
+    Future<void> placeTower(int x, int y, Tower tower) async {
         final GridCell cell = getCell(x, y);
         if (cell == null) { throw Exception("invalid cell $x,$y"); }
-        final B.Vector2 worldCoords = cell.getWorldPosition();
-        final double rot = cell.getWorldRotation();
-        tower
-            ..gridCell = cell
-            ..position.setFrom(worldCoords)
-            ..rot_angle = rot
-            ..turretAngle = rot
-            ..prevTurretAngle = rot;
-        cell.tower = tower;
+        return cell.placeTower(tower);
     }
 
     @override
@@ -314,6 +307,9 @@ class GridCell extends LevelObject with Selectable {
 
     @override
     String get name => "gridcell";
+
+    @override
+    Level get level => grid.level;
 
     GridCell(Grid this.grid) {
         this.parentObject = grid;
@@ -358,4 +354,24 @@ class GridCell extends LevelObject with Selectable {
 
     @override
     SelectionDisplay<GridCell> createSelectionUI(UIController controller) => new GridCellSelectionDisplay(controller);
+
+    Future<void> placeTower(Tower tower) async {
+
+        if (tower.towerType.blocksPath) {
+            await level.engine.pathfinder.flipNodeState(<PathNode>[node]);
+            toggleBlocked();
+            await level.engine.pathfinder.recalculatePathData(level);
+        }
+
+        final B.Vector2 worldCoords = this.getWorldPosition();
+        final double rot = this.getWorldRotation();
+        tower
+            ..gridCell = this
+            ..position.setFrom(worldCoords)
+            ..rot_angle = rot
+            ..turretAngle = rot
+            ..prevTurretAngle = rot;
+        this.tower = tower;
+        this.level.engine.addEntity(tower);
+    }
 }

@@ -99,7 +99,6 @@ class GridCellSelectionDisplay extends SelectionDisplay<GridCell> {
     Future<void> postSelect() async {
         placementAllowed = await engine.placementCheck(selected.node);
         blockChecked = true;
-        print("placement allowed: $placementAllowed");
 
         update();
     }

@@ -10,6 +10,8 @@ abstract class Renderer {
 
     Element container;
 
+    Future<void> initialise();
+
     void draw([double interpolation]) {}
     void addRenderable(Object object) {}
     void addRenderables(Iterable<Object> objects) {

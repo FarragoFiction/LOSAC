@@ -1,6 +1,7 @@
 import "dart:html";
 import "dart:math" as Math;
 
+import "../engine/engine.dart";
 import "../renderer/2d/bounds.dart";
 import "connectible.dart";
 import "domainmap.dart";
@@ -10,8 +11,9 @@ import "pathnode.dart";
 import "terrain.dart";
 
 class Level {
+    Engine engine;
 
-    Set<LevelObject> objects = <LevelObject>{};
+    Set<SimpleLevelObject> objects = <SimpleLevelObject>{};
     Iterable<Connectible> connectibles;
 
     final List<PathNode> pathNodes = <PathNode>[];
@@ -29,6 +31,11 @@ class Level {
     Level() {
         connectibles = objects.whereType();
         connectedNodes = pathNodes.where((PathNode node) => !node.isolated);
+    }
+
+    void addObject(SimpleLevelObject object) {
+        this.objects.add(object);
+        object.level = this;
     }
 
     void derivePathNodes() {
@@ -79,7 +86,7 @@ class Level {
     }
 
     void buildDataMaps() {
-        this.bounds = outerBounds(objects.map((LevelObject o) => o.bounds));
+        this.bounds = outerBounds(objects.whereType<LevelObject>().map((LevelObject o) => o.bounds));
 
         domainMap = new DomainMap(bounds.left, bounds.top, bounds.width, bounds.height);
         levelHeightMap = new LevelHeightMap(bounds.left, bounds.top, bounds.width, bounds.height);

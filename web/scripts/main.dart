@@ -35,6 +35,7 @@ Future<void> main() async {
     document.body.append(fpsElement);*/
 
     final Renderer renderer = new Renderer3D(testCanvas);
+    await renderer.initialise();
     final Game game = new Game(renderer, querySelector("#uicontainer"));
 
     final Pathfinder pathfinder = new Pathfinder();
@@ -51,7 +52,7 @@ Future<void> main() async {
     testObject.addSubObject(new LevelObject()..pos_x = -10..rot_angle=-0.6..scale=0.5);
     testObject.addSubObject(new LevelObject()..pos_x = 10..rot_angle=0.6..scale=0.5);
 
-    testLevel.objects.add(testObject);*/
+    testLevel.addObject(testObject);*/
 
     // grid
 
@@ -76,13 +77,13 @@ Future<void> main() async {
         c.state = GridCellState.hole;
     }
 
-    cells = testGrid.getCells(0, 8, 4, 8);
+    /*cells = testGrid.getCells(0, 8, 4, 8);
     for (final GridCell c in cells) {
         c.state = GridCellState.blocked;
-    }
+    }*/
 
     testGrid.updateConnectors();
-    testLevel.objects.add(testGrid);
+    testLevel.addObject(testGrid);
 
     // side grid
 
@@ -91,7 +92,7 @@ Future<void> main() async {
         ..rot_angle = 0.75
         ..meshProvider = gridMeshProvider;
     sideGrid.updateConnectors();
-    testLevel.objects.add(sideGrid);
+    testLevel.addObject(sideGrid);
 
     // curve
 
@@ -114,7 +115,7 @@ Future<void> main() async {
 
     testPath.recentreOrigin();
 
-    testLevel.objects.add(testPath);
+    testLevel.addObject(testPath);
 
     // entrances and exit
 
@@ -128,12 +129,12 @@ Future<void> main() async {
 
     testPath.recentreOrigin();
 
-    testLevel.objects.add(testExit);
+    testLevel.addObject(testExit);
 
     final SpawnerObject testSpawner1 = new SpawnerObject()
         ..meshProvider = endCapMeshProvider;
     testSpawner1.connector.connectAndOrient(testGrid.getCell(0, 9).down);
-    testLevel.objects.add(testSpawner1);
+    testLevel.addObject(testSpawner1);
 
     // build path nodes
 
@@ -188,14 +189,12 @@ Future<void> main() async {
 
     {
         final Tower tower = new Tower(testTowerType);
-        sideGrid.placeTower(3, 0, tower);
-        game.addEntity(tower);
+        await sideGrid.placeTower(3, 0, tower);
     }
 
     {
         final Tower tower = new Tower(testTowerType);
-        testGrid.placeTower(3, 8, tower);
-        game.addEntity(tower);
+        await testGrid.placeTower(3, 8, tower);
     }
 
     renderer.centreOnObject(testLevel);

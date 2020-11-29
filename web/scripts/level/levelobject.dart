@@ -4,6 +4,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "package:collection/collection.dart";
 import "package:js/js.dart" as JS;
 
+import "../engine/engine.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import "../renderer/3d/models/meshprovider.dart";
@@ -12,6 +13,8 @@ import "../utility/extensions.dart";
 import "level.dart";
 
 class SimpleLevelObject with Renderable3D {
+    Level level;
+
     B.Vector2 position = B.Vector2.Zero();
     double zPosition = 0;
 
@@ -29,8 +32,6 @@ class SimpleLevelObject with Renderable3D {
 
         this.updateMeshPosition();
     }
-
-    Level get level => this.renderer?.engine?.level;
 
     B.Vector2 getModelPosition() => this.position;
     num getModelRotation() => 0;

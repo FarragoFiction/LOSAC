@@ -13,6 +13,7 @@ import "../level/levelobject.dart";
 import "../level/selectable.dart";
 import "../renderer/2d/matrix.dart";
 import "../ui/ui.dart";
+import "../utility/extensions.dart";
 import "../utility/towerutils.dart";
 import "enemy.dart";
 import "projectiles/projectile.dart";
@@ -327,4 +328,19 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
 
     /*@override
     SelectionDisplay<Tower> createSelectionUI(UIController controller) => null;*/
+
+    @override
+    void onSelect() {
+        if (this.towerType.weapon != null) {
+            this.renderer.rangeIndicator
+                ..position.setFrom(this.mesh.position)
+                ..scaling.set(this.towerType.weapon.range, 1, this.towerType.weapon.range)
+                ..isVisible = true;
+        }
+    }
+
+    @override
+    void onDeselect() {
+        this.renderer.rangeIndicator.isVisible = false;
+    }
 }
