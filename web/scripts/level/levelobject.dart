@@ -27,7 +27,7 @@ class SimpleLevelObject with Renderable3D {
         if (this.meshProvider != null) {
             this.mesh = this.meshProvider.provide(this);
         } else {
-            this.mesh = this.renderer.defaultMeshProvider.provide(this);
+            this.mesh = this.renderer.standardAssets.defaultMeshProvider.provide(this);
         }
 
         this.updateMeshPosition();

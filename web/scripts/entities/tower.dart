@@ -332,7 +332,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
     @override
     void onSelect() {
         if (this.towerType.weapon != null) {
-            this.renderer.rangeIndicator
+            this.renderer.standardAssets.rangeIndicator
                 ..position.setFrom(this.mesh.position)
                 ..scaling.set(this.towerType.weapon.range, 1, this.towerType.weapon.range)
                 ..isVisible = true;
@@ -341,6 +341,6 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
 
     @override
     void onDeselect() {
-        this.renderer.rangeIndicator.isVisible = false;
+        this.renderer.standardAssets.rangeIndicator.isVisible = false;
     }
 }

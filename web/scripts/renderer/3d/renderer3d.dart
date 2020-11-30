@@ -19,6 +19,7 @@ import '../../level/selectable.dart';
 import "../../utility/extensions.dart";
 import "../renderer.dart";
 import 'models/meshprovider.dart';
+import 'models/standardassets.dart';
 import 'renderable3d.dart';
 
 typedef PickerPredicate = bool Function(B.AbstractMesh mesh);
@@ -38,27 +39,15 @@ class Renderer3D extends Renderer {
 
     Set<Renderable3D> renderList = <Renderable3D>{};
 
-    B.Material defaultMaterial;
-    MeshProvider<SimpleLevelObject> defaultMeshProvider;
+    /// container for various standard default models and textures
+    Renderer3DStandardAssets standardAssets;
 
     B.DepthRenderer depthRenderer;
     B.Texture depthTexture;
-    B.Texture emptyTexture;
 
-    B.Material towerPreviewMaterial;
     B.AbstractMesh towerPreviewMesh;
     TowerType towerPreviewType;
     GridCell towerPreviewCell;
-
-    B.Material rangeIndicatorMaterial;
-    B.Material rangePreviewMaterial;
-    B.AbstractMesh rangeIndicator;
-    B.AbstractMesh rangePreview;
-
-    B.AbstractMesh hoverIndicator;
-    B.AbstractMesh selectionIndicator;
-    PickerPredicate pickerPredicateInterop;
-    PickerPredicate gridPickerPredicateInterop;
 
     StreamSubscription<Event> resizeHandler;
 
@@ -74,19 +63,6 @@ class Renderer3D extends Renderer {
         this.scene = new B.Scene(this.babylon);
         this.container = this.canvas;
 
-        this.pickerPredicateInterop = JS.allowInterop(this.pickerPredicate);
-        this.gridPickerPredicateInterop = JS.allowInterop(this.gridPickerPredicate);
-
-        this.hoverIndicator = B.PlaneBuilder.CreatePlane("hover", B.PlaneBuilderCreatePlaneOptions(size:1))
-            ..rotation.x = Math.pi * 0.5
-            ..isVisible = false;
-        this.scene.addMesh(hoverIndicator);
-
-        this.selectionIndicator = B.PlaneBuilder.CreatePlane("selection", B.PlaneBuilderCreatePlaneOptions(size:1))
-            ..rotation.x = Math.pi * 0.5
-            ..isVisible = false;
-        this.scene.addMesh(selectionIndicator);
-
         this.canvas.onContextMenu.listen((MouseEvent event) {
             event.preventDefault();
         });
@@ -98,79 +74,12 @@ class Renderer3D extends Renderer {
 
         this.depthRenderer = scene.enableDepthRenderer(camera);
         this.depthTexture = depthRenderer.getDepthMap();
-        /*this.emptyTexture = new B.RawTexture(new Uint8ClampedList.fromList(<int>[
-            0
-        ]), 1,1, B.Engine.TEXTUREFORMAT_LUMINANCE, scene, false, false, B.Texture.NEAREST_SAMPLINGMODE, B.Engine.TEXTURETYPE_UNSIGNED_BYTE)
-            ..wrapU = B.Texture.WRAP_ADDRESSMODE
-            ..wrapV = B.Texture.WRAP_ADDRESSMODE
-        ;*/
-        this.emptyTexture = new B.RawTexture(new Uint8ClampedList.fromList(<int>[
-            0,0,0,0
-        ]), 1,1, B.Engine.TEXTUREFORMAT_RGBA, scene, false, false, B.Texture.NEAREST_SAMPLINGMODE, B.Engine.TEXTURETYPE_UNSIGNED_BYTE)
-            ..wrapU = B.Texture.WRAP_ADDRESSMODE
-            ..wrapV = B.Texture.WRAP_ADDRESSMODE
-        ;
 
         this.scene.addLight(new B.DirectionalLight("sun", new B.Vector3(1,-5,1), scene));
 
-        this.defaultMaterial = new B.StandardMaterial("defaultMaterial", scene);
-        this.defaultMeshProvider = new MeshProvider<SimpleLevelObject>(this);
-
-        this.towerPreviewMaterial = new B.StandardMaterial("towerPreviewMaterial", scene)
-            ..diffuseColor.set(0.25, 0.5, 0.25)
-            ..emissiveColor.set(0.0, 0.5, 0.0)
-            ..specularColor.set(0, 0, 0)
-            ..alpha = 0.5
-        ;
-
-        this.rangePreviewMaterial = new B.StandardMaterial("rangePreviewMaterial", scene)
-            ..diffuseColor.set(0,0,0)
-            ..emissiveColor.set(0.0, 0.5, 0.0)
-            ..specularColor.set(0, 0, 0)
-            ..alpha = 0.5
-            ..backFaceCulling = false
-        ;
-        this.rangePreview = B.CylinderBuilder.CreateCylinder("rangePreview", B.CylinderBuilderCreateCylinderOptions(
-            diameter: 2,
-            height: 200,
-            tessellation: 24,
-        ), scene)
-            ..isVisible = false
-            ..material = rangePreviewMaterial
-        ;
-
-        /*this.rangeIndicatorMaterial = new B.StandardMaterial("rangeIndicatorMaterial", scene)
-            ..diffuseColor.set(0,0,0)
-            ..emissiveColor.set(0.75, 0.25, 0.25)
-            ..specularColor.set(0, 0, 0)
-            ..alpha = 0.5
-            ..backFaceCulling = false
-        ;*/
-        final String basicVert = await Loader.getResource("assets/shaders/basic.vert");
-        final String rangeFrag = await Loader.getResource("assets/shaders/range.frag");
-
-        this.rangeIndicatorMaterial = new B.ShaderMaterialWithAlphaTestTexture("rangeIndicatorMaterial", scene, B.ShaderMaterialShaderPath(
-            vertexSource: basicVert,
-            fragmentSource: rangeFrag
-        ), B.IShaderMaterialOptions(
-            needAlphaTesting: true,
-            attributes: <String>["position", "normal", "uv", "color"],
-            uniforms: <String>["world", "viewProjection", "worldViewProjection"],
-            samplers: <String>["depth"],
-            defines: <String>["#define INSTANCES"]
-        ),emptyTexture)
-            ..setTexture("depth", depthTexture)
-        ;
-        //this.rangeIndicator
-        B.Mesh r= B.CylinderBuilder.CreateCylinder("rangeIndicator", B.CylinderBuilderCreateCylinderOptions(
-            diameter: 2,
-            height: 200,
-            tessellation: 24,
-        ), scene)
-            ..isVisible = false
-            ..material = rangeIndicatorMaterial
-        ;
-        rangeIndicator = r.createInstance("aaaa");
+        // init standard models and textures
+        this.standardAssets = new Renderer3DStandardAssets(this);
+        await standardAssets.initialise();
 
         this.resizeHandler = window.onResize.listen((Event event) { this.updateCanvasSize(); });
     }
@@ -223,6 +132,7 @@ class Renderer3D extends Renderer {
 
     void updateCanvasSize() {
         babylon.setSize(window.innerWidth, window.innerHeight);
+        depthRenderer?.getDepthMap()?.resize(JsUtil.jsify(<String,int>{"width":window.innerWidth, "height":window.innerHeight}));
         engine?.uiController?.resize();
     }
 
@@ -231,23 +141,23 @@ class Renderer3D extends Renderer {
         final Selectable selected = this.engine.selected;
 
         if (hover == null || hover == selected) {
-            this.hoverIndicator.isVisible = false;
+            this.standardAssets.hoverIndicator.isVisible = false;
         } else {
-            this.hoverIndicator.isVisible = true;
-            this.hoverIndicator.position.setFromGameCoords(hover.getModelPosition(), hover.getZPosition() + 3.0);
-            this.hoverIndicator.rotation.y = hover.getModelRotation();
-            this.hoverIndicator.scaling.setAll(20);
+            this.standardAssets.hoverIndicator.isVisible = true;
+            this.standardAssets.hoverIndicator.position.setFromGameCoords(hover.getModelPosition(), hover.getZPosition() + 3.0);
+            this.standardAssets.hoverIndicator.rotation.y = hover.getModelRotation();
+            this.standardAssets.hoverIndicator.scaling.setAll(20);
         }
 
         if (selected == null) {
-            this.selectionIndicator.isVisible = false;
-            this.rangeIndicator.isVisible = false;
+            this.standardAssets.selectionIndicator.isVisible = false;
+            this.standardAssets.rangeIndicator.isVisible = false;
             this.clearTowerPreview();
         } else {
-            this.selectionIndicator.isVisible = true;
-            this.selectionIndicator.position.setFromGameCoords(selected.getModelPosition(), selected.getZPosition() + 3.0);
-            this.selectionIndicator.rotation.y = selected.getModelRotation();
-            this.selectionIndicator.scaling.setAll(25);
+            this.standardAssets.selectionIndicator.isVisible = true;
+            this.standardAssets.selectionIndicator.position.setFromGameCoords(selected.getModelPosition(), selected.getZPosition() + 3.0);
+            this.standardAssets.selectionIndicator.rotation.y = selected.getModelRotation();
+            this.standardAssets.selectionIndicator.scaling.setAll(25);
         }
     }
 
@@ -398,10 +308,10 @@ class Renderer3D extends Renderer {
         y ??= this.scene.pointerY;
 
         final B.Ray ray = scene.createPickingRay(x, y, null, camera);
-        final B.PickingInfo pick = scene.pickWithRay(ray, pickerPredicateInterop, true);
+        final B.PickingInfo pick = scene.pickWithRay(ray, standardAssets.pickerPredicateInterop, true);
 
         if (pick.pickedMesh == null) {
-            final B.PickingInfo gridPick = scene.pickWithRay(ray, gridPickerPredicateInterop, true);
+            final B.PickingInfo gridPick = scene.pickWithRay(ray, standardAssets.gridPickerPredicateInterop, true);
             if (gridPick.pickedMesh == null) {
                 return null;
             } else if (gridPick.pickedMesh?.metadata?.owner is Grid) {
@@ -444,26 +354,26 @@ class Renderer3D extends Renderer {
             towerPreviewMesh = null;
             towerPreviewCell = null;
             towerPreviewType = null;
-            rangePreview.isVisible = false;
+            standardAssets.rangePreview.isVisible = false;
         } else {
             if (towerPreviewMesh == null || towerPreviewType != type) {
                 towerPreviewMesh?.dispose();
 
                 B.Mesh mesh = type.mesh;
-                mesh ??= defaultMeshProvider.provide(null);
+                mesh ??= standardAssets.defaultMeshProvider.provide(null);
 
-                towerPreviewMesh = mesh..material = towerPreviewMaterial;
+                towerPreviewMesh = mesh..material = standardAssets.towerPreviewMaterial;
             }
 
             towerPreviewMesh.position.setFromGameCoords(cell.getWorldPosition(), cell.getZPosition());
             towerPreviewMesh.rotation.y = cell.getWorldRotation();
 
             if (type.weapon != null) {
-                rangePreview.position.setFrom(towerPreviewMesh.position);
-                rangePreview.scaling.set(type.weapon.range, 1, type.weapon.range);
-                rangePreview.isVisible = true;
+                standardAssets.rangePreview.position.setFrom(towerPreviewMesh.position);
+                standardAssets.rangePreview.scaling.set(type.weapon.range, 1, type.weapon.range);
+                standardAssets.rangePreview.isVisible = true;
             } else {
-                rangePreview.isVisible = false;
+                standardAssets.rangePreview.isVisible = false;
             }
 
             towerPreviewType = type;
