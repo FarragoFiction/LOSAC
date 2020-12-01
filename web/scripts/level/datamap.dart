@@ -124,7 +124,7 @@ abstract class DataMap<Data, Array extends List<Data>> {
     }
 
     void copyDataFrom(DataMap<Data,Array> other) {
-        print("this: $pos_x,$pos_y ${width}x$height, other: ${other.pos_x},${other.pos_y} ${other.width}x${other.height}");
+        //print("this: $pos_x,$pos_y ${width}x$height, other: ${other.pos_x},${other.pos_y} ${other.width}x${other.height}");
         final int dx = (pos_x - other.pos_x) ~/ cellSize;
         final int dy = (pos_y - other.pos_y) ~/ cellSize;
         final DataMapRegion<Data,Array> mapping = other.subRegion(dx,dy, width, height);

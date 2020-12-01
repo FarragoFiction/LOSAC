@@ -374,4 +374,43 @@ class GridCell extends LevelObject with Selectable {
         this.tower = tower;
         this.level.engine.addEntity(tower);
     }
+
+    Future<void> removeTower() async {
+        if (this.tower == null) { return; }
+
+        if (tower.towerType.blocksPath) {
+            await level.engine.pathfinder.flipNodeState(<PathNode>[node]);
+            toggleBlocked();
+            await level.engine.pathfinder.recalculatePathData(level);
+        }
+
+        this.tower.kill();
+        this.tower = null;
+    }
+
+    Future<void> replaceTower(Tower replacement) async {
+        final bool currentBlocks = tower.towerType.blocksPath;
+        final bool replacementBlocks = replacement.towerType.blocksPath;
+
+        if (currentBlocks ^ replacementBlocks) {
+            await level.engine.pathfinder.flipNodeState(<PathNode>[node]);
+            toggleBlocked();
+            await level.engine.pathfinder.recalculatePathData(level);
+        }
+
+        tower.kill();
+
+        tower = replacement;
+
+        final B.Vector2 worldCoords = this.getWorldPosition();
+        final double rot = this.getWorldRotation();
+        tower
+            ..gridCell = this
+            ..position.setFrom(worldCoords)
+            ..rot_angle = rot
+            ..turretAngle = rot
+            ..prevTurretAngle = rot;
+        this.tower = tower;
+        this.level.engine.addEntity(tower);
+    }
 }

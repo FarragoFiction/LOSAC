@@ -27,7 +27,6 @@ Future<void> main() async {
     print("LOSAC yo");
 
     final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600);//..style.border="1px solid black";
-    //final CanvasRenderingContext2D ctx = testCanvas.context2D;
 
     querySelector("#canvascontainer").append(testCanvas);
 
@@ -44,15 +43,6 @@ Future<void> main() async {
     final Terrain terrain = new Terrain();
     renderer.addRenderable(terrain);
     testLevel.terrain = terrain;
-
-    // basic object test
-
-    /*final LevelObject testObject = new LevelObject()..pos_x = 250..pos_y = 250..rot_angle = 0.5..scale=8.0;
-
-    testObject.addSubObject(new LevelObject()..pos_x = -10..rot_angle=-0.6..scale=0.5);
-    testObject.addSubObject(new LevelObject()..pos_x = 10..rot_angle=0.6..scale=0.5);
-
-    testLevel.addObject(testObject);*/
 
     // grid
 
@@ -76,11 +66,6 @@ Future<void> main() async {
     for (final GridCell c in cells) {
         c.state = GridCellState.hole;
     }
-
-    /*cells = testGrid.getCells(0, 8, 4, 8);
-    for (final GridCell c in cells) {
-        c.state = GridCellState.blocked;
-    }*/
 
     testGrid.updateConnectors();
     testLevel.addObject(testGrid);
@@ -123,7 +108,6 @@ Future<void> main() async {
         ..meshProvider = endCapMeshProvider;//..pos_x=500..pos_y=500;
 
     testExit.connector.connectAndOrient(testPath.startConnector);
-    //testPath.startConnector.connectAndOrient(testExit.connector);
 
     testPath.rebuildSegments();
 
@@ -167,25 +151,11 @@ Future<void> main() async {
     final TowerType testTowerType = new TowerType();
     game.towerTypeRegistry.register(testTowerType);
 
-    /*final Tower testTower = new Tower(testTowerType);
-    //final Point<num> towerCoord = sideGrid.getCell(2, 0).getWorldPosition();
-    final Point<num> towerCoord = testGrid.getCell(0, 8).getWorldPosition();
-    testTower..pos_x = towerCoord.x..pos_y = towerCoord.y;*/
-
     game
         ..pathfinder = pathfinder
         ..setLevel(testLevel)
         //..fpsElement = fpsElement
         ..start();
-
-    //game.addEntity(testTower);
-
-    /*const int towers = 5;
-    for (int i=0; i<towers; i++) {
-        final Tower tower = new Tower(testTowerType);
-        testGrid.placeTower(i, 8, tower);
-        game.addEntity(tower);
-    }*/
 
     {
         final Tower tower = new Tower(testTowerType);
@@ -200,7 +170,6 @@ Future<void> main() async {
     renderer.centreOnObject(testLevel);
     r3d.initCameraBounds(testLevel);
 
-    //game.spawnEnemy(testEnemyType, testSpawner1);
     int n = 0;
     new Timer.periodic(const Duration(milliseconds: 1500), (Timer t) {
         game.spawnEnemy(testEnemyType, testSpawner1);

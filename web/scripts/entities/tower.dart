@@ -19,6 +19,14 @@ import "enemy.dart";
 import "projectiles/projectile.dart";
 import "towertype.dart";
 
+enum TowerState {
+    ready,
+    building,
+    upgrading,
+    selling,
+    busy
+}
+
 class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, Selectable {
     final TowerType towerType;
 
@@ -28,6 +36,10 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
     int _sleep = 0;
     int _sleepCounter = 0;
     static const int _sleepFrames = 10;
+
+    TowerState state = TowerState.ready;
+    double buildTimer = 0;
+    TowerType upgradeTowerType;
 
     double weaponCooldown = 0;
     int currentBurst = 0;
@@ -64,69 +76,172 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
 
     @override
     void logicUpdate([num dt = 0]) {
-        if (towerType.turreted) {
-            // we have a turret, and need to determine if we're angled right
-            updateTargetAngle();
+        if (state == TowerState.busy) {
+            // busy blocks all action, including timers...
+            // this state is for when we're waiting on another thread to complete
+        } else if (state == TowerState.ready) {
+            // we are built and operational!
+            // evaluate weapon targets, sort out buffing, etc
 
-            // how far we are off pointing at the enemy
-            final double diff = angleDiff(this.turretAngle, targetAngle);
-
-            this.prevTurretAngle = this.turretAngle;
-
-            this.turretAngle -= diff.sign * Math.min(diff.abs(), towerType.turnRate * dt);
-        }
-
-        if (weaponCooldown > 0) {
-            weaponCooldown = Math.max(0, weaponCooldown - dt);
-        } else {
-            // if the tower is in a sleep cycle, skip targeting
-            if (sleeping) {
-                if (this._sleep >= 0) {
-                    this._sleep--;
-                    return;
-                }
-            }
-            evaluateTargets();
-            updateTargetAngle();
-            // line up and shoot at previously targeted enemies
-            if (!targets.isEmpty) {
-                // wakey wakey
-                sleeping = false;
-                _sleepCounter = 0;
+            // only evaluate weapon related stuff if we actually have a weapon...
+            if (towerType.weapon != null) {
 
                 if (towerType.turreted) {
-                    // we have a turret and need to work out if we're pointing the right way to shoot
+                    // we have a turret, and need to determine if we're angled right
+                    updateTargetAngle();
+
+                    // how far we are off pointing at the enemy
                     final double diff = angleDiff(this.turretAngle, targetAngle);
 
-                    if(diff.abs() <= TowerType.fireAngleFuzz || diff.abs() <= towerType.fireAngle) {
-                        // if the angle is less than the fire angle limit, attack!
-                        for (final Enemy target in targets) {
-                            attack(target);
-                        }
-                        _setCooldown();
-                    } else {
-                        // if the angle is greater, delay the attack
-                        weaponCooldown = dt;
-                    }
-                } else {
-                    // no turret, just fire
-                    for (final Enemy target in targets) {
-                        attack(target);
-                    }
-                    _setCooldown();
+                    this.prevTurretAngle = this.turretAngle;
+
+                    this.turretAngle -= diff.sign * Math.min(diff.abs(), towerType.turnRate * dt);
                 }
-            } else {
-                // count down to sleep cycle
-                _sleepCounter++;
-                if (_sleepCounter > _sleepFrames) {
-                    sleeping = true; // ZZzzzz...
+
+                if (weaponCooldown > 0) {
+                    weaponCooldown = Math.max(0, weaponCooldown - dt);
+                } else {
+                    // if the tower is in a sleep cycle, skip targeting
+                    if (sleeping) {
+                        if (this._sleep >= 0) {
+                            this._sleep--;
+                            return;
+                        }
+                    }
+                    evaluateTargets();
+                    updateTargetAngle();
+                    // line up and shoot at previously targeted enemies
+                    if (!targets.isEmpty) {
+                        // wakey wakey
+                        sleeping = false;
+                        _sleepCounter = 0;
+
+                        if (towerType.turreted) {
+                            // we have a turret and need to work out if we're pointing the right way to shoot
+                            final double diff = angleDiff(this.turretAngle, targetAngle);
+
+                            if (diff.abs() <= TowerType.fireAngleFuzz || diff.abs() <= towerType.fireAngle) {
+                                // if the angle is less than the fire angle limit, attack!
+                                for (final Enemy target in targets) {
+                                    attack(target);
+                                }
+                                _setCooldown();
+                            } else {
+                                // if the angle is greater, delay the attack
+                                weaponCooldown = dt;
+                            }
+                        } else {
+                            // no turret, just fire
+                            for (final Enemy target in targets) {
+                                attack(target);
+                            }
+                            _setCooldown();
+                        }
+                    } else {
+                        // count down to sleep cycle
+                        _sleepCounter++;
+                        if (_sleepCounter > _sleepFrames) {
+                            sleeping = true; // ZZzzzz...
+                        }
+                    }
+                    if (sleeping) {
+                        // set sleep time for a new cycle
+                        _sleep = _sleepFrames;
+                    }
                 }
             }
-            if(sleeping) {
-                // set sleep time for a new cycle
-                _sleep = _sleepFrames;
+        } else {
+            // we're in one of the other states, which means we're building, upgrading or selling
+
+            if (buildTimer > 0) {
+                // if the build timer is running, decrement it
+                buildTimer = Math.max(0, buildTimer - dt);
+            } else {
+                // if the build timer is at zero, act based on our state
+
+                if (state == TowerState.building) {
+                    // a building tower simply completes and becomes ready
+                    this.state = TowerState.ready;
+                } else if (state == TowerState.selling) {
+                    // a selling tower completes its sequence and deconstructs
+                    _completeSell();
+                } else if (state == TowerState.upgrading) {
+                    // an upgrading tower completes its upgrade and is replaced
+                    _completeUpgrade();
+                }
             }
         }
+    }
+
+    void startBuilding() {
+        if (state != TowerState.ready) {
+            throw Exception("Invalid tower state, cannot start building: $state");
+        }
+
+        this.state = TowerState.building;
+        this.buildTimer = this.towerType.buildTime;
+    }
+
+    void upgrade(TowerType upgradeTo, [bool instant = false]) {
+        if (state != TowerState.ready) {
+            throw Exception("Invalid tower state, cannot start upgrade: $state");
+        }
+        upgradeTowerType = upgradeTo;
+        this.state = TowerState.upgrading;
+        if (instant) {
+            _completeUpgrade();
+            return;
+        }
+
+        this.buildTimer = upgradeTowerType.buildTime;
+    }
+    Future<void> _completeUpgrade() async {
+        this.state = TowerState.busy;
+
+        final Tower newTower = new Tower(upgradeTowerType);
+        await this.gridCell.replaceTower(newTower);
+
+        if (engine.selected == this) {
+            engine.selectObject(newTower);
+        }
+    }
+
+    void sell([bool instant = false]) {
+        if (state != TowerState.ready) {
+            throw Exception("Invalid tower state, cannot start sell: $state");
+        }
+        this.state = TowerState.selling;
+
+        if (instant) {
+            _completeSell();
+            return;
+        }
+
+        this.buildTimer = towerType.buildTime;
+    }
+    Future<void> _completeSell() async {
+        this.state = TowerState.busy;
+
+        await this.gridCell.removeTower();
+
+        if (engine.selected == this) {
+            engine.selectObject(this.gridCell);
+        }
+
+        // todo: refund resources here
+    }
+
+    /// Build, upgrade or sell progress as a 0-1, for display purposes
+    double getProgress() {
+        if (state == TowerState.ready) { return 1; }
+
+        if (state == TowerState.selling || state == TowerState.building) {
+            return 1 - (buildTimer / towerType.buildTime);
+        } else if (state == TowerState.upgrading) {
+            return 1 - (buildTimer / upgradeTowerType.buildTime);
+        }
+
+        return 0;
     }
 
     void _setCooldown() {
@@ -326,8 +441,8 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
         return z;
     }
 
-    /*@override
-    SelectionDisplay<Tower> createSelectionUI(UIController controller) => null;*/
+    @override
+    SelectionDisplay<Tower> createSelectionUI(UIController controller) => new TowerSelectionDisplay(controller);
 
     @override
     void onSelect() {

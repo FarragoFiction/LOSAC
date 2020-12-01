@@ -112,7 +112,7 @@ class Renderer3D extends Renderer {
         final Rectangle<num> bounds = level.bounds;
         this.cameraAnchor = new B.Vector2(bounds.left + bounds.width * 0.5, bounds.top + bounds.height * 0.5);
         this.cameraAnchorRange = Math.sqrt(bounds.width * bounds.width + bounds.height * bounds.height) * 0.5;
-        print("anchor: $cameraAnchor, range: $cameraAnchorRange");
+        //print("anchor: $cameraAnchor, range: $cameraAnchorRange");
     }
 
     @override

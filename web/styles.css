@@ -167,6 +167,14 @@ canvas {
     pointer-events:none;
 }
 
+.BuildGrid {
+    --width: 0px;
+
+    top: 0px;
+    left: 100%;
+    max-width: var(--width);
+}
+
 .Tooltip {
     position:absolute;
     --x:10;

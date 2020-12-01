@@ -275,14 +275,9 @@ class PathWorker extends WorkerBase {
 }
 
 void main() {
-    new PathWorker();
-    
     WorkerGlobalScope.instance.importScripts("../../packages/CubeLib/js/babylon.js");
     WorkerGlobalScope.instance.importScripts("../../packages/CubeLib/js/babylon_extensions.js");
 
-    final B.Vector3 a = new B.Vector3(1,0,0);
-    final B.Vector3 b = new B.Vector3(0.5,1,0);
-
-    print(a+b);
+    new PathWorker();
 }
 

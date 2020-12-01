@@ -18,6 +18,8 @@ class TowerType with Registerable {
     String name = "default";
     /// Does this tower block the path of enemies?
     bool blocksPath = true;
+    /// How long in seconds does this tower take to construct or upgrade to?
+    double buildTime = 5.0;
 
     /// Does this tower have a turret?
     bool turreted = false;
