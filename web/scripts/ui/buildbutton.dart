@@ -11,9 +11,7 @@ class BuildButton extends UIButton {
     final TowerType towerType;
     final GridCellSelectionDisplay selectionDisplay;
 
-    GridCell get selected {
-        return selectionDisplay.selected;
-    }
+    GridCell get selected => selectionDisplay.selected;
 
     BuildButton(UIController controller, GridCellSelectionDisplay this.selectionDisplay, TowerType this.towerType) : super(controller);
 

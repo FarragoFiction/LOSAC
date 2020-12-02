@@ -3,6 +3,8 @@ import "dart:html";
 import 'ui.dart';
 
 export "buildbutton.dart";
+export "cancelbutton.dart";
+export "sellbutton.dart";
 
 class UIButton extends UIComponent with HasTooltip {
 

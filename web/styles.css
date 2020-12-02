@@ -167,6 +167,16 @@ canvas {
     pointer-events:none;
 }
 
+.Button.DisplayButton {
+    position:absolute;
+    right: 0;
+    bottom: 0;
+}
+
+.Button.DisplayButton.disabled {
+    display:none;
+}
+
 .BuildGrid {
     --width: 0px;
 

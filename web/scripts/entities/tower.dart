@@ -231,6 +231,18 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
         // todo: refund resources here
     }
 
+    Future<void> cancelBuilding() async {
+        if (this.state == TowerState.selling || this.state == TowerState.upgrading) {
+            // if we're selling or upgrading, we just need to set the status back to ready and it'll be ignored
+            this.state = TowerState.ready;
+            this.upgradeTowerType = null;
+        } else if (this.state == TowerState.building) {
+            // if we're building, we need to wait for the cell to sort out cleanup, and block in the meantime
+            this.state = TowerState.busy;
+            await this.gridCell.removeTower();
+        }
+    }
+
     /// Build, upgrade or sell progress as a 0-1, for display purposes
     double getProgress() {
         if (state == TowerState.ready) { return 1; }
