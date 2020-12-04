@@ -5,8 +5,10 @@ import 'ui.dart';
 export "buildbutton.dart";
 export "cancelbutton.dart";
 export "sellbutton.dart";
+export "upgradebutton.dart";
 
 class UIButton extends UIComponent with HasTooltip {
+    static const Duration _tooltipDelay = Duration(milliseconds: 75);
 
     bool clicked = false;
 
@@ -24,6 +26,12 @@ class UIButton extends UIComponent with HasTooltip {
             clicked = true;
 
             await this.onUse();
+
+            new Future<void>.delayed(_tooltipDelay, ()
+            {
+                controller.tooltip?.updateTooltipObject();
+                controller.tooltip?.updateTooltipContents();
+            });
 
             clicked = false;
         });

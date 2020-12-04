@@ -1,9 +1,12 @@
 import "dart:html";
 
 import "../engine/engine.dart";
+import 'tooltip.dart';
 
+export "../utility/tooltiputils.dart";
 export "button.dart";
 export "buttongrid.dart";
+export "progressbar.dart";
 export "selectionwindow.dart";
 export "tooltip.dart";
 
@@ -12,6 +15,8 @@ class UIController {
     final Element container;
 
     final Set<UIComponent> components = <UIComponent>{};
+
+    TooltipComponent tooltip;
 
     UIController(Engine this.engine, Element this.container);
 

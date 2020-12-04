@@ -34,13 +34,14 @@ class BuildButton extends UIButton {
         return e;
     }
 
-    /*@override
-    void update() {
-        super.update();
-    }*/
-
     @override
     Future<void> onUse() async {
+        if (towerType.blocksPath) {
+            final bool canPlace = await engine.placementCheck(selected.node);
+            selectionDisplay.placementAllowed = canPlace;
+            if (!canPlace) { return; }
+        }
+
         final Tower tower = new Tower(towerType);
         await selected.placeTower(tower);
         tower.startBuilding();
@@ -84,14 +85,6 @@ class BuildButton extends UIButton {
 
     @override
     Future<void> populateTooltip(Element tooltip) async {
-        tooltip.append(new HeadingElement.h1()..text=localise(towerType.getDisplayName()));
-
-        //final Element p = new ParagraphElement();
-        for (int i=0; i<50; i++) {
-            //p.appendText("words ");
-            tooltip.appendText("words ");
-        }
-
-        //tooltip.append(p);
+        towerType.populateTooltip(tooltip, controller);
     }
 }

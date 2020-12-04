@@ -23,6 +23,7 @@ abstract class Engine {
 
     InputHandler input;
     UIController uiController;
+    bool clearSelectionOnRemove = true;
 
     bool started = false;
     int currentFrame = 0;
@@ -50,7 +51,7 @@ abstract class Engine {
         renderer.engine = this;
         this.input = new InputHandler3D(this);
         this.uiController = new UIController(this, uiContainer);
-        this.uiController.addComponent(new TooltipComponent(uiController));
+        this.uiController.tooltip = this.uiController.addComponent(new TooltipComponent(uiController));
         this.renderer.initUiEventHandlers();
     }
 
@@ -142,7 +143,7 @@ abstract class Engine {
 
     void removeEntity(Entity entity) {
         this.renderer.removeRenderable(entity);
-        if (entity == selected) {
+        if (clearSelectionOnRemove && entity == selected) {
             this.selectObject(null);
         }
     }

@@ -5,6 +5,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 
 import "../engine/registry.dart";
 import "../targeting/strategies.dart";
+import "../ui/ui.dart";
 import "enemy.dart";
 import "projectiles/projectile.dart";
 
@@ -20,6 +21,11 @@ class TowerType with Registerable {
     bool blocksPath = true;
     /// How long in seconds does this tower take to construct or upgrade to?
     double buildTime = 5.0;
+    /// Can this tower be built directly onto a blank cell?
+    /// False would suggest it's only an upgrade
+    bool buildable = true;
+    /// Which types of tower can this one be upgraded into?
+    Set<TowerType> upgradeList = <TowerType>{};
 
     /// Does this tower have a turret?
     bool turreted = false;
@@ -71,4 +77,16 @@ class TowerType with Registerable {
     String getRegistrationKey() => name;
 
     String getDisplayName() => "tower.$name.name";
+
+    void populateTooltip(Element tooltip, UIController controller) {
+        tooltip.append(new HeadingElement.h1()..text=controller.localise(this.getDisplayName()));
+
+        // TODO: resource cost display goes here
+
+        if (this.weapon != null) {
+            this.weapon.populateTooltip(tooltip, controller);
+        }
+
+        tooltip.appendFormattedLocalisation("tower.${getRegistrationKey()}.description", controller);
+    }
 }

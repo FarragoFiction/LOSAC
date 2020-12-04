@@ -209,6 +209,29 @@ canvas {
     padding:8px;
 }
 
+.ProgressBar {
+    --progress:0;
+
+    position:relative;
+    width:100px;
+    height:20px;
+
+    background-color: black;
+}
+
+.ProgressBarInner {
+    position:absolute;
+    width: calc(var(--progress) * 100%);
+    height:100%;
+    left:0px;
+    top:0px;
+
+    transition: width 0.05s;
+    transition-timing-function: linear;
+
+    background-color: #AAAAAA;
+}
+
 /* ######################################################################## */
 
 .top { top: 0px; }

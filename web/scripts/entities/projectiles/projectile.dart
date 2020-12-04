@@ -1,9 +1,11 @@
+import "dart:html";
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
 
 import "../../engine/game.dart";
 import "../../targeting/targetingstrategy.dart";
+import "../../ui/ui.dart";
 import "../enemy.dart";
 import "../moverentity.dart";
 import "../tower.dart";
@@ -140,4 +142,10 @@ abstract class WeaponType {
     Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos);
 
     void load(Map<dynamic,dynamic> json) {}
+
+    void populateTooltip(Element tooltip, UIController controller) {
+        tooltip.appendText("{weapon}");
+
+        // TODO: expand weapon tooltip
+    }
 }

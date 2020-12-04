@@ -151,6 +151,13 @@ Future<void> main() async {
     final TowerType testTowerType = new TowerType();
     game.towerTypeRegistry.register(testTowerType);
 
+    final TowerType upgradeTestTowerType = new TowerType()
+        ..name="upgradetest"
+        ..buildable=false
+    ;
+    game.towerTypeRegistry.register(upgradeTestTowerType);
+    testTowerType.upgradeList.add(upgradeTestTowerType);
+
     game
         ..pathfinder = pathfinder
         ..setLevel(testLevel)

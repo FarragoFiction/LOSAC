@@ -198,12 +198,16 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
     Future<void> _completeUpgrade() async {
         this.state = TowerState.busy;
 
+        final Selectable selected = engine.selected;
+        engine.clearSelectionOnRemove = false;
+
         final Tower newTower = new Tower(upgradeTowerType);
         await this.gridCell.replaceTower(newTower);
 
-        if (engine.selected == this) {
+        if (selected == this) {
             engine.selectObject(newTower);
         }
+        engine.clearSelectionOnRemove = true;
     }
 
     void sell([bool instant = false]) {
