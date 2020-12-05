@@ -209,6 +209,11 @@ canvas {
     padding:8px;
 }
 
+.TooltipInner>h1 {
+    white-space:nowrap;
+    font-size: 18px;
+}
+
 .ProgressBar {
     --progress:0;
 

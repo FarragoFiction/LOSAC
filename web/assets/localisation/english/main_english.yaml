@@ -1,0 +1,8 @@
+translations:
+  gridcell.name: "Buildable Space"
+
+  tower.default.name: "Default Tower"
+  tower.default.description: "The default tower.\nNothing fancy."
+
+  tower.upgradetest.name: "Upgraded $tower.default.name$"
+  tower.upgradetest.description: "$tower.default.description$"

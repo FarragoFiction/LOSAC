@@ -39,7 +39,7 @@ class UIController {
         return component;
     }
 
-    String localise(String key) => "[$key]";
+    String localise(String key) => engine.localisation.translate(key);
 
     UIComponent queryComponentAtCoords(Point<num> coords, [bool Function(UIComponent c) test]) {
         for (final UIComponent component in components) {

@@ -5,7 +5,7 @@ import "../ui/ui.dart";
 abstract class TooltipUtils {
 
     static void appendFormattedText(Element element, String text) {
-        final List<String> sections = text.split("\\n");
+        final List<String> sections = text.split("\n");
 
         for (final String section in sections) {
             if (section != sections.first) { element.append(new BRElement()); }
@@ -22,8 +22,8 @@ extension TooltipAppend on Element {
     }
 
     void appendFormattedLocalisation(String key, UIController controller) {
-        this.appendFormattedText("Here is some test text.\\n\\nIt has line breaks in it.");
+        //this.appendFormattedText("Here is some test text.\\n\\nIt has line breaks in it.");
 
-        //this.appendFormattedText(controller.localise(key));
+        this.appendFormattedText(controller.localise(key));
     }
 }

@@ -85,6 +85,7 @@ class TowerType with Registerable {
 
         if (this.weapon != null) {
             this.weapon.populateTooltip(tooltip, controller);
+            tooltip..append(new BRElement())..append(new BRElement());
         }
 
         tooltip.appendFormattedLocalisation("tower.${getRegistrationKey()}.description", controller);

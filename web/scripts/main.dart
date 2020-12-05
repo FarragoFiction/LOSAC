@@ -36,6 +36,7 @@ Future<void> main() async {
     final Renderer renderer = new Renderer3D(testCanvas);
     await renderer.initialise();
     final Game game = new Game(renderer, querySelector("#uicontainer"));
+    await game.initialise();
 
     final Pathfinder pathfinder = new Pathfinder();
     final Level testLevel = new Level3D();

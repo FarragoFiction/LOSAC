@@ -1,0 +1,6 @@
+languages:
+  english:
+    file: english/language_english.yaml
+    icon: english.png
+    names:
+      english: "English"
