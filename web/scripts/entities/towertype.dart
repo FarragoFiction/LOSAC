@@ -4,6 +4,7 @@ import "dart:math" as Math;
 import "package:CubeLib/CubeLib.dart" as B;
 
 import "../engine/registry.dart";
+import "../localisation/localisation.dart";
 import "../targeting/strategies.dart";
 import "../ui/ui.dart";
 import "enemy.dart";
@@ -78,16 +79,16 @@ class TowerType with Registerable {
 
     String getDisplayName() => "tower.$name.name";
 
-    void populateTooltip(Element tooltip, UIController controller) {
-        tooltip.append(new HeadingElement.h1()..text=controller.localise(this.getDisplayName()));
+    void populateTooltip(Element tooltip, LocalisationEngine localisationEngine) {
+        tooltip.append(new HeadingElement.h1()..appendFormattedLocalisation(this.getDisplayName(), localisationEngine));
 
         // TODO: resource cost display goes here
 
         if (this.weapon != null) {
-            this.weapon.populateTooltip(tooltip, controller);
+            this.weapon.populateTooltip(tooltip, localisationEngine);
             tooltip..append(new BRElement())..append(new BRElement());
         }
 
-        tooltip.appendFormattedLocalisation("tower.${getRegistrationKey()}.description", controller);
+        tooltip.appendFormattedLocalisation("tower.${getRegistrationKey()}.description", localisationEngine);
     }
 }

@@ -68,6 +68,6 @@ class UpgradeButton extends UIButton {
 
     @override
     Future<void> populateTooltip(Element tooltip) async {
-        towerType.populateTooltip(tooltip, controller);
+        towerType.populateTooltip(tooltip, controller.localisation);
     }
 }

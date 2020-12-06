@@ -214,6 +214,11 @@ canvas {
     font-size: 18px;
 }
 
+.TooltipInner .item {
+    color:#FFAA44;
+    font-weight:bold;
+}
+
 .ProgressBar {
     --progress:0;
 
@@ -244,3 +249,11 @@ canvas {
 .left { left:0px; }
 .right { right:0px; }
 .hidden { display: none; }
+.nowrap { white-space:nowrap; }
+
+.loctest {
+    color:red;
+}
+.loctest2 {
+    color:yellow;
+}

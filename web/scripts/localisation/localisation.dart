@@ -8,18 +8,18 @@ class LocalisationEngine {
     static const String masterFile = "languages.yaml";
 
     /// Matches sequences between paired $s (group 1), with optional extras after a | inside (group 3)
-    static final RegExp _replacementPattern = new RegExp(r"\$([^$|]+)(\|([^$]+))?\$");
+    static final RegExp replacementPattern = new RegExp(r"\$([^$|]+)(\|([^$]+))?\$");
 
     static YAMLFormat yamlFormat = new YAMLFormat();
 
     Map<String,Language> languages = <String,Language>{};
     Language currentLanguage;
 
-    String translate(String key) {
+    String translate(String key, {Map<String,String> data}) {
         if (currentLanguage == null) {
             return key;
         }
-        return currentLanguage.translate(key);
+        return currentLanguage.translate(key, data:data);
     }
 
     Language get(String name) => languages[name];
@@ -82,13 +82,23 @@ class Language {
 
     Language(String this.path, Map<String,String> this.languageNames, String this.iconPath, {String this.fallbackName});
 
-    String translate(String key) {
+    String translate(String key, {Map<String,String> data}) {
+        if (data != null && data.containsKey(key)) {
+            final String datum = data[key];
+
+            if (datum.startsWith("\$")) {
+                return translate(datum.substring(1), data:data);
+            }
+
+            return datum;
+        }
+
         if (translationTable.containsKey(key)) {
             return translationTable[key];
         }
 
         if (fallback != null) {
-            return fallback.translate(key);
+            return fallback.translate(key, data:data);
         }
 
         return key;
@@ -120,48 +130,40 @@ class Language {
         }
 
         // replace cross-references until there are none left which can be resolved
-        final Set<String> keysToCheck = translationTable.keys.toSet();
-        final Map<String,int> iterationCheck = <String,int>{};
 
-        while(keysToCheck.isNotEmpty) {
+        void Function(String key, [Set<String> visited]) crossRef;
+        crossRef = (String key, [Set<String> visited]) {
+            visited ??= <String>{};
 
-            final String key = keysToCheck.first;
-            keysToCheck.remove(key);
+            if (visited.contains(key)) {
+                throw Exception("Circular reference detected in localisation, check keys $visited");
+            }
 
             String value = translationTable[key];
+            value = value.replaceAllMapped(LocalisationEngine.replacementPattern, (Match match) {
+                final String matchString = match.group(0);
 
-            bool replaced = false;
-
-            value = value.replaceAllMapped(LocalisationEngine._replacementPattern, (Match match) {
-                final String replaceKey = match.group(1);
-
-                // skip if we have some kind of attached formatting information
+                // if we contain some formatting information, just pass through
                 if (match.group(3) != null) {
-                    return match.group(0);
+                    return matchString;
                 }
 
-                if (translationTable.containsKey(replaceKey)) {
-                    replaced = true;
-                    return translationTable[replaceKey];
+                final String subKey = match.group(1);
+
+                if (translationTable.containsKey(subKey)) {
+                    crossRef(subKey, new Set<String>.from(visited)..add(key));
+
+                    return translationTable[subKey];
                 }
 
-                return match.group(0);
+                return matchString;
             });
 
             translationTable[key] = value;
+        };
 
-            if (replaced) {
-                keysToCheck.add(key);
-            }
-
-            if (iterationCheck.containsKey(key)) {
-                iterationCheck[key] = iterationCheck[key] + 1;
-                if (iterationCheck[key] > 20) {
-                    throw Exception("Localisation resolution took too many attempts. Check key $key for circular references");
-                }
-            } else {
-                iterationCheck[key] = 1;
-            }
+        for (final String key in translationTable.keys) {
+            crossRef(key);
         }
     }
 }

@@ -1,11 +1,13 @@
+import 'dart:collection';
 import "dart:html";
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
 
 import "../../engine/game.dart";
+import '../../localisation/localisation.dart';
 import "../../targeting/targetingstrategy.dart";
-import "../../ui/ui.dart";
+import '../../ui/ui.dart';
 import "../enemy.dart";
 import "../moverentity.dart";
 import "../tower.dart";
@@ -105,6 +107,8 @@ abstract class WeaponType {
 
     final TowerType towerType;
 
+    final WeaponInfo tooltipData;
+
     /// Maximum target count
     /// This isn't the amount of targets which can be hit (since AoE is a thing),
     /// but how many enemies may be independently targeted at once.
@@ -135,7 +139,8 @@ abstract class WeaponType {
     /// Multiplier for damage to secondary targets
     double areaOfEffectNonTargetMultiplier = 1.0;
 
-    WeaponType(TowerType this.towerType) {
+    WeaponType(TowerType this.towerType) : tooltipData = new WeaponInfo() {
+        tooltipData.owner = this;
         load(null);
     }
 
@@ -143,9 +148,51 @@ abstract class WeaponType {
 
     void load(Map<dynamic,dynamic> json) {}
 
-    void populateTooltip(Element tooltip, UIController controller) {
-        tooltip.appendText("{weapon}");
+    void populateTooltip(Element tooltip, LocalisationEngine localisationEngine) {
+        tooltip.appendFormattedLocalisation("tooltip.weaponstats", localisationEngine, data: this.tooltipData);
+    }
+}
 
-        // TODO: expand weapon tooltip
+class WeaponInfo extends DataSurrogate<WeaponType> {
+    static const Set<String> _keys = <String>{"dps", "damage", "targets", "cooldown", "rof", "range",
+        "projSpeed", "burstTime", "burst", "burstRof", "hasAoe", "aoe", "aoeHotspot", "aoeSecondary"};
+
+    @override
+    Iterable<String> get keys => _keys;
+
+    @override
+    String operator [](Object key) {
+        switch(key) {
+            case "dps":
+                return (owner.damage / owner.cooldown).toStringAsFixed(2);
+            case "damage":
+                return owner.damage.toStringAsFixed(2);
+            case "targets":
+                return owner.maxTargets.toString();
+            case "cooldown":
+                return owner.cooldown.toStringAsFixed(2);
+            case "rof":
+                return (1/owner.cooldown).toStringAsFixed(2);
+            case "range":
+                return owner.range.toStringAsFixed(2);
+            case "projSpeed":
+                return owner.projectileSpeed.toStringAsFixed(2);
+            case "burstTime":
+                return owner.burstTime.toStringAsFixed(2);
+            case "burstRof":
+                return (owner.burstTime/owner.cooldown).toStringAsFixed(2);
+            case "burst":
+                return owner.burst.toString();
+            case "hasAoe":
+                return owner.hasAreaOfEffect ? "\$yes" : "\$no";
+            case "aoe":
+                return owner.areaOfEffectRadius.toStringAsFixed(2);
+            case "aoeHotspot":
+                return owner.areaOfEffectHotspot.toStringAsFixed(2);
+            case "aoeSecondary":
+                return owner.areaOfEffectNonTargetMultiplier.toStringAsFixed(2);
+        }
+
+        return null;
     }
 }

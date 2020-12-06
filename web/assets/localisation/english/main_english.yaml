@@ -1,4 +1,7 @@
 translations:
+  yes: "yes"
+  no: "no"
+
   gridcell.name: "Buildable Space"
 
   tower.default.name: "Default Tower"
@@ -6,3 +9,7 @@ translations:
 
   tower.upgradetest.name: "Upgraded $tower.default.name$"
   tower.upgradetest.description: "$tower.default.description$"
+
+  tooltip.weaponstats: "$tooltip.weaponstats.dps|nowrap$\n$tooltip.weaponstats.range|nowrap$"
+  tooltip.weaponstats.dps: "@[item]Damage:@ $dps$/sec"
+  tooltip.weaponstats.range: "@[item]Range:@ $range$"

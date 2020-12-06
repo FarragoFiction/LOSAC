@@ -1,6 +1,7 @@
 import "dart:html";
 
 import "../engine/engine.dart";
+import '../localisation/localisation.dart';
 import 'tooltip.dart';
 
 export "../utility/tooltiputils.dart";
@@ -39,7 +40,8 @@ class UIController {
         return component;
     }
 
-    String localise(String key) => engine.localisation.translate(key);
+    String localise(String key, {Map<String,String> data}) => engine.localisation.translate(key, data:data);
+    LocalisationEngine get localisation => engine.localisation;
 
     UIComponent queryComponentAtCoords(Point<num> coords, [bool Function(UIComponent c) test]) {
         for (final UIComponent component in components) {
@@ -124,7 +126,7 @@ abstract class UIComponent {
         component.parent = null;
     }
 
-    String localise(String key) => controller.localise(key);
+    String localise(String key, {Map<String,String> data}) => controller.localise(key, data:data);
 
     UIComponent queryComponentAtCoords(Point<num> coords, [bool Function(UIComponent c) test]) {
         if(disposed) { return null; }
