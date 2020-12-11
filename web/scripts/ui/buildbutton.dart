@@ -1,5 +1,6 @@
 import "dart:html";
 
+import "../engine/game.dart";
 import "../entities/tower.dart";
 import "../entities/towertype.dart";
 import "../level/grid.dart";
@@ -56,7 +57,7 @@ class BuildButton extends UIButton {
         // not usable if this space is not a valid build location for this tower
         if (!canBuildHere()) { return false; }
 
-        // TODO: resource checks go here
+        if (!towerType.isAffordable(engine)) { return false; }
 
         return true;
     }
@@ -86,5 +87,13 @@ class BuildButton extends UIButton {
     @override
     Future<void> populateTooltip(Element tooltip) async {
         towerType.populateTooltip(tooltip, controller.localisation);
+
+        final bool blocks = !this.canBuildHere();
+        final bool resources = !towerType.isAffordable(engine);
+
+        if (blocks || resources) { tooltip.append(new BRElement()); }
+
+        if (blocks) { tooltip..append(new BRElement())..appendFormattedLocalisation("error.build.blocked", engine.localisation); }
+        if (resources) { tooltip..append(new BRElement())..appendFormattedLocalisation("error.build.resources", engine.localisation); }
     }
 }

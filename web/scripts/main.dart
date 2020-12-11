@@ -7,6 +7,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "engine/game.dart";
 import "engine/inputhandler.dart";
 import "entities/enemytype.dart";
+import 'entities/projectiles/chaserprojectile.dart';
 import "entities/tower.dart";
 import "entities/towertype.dart";
 import "level/curve.dart";
@@ -20,6 +21,7 @@ import 'renderer/3d/models/curvemeshprovider.dart';
 import 'renderer/3d/models/gridmeshprovider.dart';
 import "renderer/3d/renderer3d.dart";
 import "renderer/renderer.dart";
+import "resources/resourcetype.dart";
 import "utility/extensions.dart";
 import "utility/levelutils.dart";
 
@@ -36,7 +38,6 @@ Future<void> main() async {
     final Renderer renderer = new Renderer3D(testCanvas);
     await renderer.initialise();
     final Game game = new Game(renderer, querySelector("#uicontainer"));
-    await game.initialise();
 
     final Pathfinder pathfinder = new Pathfinder();
     final Level testLevel = new Level3D();
@@ -148,18 +149,30 @@ Future<void> main() async {
     await pathfinder.transferDomainMap(testLevel);
     await pathfinder.recalculatePathData(testLevel);
 
+    final ResourceType testResource = new ResourceType();
+    game.resourceTypeRegistry.register(testResource);
+    final ResourceType testResource2 = new ResourceType()..name="second";
+    game.resourceTypeRegistry.register(testResource2);
+
     final EnemyType testEnemyType = new EnemyType();
-    final TowerType testTowerType = new TowerType();
+    final TowerType testTowerType = new TowerType()
+        ..buildCost.addResource(testResource, 10)
+    ;
+    testTowerType.weapon = new ChaserWeaponType(testTowerType);
     game.towerTypeRegistry.register(testTowerType);
 
     final TowerType upgradeTestTowerType = new TowerType()
         ..name="upgradetest"
         ..buildable=false
+        ..buildCost.addResource(testResource, 25)
+        ..buildCost.addResource(testResource2, 1)
     ;
+    upgradeTestTowerType.weapon = new ChaserWeaponType(upgradeTestTowerType)..damage = 3;
     game.towerTypeRegistry.register(upgradeTestTowerType);
     testTowerType.upgradeList.add(upgradeTestTowerType);
 
     game
+        ..initialise()
         ..pathfinder = pathfinder
         ..setLevel(testLevel)
         //..fpsElement = fpsElement

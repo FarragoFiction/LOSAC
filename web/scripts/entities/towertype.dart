@@ -3,8 +3,11 @@ import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
 
+import "../engine/engine.dart";
+import "../engine/game.dart";
 import "../engine/registry.dart";
 import "../localisation/localisation.dart";
+import "../resources/resourcetype.dart";
 import "../targeting/strategies.dart";
 import "../ui/ui.dart";
 import "enemy.dart";
@@ -25,6 +28,8 @@ class TowerType with Registerable {
     /// Can this tower be built directly onto a blank cell?
     /// False would suggest it's only an upgrade
     bool buildable = true;
+    /// How much does this tower cost to construct, or upgrade to?
+    ResourceValue buildCost = new ResourceValue();
     /// Which types of tower can this one be upgraded into?
     Set<TowerType> upgradeList = <TowerType>{};
 
@@ -44,9 +49,9 @@ class TowerType with Registerable {
 
     B.Mesh mesh;
 
-    TowerType() {
+    /*TowerType() {
         weapon = new ChaserWeaponType(this);
-    }
+    }*/
 
     void draw2D(CanvasRenderingContext2D ctx) {
         ctx.fillStyle="#A0A0A0";
@@ -74,6 +79,16 @@ class TowerType with Registerable {
             ..fillRect(0, -w*0.5, 25, w);
     }
 
+    bool isAffordable(Engine engine) {
+        if (engine is Game) {
+            final Game game = engine;
+            if (!game.resourceStockpile.canAfford(buildCost)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @override
     String getRegistrationKey() => name;
 
@@ -82,7 +97,8 @@ class TowerType with Registerable {
     void populateTooltip(Element tooltip, LocalisationEngine localisationEngine) {
         tooltip.append(new HeadingElement.h1()..appendFormattedLocalisation(this.getDisplayName(), localisationEngine));
 
-        // TODO: resource cost display goes here
+        this.buildCost.populateTooltip(tooltip, localisationEngine);
+        tooltip..append(new BRElement())..append(new BRElement());
 
         if (this.weapon != null) {
             this.weapon.populateTooltip(tooltip, localisationEngine);

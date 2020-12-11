@@ -13,3 +13,10 @@ translations:
   tooltip.weaponstats: "$tooltip.weaponstats.dps|nowrap$\n$tooltip.weaponstats.range|nowrap$"
   tooltip.weaponstats.dps: "@[item]Damage:@ $dps$/sec"
   tooltip.weaponstats.range: "@[item]Range:@ $range$"
+
+  tooltip.cost: "&$resource$&$amount$"
+  tooltip.cost.insufficient: "&$resource$&$amount|insufficient$"
+  tooltip.cost.nocost: "@[item]Free@"
+
+  error.build.blocked: "@[nowrap error]Blocks enemy path@"
+  error.build.resources: "@[nowrap error]Insufficient resources@"

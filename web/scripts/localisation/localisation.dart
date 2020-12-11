@@ -1,7 +1,11 @@
 import "package:LoaderLib/Loader.dart";
 import 'package:yaml/yaml.dart';
 
+import "../engine/engine.dart";
 import '../formats/yamlformat.dart';
+import '../ui/ui.dart';
+
+export "formatting.dart";
 
 class LocalisationEngine {
     static const String locPath = "assets/localisation";
@@ -9,11 +13,20 @@ class LocalisationEngine {
 
     /// Matches sequences between paired $s (group 1), with optional extras after a | inside (group 3)
     static final RegExp replacementPattern = new RegExp(r"\$([^$|]+)(\|([^$]+))?\$");
+    /// Matches sequences between paired &s (group 1)
+    static final RegExp iconPattern = new RegExp(r"&([^&]+)&");
 
-    static YAMLFormat yamlFormat = new YAMLFormat();
+    static final YAMLFormat yamlFormat = new YAMLFormat();
+
+    Engine engine;
+    FormattingEngine formatting;
 
     Map<String,Language> languages = <String,Language>{};
     Language currentLanguage;
+
+    LocalisationEngine() {
+        this.formatting = new FormattingEngine(this);
+    }
 
     String translate(String key, {Map<String,String> data}) {
         if (currentLanguage == null) {
@@ -25,6 +38,7 @@ class LocalisationEngine {
     Language get(String name) => languages[name];
 
     Future<void> initialise() async {
+        await formatting.initialise();
         final YamlDocument languagesFile = await Loader.getResource("$locPath/$masterFile", format: yamlFormat);
 
         final YamlMap languageDefs = languagesFile.contents.value["languages"];

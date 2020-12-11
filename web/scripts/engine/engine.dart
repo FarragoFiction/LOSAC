@@ -8,7 +8,7 @@ import '../level/selectable.dart';
 import '../localisation/localisation.dart';
 import "../pathfinder/pathfinder.dart";
 import "../renderer/3d/renderer3d.dart";
-import "../renderer/renderer.dart";
+import "../resources/resourcetype.dart";
 import '../ui/ui.dart';
 import "entity.dart";
 import "inputhandler.dart";
@@ -21,6 +21,7 @@ abstract class Engine {
     final Set<Entity> _entityQueue = <Entity>{};
 
     final Registry<TowerType> towerTypeRegistry = new Registry<TowerType>();
+    final Registry<ResourceType> resourceTypeRegistry = new Registry<ResourceType>();
 
     InputHandler input;
     UIController uiController;
@@ -55,11 +56,21 @@ abstract class Engine {
         this.uiController = new UIController(this, uiContainer);
         this.uiController.tooltip = this.uiController.addComponent(new TooltipComponent(uiController));
         this.renderer.initUiEventHandlers();
-        this.localisation = new LocalisationEngine();
+        this.localisation = new LocalisationEngine()..engine = this;
     }
 
     Future<void> initialise() async {
         await localisation.initialise();
+
+        /*for (final ResourceType type in resourceTypeRegistry.mapping.values) {
+            final String name = type.getRegistrationKey();
+            localisation.formatting.registerIcon("resource.$name", "assets/icons/resources/$name.png");
+        }*/
+
+        await Future.wait(resourceTypeRegistry.mapping.values.map((ResourceType type) async {
+            final String name = type.getRegistrationKey();
+            await localisation.formatting.registerIcon("resource.$name", "assets/icons/resources/$name.png");
+        }));
     }
 
     void start() {

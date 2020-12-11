@@ -1,5 +1,6 @@
 import "dart:html";
 
+import "../engine/game.dart";
 import '../entities/tower.dart';
 import '../entities/towertype.dart';
 import "../renderer/3d/renderer3d.dart";
@@ -47,7 +48,7 @@ class UpgradeButton extends UIButton {
         // check for switching from non-blocking to blocking
         if (!canBuildHere()) { return false; }
 
-        // TODO: resource checks go here
+        if (!towerType.isAffordable(engine)) { return false; }
 
         return true;
     }
@@ -69,5 +70,13 @@ class UpgradeButton extends UIButton {
     @override
     Future<void> populateTooltip(Element tooltip) async {
         towerType.populateTooltip(tooltip, controller.localisation);
+
+        final bool blocks = !this.canBuildHere();
+        final bool resources = !towerType.isAffordable(engine);
+
+        if (blocks || resources) { tooltip.append(new BRElement()); }
+
+        if (blocks) { tooltip..append(new BRElement())..appendFormattedLocalisation("error.build.blocked", engine.localisation); }
+        if (resources) { tooltip..append(new BRElement())..appendFormattedLocalisation("error.build.resources", engine.localisation); }
     }
 }

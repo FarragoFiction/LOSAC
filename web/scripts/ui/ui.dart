@@ -4,10 +4,11 @@ import "../engine/engine.dart";
 import '../localisation/localisation.dart';
 import 'tooltip.dart';
 
-export "../utility/tooltiputils.dart";
+export '../localisation/formatting.dart';
 export "button.dart";
 export "buttongrid.dart";
 export "progressbar.dart";
+export "resourcelist.dart";
 export "selectionwindow.dart";
 export "tooltip.dart";
 

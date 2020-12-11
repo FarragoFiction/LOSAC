@@ -50,6 +50,10 @@ canvas {
     color: #E0E0E0;
 }
 
+.error {
+    color:#FF2222;
+}
+
 /* ######################################################################## */
 
 .SelectionWindow {
@@ -219,6 +223,56 @@ canvas {
     font-weight:bold;
 }
 
+.TooltipIcon {
+    --icon: none;
+
+    display:inline-block;
+    position:relative;
+    /*background-color: white;*/
+    height:0.8em;
+    width:0.8em;
+    bottom: -0.05em;
+
+    background-image: var(--icon);
+    background-size: 100% 100%;
+    margin:0 2px 0 2px;
+}
+
+.ResourceList {
+    white-space: nowrap;
+}
+.ResourceList>span {
+    margin-right:3px;
+}
+.ResourceList .insufficient {
+    color:#FF2222;
+}
+
+.ResourceListWindow {
+    position:absolute;
+    top:0;
+    left:0;
+}
+.ResourceDisplay {
+    padding:4px;
+}
+.ResourceIcon {
+    width:24px;
+    height:24px;
+    background-image:var(--icon);
+    background-size:100% 100%;
+    display:inline-block;
+}
+.ResourceCounter {
+    display:inline-block;
+    margin: 0 4px 0 4px;
+    width:100px;
+    background-color:black;
+    padding: 2px 5px 2px 5px;
+    position:relative;
+    top:-6px;
+}
+
 .ProgressBar {
     --progress:0;
 
@@ -250,10 +304,3 @@ canvas {
 .right { right:0px; }
 .hidden { display: none; }
 .nowrap { white-space:nowrap; }
-
-.loctest {
-    color:red;
-}
-.loctest2 {
-    color:yellow;
-}

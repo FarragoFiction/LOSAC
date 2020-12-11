@@ -5,10 +5,9 @@ import "../entities/enemytype.dart";
 import "../entities/tower.dart";
 import "../level/endcap.dart";
 import "../level/level.dart";
-import "../level/pathnode.dart";
 import '../level/selectable.dart';
 import "../renderer/renderer.dart";
-import '../ui/selectionwindow.dart';
+import "../resources/resourcetype.dart";
 import '../ui/ui.dart';
 import "../utility/extensions.dart";
 import "engine.dart";
@@ -20,9 +19,19 @@ class Game extends Engine {
     SpatialHash<Enemy> enemySelector;
 
     UIComponent selectionWindow;
+    UIComponent resourceList;
+
+    ResourceStockpile resourceStockpile = new ResourceStockpile();
 
     Game(Renderer renderer, Element uiContainer) : super(renderer, uiContainer) {
         this.selectionWindow = uiController.addComponent(new SelectionWindow(uiController));
+    }
+
+    @override
+    Future<void> initialise() async {
+        await super.initialise();
+
+        this.resourceList = uiController.addComponent(new ResourceList(uiController));
     }
 
     @override
