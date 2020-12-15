@@ -10,13 +10,5 @@ translations:
   tower.upgradetest.name: "Upgraded $tower.default.name$"
   tower.upgradetest.description: "$tower.default.description$"
 
-  tooltip.weaponstats: "$tooltip.weaponstats.dps|nowrap$\n$tooltip.weaponstats.range|nowrap$"
-  tooltip.weaponstats.dps: "@[item]Damage:@ $dps$/sec"
-  tooltip.weaponstats.range: "@[item]Range:@ $range$"
-
-  tooltip.cost: "&$resource$&$amount$"
-  tooltip.cost.insufficient: "&$resource$&$amount|insufficient$"
-  tooltip.cost.nocost: "@[item]Free@"
-
-  error.build.blocked: "@[nowrap error]Blocks enemy path@"
-  error.build.resources: "@[nowrap error]Insufficient resources@"
+  resource.default.name: "Default Resource"
+  resource.default.description: "Use this to buy things in a very generic manner.\n\nCall it Gold, or whatever..."

@@ -137,6 +137,10 @@ abstract class InputHandler {
 
         this.engine.renderer.onMouseMove(e);
     }
+    void _onMouseOut(MouseEvent e) {
+        // this is very much a hack but it's technically cleaner than a load of null checks all over
+        this.mousePos = const Point<num>(-1,-1);
+    }
     void _onMouseWheel(WheelEvent e) {
         this.engine.renderer.onMouseWheel(e);
         e.preventDefault();
@@ -238,6 +242,8 @@ class InputHandler3D extends InputHandler {
                 this._onMouseWheel(info.event);
             }
         }));
+
+        window.onMouseOut.listen(this._onMouseOut);
     }
 }
 

@@ -12,6 +12,7 @@ import "../level/grid.dart";
 import "../level/levelobject.dart";
 import "../level/selectable.dart";
 import "../renderer/2d/matrix.dart";
+import "../resources/resourcetype.dart";
 import "../ui/ui.dart";
 import "../utility/extensions.dart";
 import "../utility/towerutils.dart";
@@ -40,6 +41,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
     TowerState state = TowerState.ready;
     double buildTimer = 0;
     TowerType upgradeTowerType;
+    ResourceValue sellValue = new ResourceValue();
 
     double weaponCooldown = 0;
     int currentBurst = 0;
@@ -53,7 +55,9 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
     @override
     String get name => "tower.${towerType.name}";
 
-    Tower(TowerType this.towerType);
+    Tower(TowerType this.towerType) {
+        this.sellValue.add(this.towerType.buildCost);
+    }
 
     void updateTargetAngle() {
         if (targets.isEmpty) {
@@ -203,6 +207,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
 
         final Tower newTower = new Tower(upgradeTowerType);
         await this.gridCell.replaceTower(newTower);
+        newTower.sellValue.add(this.sellValue);
 
         if (selected == this) {
             engine.selectObject(newTower);
@@ -232,17 +237,30 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
             engine.selectObject(this.gridCell);
         }
 
-        // todo: refund resources here
+        if (engine is Game) {
+            final Game game = engine;
+            game.resourceStockpile.add(sellValue, multiplier: game.rules.sellReturn);
+        }
     }
 
     Future<void> cancelBuilding() async {
         if (this.state == TowerState.selling || this.state == TowerState.upgrading) {
             // if we're selling or upgrading, we just need to set the status back to ready and it'll be ignored
             this.state = TowerState.ready;
+            // refund cost if we were upgrading
+            if (engine is Game && this.state == TowerState.upgrading && upgradeTowerType != null) {
+                final Game game = engine;
+                game.resourceStockpile.add(upgradeTowerType.buildCost);
+            }
             this.upgradeTowerType = null;
         } else if (this.state == TowerState.building) {
             // if we're building, we need to wait for the cell to sort out cleanup, and block in the meantime
             this.state = TowerState.busy;
+            // refund build cost
+            if (engine is Game) {
+                final Game game = engine;
+                game.resourceStockpile.add(towerType.buildCost);
+            }
             await this.gridCell.removeTower();
         }
     }

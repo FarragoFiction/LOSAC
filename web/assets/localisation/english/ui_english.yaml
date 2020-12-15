@@ -1,0 +1,20 @@
+translations:
+  tooltip.weaponstats: "$tooltip.weaponstats.dps|nowrap$\n$tooltip.weaponstats.range|nowrap$"
+  tooltip.weaponstats.dps: "@[item]Damage:@ $dps$/sec"
+  tooltip.weaponstats.range: "@[item]Range:@ $range$"
+
+  tooltip.cost: "&$resource$&$amount$"
+  tooltip.cost.insufficient: "&$resource$&$amount|insufficient$"
+  tooltip.cost.nocost: "@[item]Free@"
+
+  error.build.blocked: "@[nowrap error]Blocks enemy path@"
+  error.build.resources: "@[nowrap error]Insufficient resources@"
+
+  ui.sell.name: "Sell Tower"
+  ui.sell.description: "Destroy this tower to recover a portion of the resources spent building it.\n\nUpon completion, you will be refunded @[item]$percent$%@ of the total cost."
+  ui.cancelbuild.name: "Cancel Construction"
+  ui.cancelbuild.description: "Cancel the construction of this tower, refunding @[item]100%@ of the resources spent."
+  ui.cancelupgrade.name: "Cancel Upgrade"
+  ui.cancelupgrade.description: "Cancel the upgrading of this tower, refunding @[item]100%@ of the resources spent on the upgrade."
+  ui.cancelsell.name: "Cancel Sale"
+  ui.cancelsell.description: "Cancel the sale of this tower, allowing it to continue operation."

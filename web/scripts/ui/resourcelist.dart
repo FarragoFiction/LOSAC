@@ -25,7 +25,7 @@ class ResourceList extends UIComponent {
 
 }
 
-class ResourceDisplay extends UIComponent {
+class ResourceDisplay extends UIComponent with HasTooltip {
     ResourceType resource;
     
     Element resourceCounter;
@@ -61,5 +61,12 @@ class ResourceDisplay extends UIComponent {
     void update() {
         final Game game = engine;
         this.resourceCounter?.text = game.resourceStockpile[resource].round().toString();
+    }
+
+    @override
+    Future<void> populateTooltip(Element tooltip) async {
+        tooltip.append(new HeadingElement.h1()..appendFormattedLocalisation("resource.${resource.getRegistrationKey()}.name", engine.localisation));
+
+        tooltip.appendFormattedLocalisation("resource.${resource.getRegistrationKey()}.description", engine.localisation);
     }
 }

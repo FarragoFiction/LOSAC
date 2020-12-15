@@ -9,15 +9,15 @@ import "resourcetype.dart";
 class ResourceValue with MapMixin<ResourceType, double> {
     final Map<ResourceType,double> _map = <ResourceType,double>{};
 
-    void add(ResourceValue other) {
+    void add(ResourceValue other, {double multiplier = 1.0}) {
         for (final ResourceType type in other.keys) {
-            addResource(type, other[type]);
+            addResource(type, other[type] * multiplier);
         }
     }
 
-    void subtract(ResourceValue other) {
+    void subtract(ResourceValue other, {double multiplier = 1.0}) {
         for (final ResourceType type in other.keys) {
-            addResource(type, -other[type]);
+            addResource(type, -other[type] * multiplier);
         }
     }
 
@@ -36,7 +36,7 @@ class ResourceValue with MapMixin<ResourceType, double> {
         return true;
     }
 
-    void populateTooltip(Element tooltip, LocalisationEngine localisationEngine) {
+    void populateTooltip(Element tooltip, LocalisationEngine localisationEngine, {bool showInsufficient = true, bool plus = false, double displayMultiplier = 1.0}) {
         if (isZero()) {
             tooltip.appendFormattedLocalisation("tooltip.cost.nocost", localisationEngine);
         } else {
@@ -46,7 +46,7 @@ class ResourceValue with MapMixin<ResourceType, double> {
                 final double value = _map[type];
                 final Element span = new SpanElement();
                 String locKey = "tooltip.cost";
-                if (localisationEngine.engine is Game) {
+                if (showInsufficient && localisationEngine.engine is Game) {
                     final Game game = localisationEngine.engine;
                     if (!game.resourceStockpile.canAffordResource(type, value)) {
                         locKey = "tooltip.cost.insufficient";
@@ -54,7 +54,7 @@ class ResourceValue with MapMixin<ResourceType, double> {
                 }
                 span.appendFormattedLocalisation(locKey, localisationEngine, data: <String,String>{
                     "resource" : "resource.${type.getRegistrationKey()}",
-                    "amount":value.floor().toString()
+                    "amount": "${plus ? "+" : ""}${(value * displayMultiplier).floor().toString()}"
                 });
                 resources.append(span);
             }

@@ -11,6 +11,7 @@ import "../resources/resourcetype.dart";
 import '../ui/ui.dart';
 import "../utility/extensions.dart";
 import "engine.dart";
+import "rules.dart";
 import "spatialhash.dart";
 
 class Game extends Engine {
@@ -22,6 +23,7 @@ class Game extends Engine {
     UIComponent resourceList;
 
     ResourceStockpile resourceStockpile = new ResourceStockpile();
+    RuleSet rules = new RuleSet();
 
     Game(Renderer renderer, Element uiContainer) : super(renderer, uiContainer) {
         this.selectionWindow = uiController.addComponent(new SelectionWindow(uiController));

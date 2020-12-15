@@ -35,7 +35,21 @@ class CancelButton extends UIButton {
 
     @override
     Future<void> populateTooltip(Element tooltip) async {
-        //tooltip.append(new HeadingElement.h1()..text=localise(towerType.getDisplayName()));
-        tooltip.appendText("cancel");
+        String name = "name";
+        String description = "description";
+
+        if (selected.state == TowerState.selling) {
+            name = "ui.cancelsell.name";
+            description = "ui.cancelsell.description";
+        } else if (selected.state == TowerState.upgrading) {
+            name = "ui.cancelupgrade.name";
+            description = "ui.cancelupgrade.description";
+        } else if (selected.state == TowerState.building) {
+            name = "ui.cancelbuild.name";
+            description = "ui.cancelbuild.description";
+        }
+
+        tooltip.append(new HeadingElement.h1()..appendFormattedLocalisation(name, engine.localisation));
+        tooltip.appendFormattedLocalisation(description, engine.localisation);
     }
 }

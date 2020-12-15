@@ -12,6 +12,7 @@ class UpgradeButton extends UIButton {
     final TowerSelectionDisplay selectionDisplay;
 
     Tower get selected => selectionDisplay.selected;
+    Game get game => engine;
 
     UpgradeButton(UIController controller, TowerSelectionDisplay this.selectionDisplay, TowerType this.towerType) : super(controller);
 
@@ -38,6 +39,7 @@ class UpgradeButton extends UIButton {
     Future<void> onUse() async {
         if (!canBuildHere()) { return; }
 
+        game.resourceStockpile.subtract(towerType.buildCost);
         selected.upgrade(towerType);
     }
 

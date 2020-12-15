@@ -17,11 +17,13 @@ class TooltipComponent extends UIComponent {
     TooltipComponent(UIController controller) : super(controller);
     StreamSubscription<MouseEvent> _mouseMoveHandler;
     StreamSubscription<MouseEvent> _mouseClickHandler;
+    StreamSubscription<MouseEvent> _mouseOutHandler;
 
     @override
     Element createElement() {
         _mouseMoveHandler = window.onMouseMove.listen(onMouseEvents);
         _mouseClickHandler = window.onClick.listen(onMouseEvents);
+        _mouseOutHandler = window.onMouseOut.listen(onMouseOut);
 
         final Element outer = new DivElement()
             ..className = "Tooltip hidden"
@@ -57,6 +59,12 @@ class TooltipComponent extends UIComponent {
         }
 
         if (engine?.input?.mousePos == null) { return false; }
+
+        final Point<num> pos = engine.input.mousePos;
+        if (pos.x < 0 || pos.x >= window.innerWidth || pos.y < 0 || pos.y >= window.innerHeight) {
+            currentObject = null;
+            return true;
+        }
 
         final HasTooltip object = controller.queryComponentAtCoords(engine.input.mousePos, (UIComponent c) => c is HasTooltip);
 
@@ -131,6 +139,10 @@ class TooltipComponent extends UIComponent {
         updateTooltipObject();
         updateTooltipPosition();
     }
+    void onMouseOut(MouseEvent e) {
+        this.currentObject = null;
+        updateTooltipContents();
+    }
 
     @override
     void resize() {
@@ -142,6 +154,7 @@ class TooltipComponent extends UIComponent {
         super.dispose();
         _mouseMoveHandler.cancel();
         _mouseClickHandler.cancel();
+        _mouseOutHandler.cancel();
     }
 }
 

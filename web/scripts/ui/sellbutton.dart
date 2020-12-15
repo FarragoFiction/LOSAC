@@ -1,9 +1,7 @@
 import "dart:html";
 
+import "../engine/game.dart";
 import "../entities/tower.dart";
-import "../entities/towertype.dart";
-import "../level/grid.dart";
-import "../renderer/3d/renderer3d.dart";
 import "ui.dart";
 
 class SellButton extends UIButton {
@@ -11,8 +9,13 @@ class SellButton extends UIButton {
     final TowerSelectionDisplay selectionDisplay;
 
     Tower get selected => selectionDisplay.selected;
+    Game get game => engine;
 
-    SellButton(UIController controller, TowerSelectionDisplay this.selectionDisplay) : super(controller);
+    Map<String,String> _sellInfo;
+
+    SellButton(UIController controller, TowerSelectionDisplay this.selectionDisplay) : super(controller) {
+        _sellInfo = <String,String>{ "percent" : (game.rules.sellReturn * 100).floor().toString() };
+    }
 
     @override
     Future<void> onUse() async {
@@ -35,7 +38,11 @@ class SellButton extends UIButton {
 
     @override
     Future<void> populateTooltip(Element tooltip) async {
-        //tooltip.append(new HeadingElement.h1()..text=localise(towerType.getDisplayName()));
-        tooltip.appendText("sell");
+        tooltip.append(new HeadingElement.h1()..appendFormattedLocalisation("ui.sell.name", engine.localisation));
+
+        selected.sellValue.populateTooltip(tooltip, engine.localisation, displayMultiplier: game.rules.sellReturn, showInsufficient: false, plus: true);
+        tooltip..append(new BRElement())..append(new BRElement());
+
+        tooltip.appendFormattedLocalisation("ui.sell.description", engine.localisation, data: _sellInfo);
     }
 }

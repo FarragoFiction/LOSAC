@@ -13,6 +13,7 @@ class BuildButton extends UIButton {
     final GridCellSelectionDisplay selectionDisplay;
 
     GridCell get selected => selectionDisplay.selected;
+    Game get game => engine;
 
     BuildButton(UIController controller, GridCellSelectionDisplay this.selectionDisplay, TowerType this.towerType) : super(controller);
 
@@ -41,7 +42,10 @@ class BuildButton extends UIButton {
             final bool canPlace = await engine.placementCheck(selected.node);
             selectionDisplay.placementAllowed = canPlace;
             if (!canPlace) { return; }
+            if (!towerType.isAffordable(engine)) { return; }
         }
+
+        game.resourceStockpile.subtract(towerType.buildCost);
 
         final Tower tower = new Tower(towerType);
         await selected.placeTower(tower);

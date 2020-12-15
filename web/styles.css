@@ -1,3 +1,7 @@
+:root {
+    --tooltipWidth: 25vw; /* tooltips will be expanded to this horizontal size by description text before wrapping */
+}
+
 html {
     background-color: #808080;
     width:100vw;
@@ -202,11 +206,11 @@ canvas {
 
     display:flex;
     flex-direction: row;
-    max-width:100px;
+    max-width:var(--tooltipWidth);
 }
 
 .TooltipInner {
-    flex-basis:100px;
+    flex-basis:var(--tooltipWidth);
     flex-grow:1;
     flex-shrink:1;
 
