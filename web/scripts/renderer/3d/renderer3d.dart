@@ -1,15 +1,12 @@
 import 'dart:async';
 import "dart:html";
 import "dart:math" as Math;
-import "dart:typed_data";
 
 import "package:CubeLib/CubeLib.dart" as B;
-import "package:LoaderLib/Loader.dart";
 import "package:js/js.dart" as JS;
 import "package:js/js_util.dart" as JsUtil;
 
 import '../../engine/engine.dart';
-import "../../entities/tower.dart";
 import "../../entities/towertype.dart";
 import "../../level/datamap.dart";
 import "../../level/grid.dart";
@@ -18,7 +15,7 @@ import '../../level/levelobject.dart';
 import '../../level/selectable.dart';
 import "../../utility/extensions.dart";
 import "../renderer.dart";
-import 'models/meshprovider.dart';
+import "floateroverlay.dart";
 import 'models/standardassets.dart';
 import 'renderable3d.dart';
 
@@ -28,6 +25,8 @@ class Renderer3D extends Renderer {
     static const double _rotationRate = 0.01;
     static const double _panRate = 1.1;
     final CanvasElement canvas;
+    final CanvasElement _floaterCanvas;
+    FloaterOverlay floaterOverlay;
 
     B.Engine babylon;
     B.Scene scene;
@@ -53,11 +52,12 @@ class Renderer3D extends Renderer {
 
     Element pointerElement;
 
-    Renderer3D(CanvasElement this.canvas);
+    Renderer3D(CanvasElement this.canvas, CanvasElement this._floaterCanvas);
     @override
     Future<void> initialise() async {
         this.babylon = new B.Engine(this.canvas, false);
         this.canvas.draggable = false;
+        this.floaterOverlay = new FloaterOverlay(this, _floaterCanvas);
         this.updateCanvasSize();
 
         this.scene = new B.Scene(this.babylon);
@@ -126,6 +126,7 @@ class Renderer3D extends Renderer {
     void draw([double interpolation = 0]) {
         this.updateSelectionIndicator(interpolation);
         this.scene.render();
+        this.floaterOverlay.draw();
 
         this.updatePointer();
     }
@@ -134,6 +135,7 @@ class Renderer3D extends Renderer {
         babylon.setSize(window.innerWidth, window.innerHeight);
         depthRenderer?.getDepthMap()?.resize(JsUtil.jsify(<String,int>{"width":window.innerWidth, "height":window.innerHeight}));
         engine?.uiController?.resize();
+        floaterOverlay.updateCanvasSize();
     }
 
     void updateSelectionIndicator(double interpolation) {

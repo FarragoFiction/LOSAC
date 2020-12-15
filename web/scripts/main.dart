@@ -28,14 +28,16 @@ import "utility/levelutils.dart";
 Future<void> main() async {
     print("LOSAC yo");
 
-    final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600);//..style.border="1px solid black";
+    final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600);
+    final CanvasElement floaterCanvas = new CanvasElement(width: 800, height: 600);
 
     querySelector("#canvascontainer").append(testCanvas);
+    querySelector("#floatercontainer").append(floaterCanvas);
 
     /*final DivElement fpsElement = new DivElement();
     document.body.append(fpsElement);*/
 
-    final Renderer renderer = new Renderer3D(testCanvas);
+    final Renderer renderer = new Renderer3D(testCanvas, floaterCanvas);
     await renderer.initialise();
     final Game game = new Game(renderer, querySelector("#uicontainer"));
 
