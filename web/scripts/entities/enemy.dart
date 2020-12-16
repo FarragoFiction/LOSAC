@@ -8,12 +8,13 @@ import "../entities/targetmoverentity.dart";
 import "../level/endcap.dart";
 import "../level/pathnode.dart";
 import "../level/selectable.dart";
-import "../ui/ui.dart";
+import "../renderer/3d/floateroverlay.dart";
 import "../utility/extensions.dart";
+import "../utility/mathutils.dart";
 import "enemytype.dart";
 import "terraincollider.dart";
 
-class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollider, Selectable {
+class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollider, Selectable, HasFloater {
 
     SpawnerObject originSpawner;
 
@@ -168,4 +169,25 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
 
     /*@override
     SelectionDisplay<Enemy> createSelectionUI(UIController controller) => null;*/
+
+    @override
+    bool shouldDrawFloater() => true;//this.health < this.maxHealth;
+    @override
+    bool drawFloater(B.Vector3 pos, CanvasRenderingContext2D ctx) {
+        final double dist = (MathUtils.tempVector1..setFrom(renderer.camera.position)..subtractInPlace(this.getFloaterPos())).length();
+        final double size = (this.boundsSize * window.innerHeight * 2) / dist;
+        const double thickness = 4;
+        final double healthFraction = (this.health / this.maxHealth);
+
+        final double redness = 1-healthFraction*healthFraction;
+        final double greenness = 1 - (1-healthFraction) * (1-healthFraction);
+
+        ctx.shadowColor = "transparent";
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillRect(pos.x - size*0.5, pos.y - size*0.5 - thickness * 0.5, size, thickness);
+        ctx.fillStyle = "rgb(${(255*redness).round()},${(255*greenness).round()},0)";
+        ctx.fillRect(pos.x - size*0.5, pos.y - size*0.5 - thickness * 0.5, size * healthFraction, thickness);
+
+        return true;
+    }
 }

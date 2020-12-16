@@ -37,6 +37,7 @@ class Renderer3D extends Renderer {
     double cameraAnchorRange;
 
     Set<Renderable3D> renderList = <Renderable3D>{};
+    Iterable<HasFloater> floaterList;
 
     /// container for various standard default models and textures
     Renderer3DStandardAssets standardAssets;
@@ -55,6 +56,8 @@ class Renderer3D extends Renderer {
     Renderer3D(CanvasElement this.canvas, CanvasElement this._floaterCanvas);
     @override
     Future<void> initialise() async {
+        this.floaterList = this.renderList.whereType();
+
         this.babylon = new B.Engine(this.canvas, false);
         this.canvas.draggable = false;
         this.floaterOverlay = new FloaterOverlay(this, _floaterCanvas);
@@ -271,6 +274,7 @@ class Renderer3D extends Renderer {
     @override
     void destroy() {
         this.babylon.dispose();
+        this.floaterOverlay.destroy();
         resizeHandler.cancel();
     }
 

@@ -7,6 +7,7 @@ import "package:js/js.dart" as JS;
 import "../engine/engine.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
+import "../renderer/3d/floateroverlay.dart";
 import "../renderer/3d/models/meshprovider.dart";
 import "../renderer/3d/renderable3d.dart";
 import "../utility/extensions.dart";
@@ -45,7 +46,7 @@ class SimpleLevelObject with Renderable3D {
     }
 }
 
-class LevelObject extends SimpleLevelObject {
+class LevelObject extends SimpleLevelObject { //with HasFloater { // floater test
 
     final Set<LevelObject> _subObjects = <LevelObject>{};
     Set<LevelObject> subObjects;

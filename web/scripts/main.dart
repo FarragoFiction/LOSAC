@@ -7,6 +7,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "engine/game.dart";
 import "engine/inputhandler.dart";
 import "entities/enemytype.dart";
+import 'entities/floaterentity.dart';
 import 'entities/projectiles/chaserprojectile.dart';
 import "entities/tower.dart";
 import "entities/towertype.dart";
@@ -47,6 +48,10 @@ Future<void> main() async {
     final Terrain terrain = new Terrain();
     renderer.addRenderable(terrain);
     testLevel.terrain = terrain;
+
+    final FloaterEntity testFloater = new FloatingText("Test caption", "Floater")..zPosition = 20;
+    testLevel.addObject(testFloater);
+    game.addEntity(testFloater);
 
     // grid
 
@@ -173,8 +178,8 @@ Future<void> main() async {
     game.towerTypeRegistry.register(upgradeTestTowerType);
     testTowerType.upgradeList.add(upgradeTestTowerType);
 
+    await game.initialise();
     game
-        ..initialise()
         ..pathfinder = pathfinder
         ..setLevel(testLevel)
         //..fpsElement = fpsElement
