@@ -311,6 +311,17 @@ canvas {
     text-shadow: 1px 1px black;
 }
 
+.ResourcePopup {
+    font-family: "courier new", "courier", monospace;
+    font-size: 15px;
+    text-align:center;
+
+    color: white;
+    font-weight: bold;
+
+    text-shadow: 1px 1px black;
+}
+
 /* ######################################################################## */
 
 .top { top: 0px; }

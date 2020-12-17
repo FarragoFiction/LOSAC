@@ -60,7 +60,7 @@ class ResourceDisplay extends UIComponent with HasTooltip {
     @override
     void update() {
         final Game game = engine;
-        this.resourceCounter?.text = game.resourceStockpile[resource].round().toString();
+        this.resourceCounter?.text = game.resourceStockpile[resource].floor().toString();
     }
 
     @override

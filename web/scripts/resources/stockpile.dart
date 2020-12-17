@@ -1,8 +1,12 @@
 import "dart:collection";
 import "dart:html";
 
+import "package:CubeLib/CubeLib.dart" as B;
+
 import "../engine/game.dart";
+import "../entities/floaterentity.dart";
 import "../localisation/localisation.dart";
+import "../utility/extensions.dart";
 import "resourcetype.dart";
 
 // ignore: prefer_mixin
@@ -74,6 +78,23 @@ class ResourceValue with MapMixin<ResourceType, double> {
     Iterable<ResourceType> get keys => _map.keys;
     @override
     double remove(Object key) => _map.remove(key);
+
+    ResourceValue operator *(Object other) {
+        if (!(other is num)) { throw ArgumentError("Must multiply ResourceValue by a number"); }
+
+        final ResourceValue newVal = new ResourceValue();
+        for (final ResourceType type in this.keys) {
+            newVal[type] = this[type] * other;
+        }
+        return newVal;
+    }
+
+    void popup(Game engine, B.Vector2 location, double height, [bool positive = true]) {
+        final ResourcePopup floater = new ResourcePopup(this, positive);
+        floater..position.setFrom(location)..zPosition = height;
+        engine.renderer.addRenderable(floater);
+        engine.addEntity(floater);
+    }
 }
 
 class ResourceStockpile extends ResourceValue {

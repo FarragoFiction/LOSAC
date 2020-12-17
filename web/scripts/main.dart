@@ -49,7 +49,7 @@ Future<void> main() async {
     renderer.addRenderable(terrain);
     testLevel.terrain = terrain;
 
-    final FloaterEntity testFloater = new FloatingText("Test caption", "Floater")..zPosition = 20;
+    final FloaterEntity testFloater = new RisingText("Test caption", "Floater")..zPosition = 20;
     testLevel.addObject(testFloater);
     game.addEntity(testFloater);
 
@@ -161,6 +161,8 @@ Future<void> main() async {
     final ResourceType testResource2 = new ResourceType()..name="second";
     game.resourceTypeRegistry.register(testResource2);
 
+    game.resourceStockpile.addResource(testResource, 20);
+
     final EnemyType testEnemyType = new EnemyType();
     final TowerType testTowerType = new TowerType()
         ..buildCost.addResource(testResource, 10)
@@ -177,6 +179,10 @@ Future<void> main() async {
     upgradeTestTowerType.weapon = new ChaserWeaponType(upgradeTestTowerType)..damage = 3;
     game.towerTypeRegistry.register(upgradeTestTowerType);
     testTowerType.upgradeList.add(upgradeTestTowerType);
+
+    final ResourcePopup testPopup = new ResourcePopup(upgradeTestTowerType.buildCost)..zPosition = 20;
+    testLevel.addObject(testPopup);
+    game.addEntity(testPopup);
 
     await game.initialise();
     game

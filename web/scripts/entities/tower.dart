@@ -240,6 +240,8 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
         if (engine is Game) {
             final Game game = engine;
             game.resourceStockpile.add(sellValue, multiplier: game.rules.sellReturn);
+
+            (sellValue * game.rules.sellReturn).popup(engine, this.getWorldPosition(), this.getZPosition());
         }
     }
 
@@ -251,6 +253,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
             if (engine is Game && this.state == TowerState.upgrading && upgradeTowerType != null) {
                 final Game game = engine;
                 game.resourceStockpile.add(upgradeTowerType.buildCost);
+                upgradeTowerType.buildCost.popup(engine, getWorldPosition(), getZPosition());
             }
             this.upgradeTowerType = null;
         } else if (this.state == TowerState.building) {
@@ -260,6 +263,7 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
             if (engine is Game) {
                 final Game game = engine;
                 game.resourceStockpile.add(towerType.buildCost);
+                towerType.buildCost.popup(engine, getWorldPosition(), getZPosition());
             }
             await this.gridCell.removeTower();
         }

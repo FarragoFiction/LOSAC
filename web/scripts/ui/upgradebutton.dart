@@ -40,6 +40,7 @@ class UpgradeButton extends UIButton {
         if (!canBuildHere()) { return; }
 
         game.resourceStockpile.subtract(towerType.buildCost);
+        towerType.buildCost.popup(game, selected.getWorldPosition(), selected.getZPosition(), false);
         selected.upgrade(towerType);
     }
 

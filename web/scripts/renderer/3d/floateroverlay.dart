@@ -59,8 +59,9 @@ class FloaterOverlay {
         toRender.sort();
 
         for (final _FloaterRenderEntry entry in toRender) {
+            ctx.save();
             final bool drawn = entry.floater.drawFloater(entry.pos, ctx);
-
+            ctx.restore();
             _drewSomethingLastFrame |= drawn;
         }
     }

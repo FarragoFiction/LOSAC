@@ -46,6 +46,7 @@ class BuildButton extends UIButton {
         }
 
         game.resourceStockpile.subtract(towerType.buildCost);
+        towerType.buildCost.popup(game, selected.getWorldPosition(), selected.getZPosition(), false);
 
         final Tower tower = new Tower(towerType);
         await selected.placeTower(tower);

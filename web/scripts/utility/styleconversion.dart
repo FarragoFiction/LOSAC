@@ -12,6 +12,7 @@ class CanvasStyle {
     String textColour;
     String textAlign;
     String textShadowColour;
+    num textLineHeight;
     num textShadowX;
     num textShadowY;
     num textShadowBlur;
@@ -27,6 +28,7 @@ class CanvasStyle {
         textFont = css.font;
         textColour = css.color;
         textAlign = css.textAlign;
+        textLineHeight = cssLengthToPixels(css.fontSize, compareHeight: true);
 
         final List<Match> shadow = _shadowPattern.allMatches(css.textShadow).toList();
 
