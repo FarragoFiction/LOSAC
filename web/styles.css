@@ -254,7 +254,7 @@ canvas {
 
 .ResourceListWindow {
     position:absolute;
-    top:0;
+    top:50px;
     left:0;
 }
 .ResourceDisplay {
@@ -298,6 +298,58 @@ canvas {
     transition-timing-function: linear;
 
     background-color: #AAAAAA;
+}
+
+.WaveTracker {
+    position:absolute;
+    width: 100%;
+    height: 50px;
+
+    top:0px;
+    left:0px;
+
+    padding: 8px 8px 8px 88px;
+}
+
+.WaveBar {
+    position:relative;
+    width:100%;
+    height:100%;
+    background-color:black;
+    overflow:hidden;
+    border: 1px solid #606060;
+}
+
+.WaveBar .bar {
+    position:absolute;
+    height:100%;
+    width:calc(var(--width) + 2px);
+    top:0;
+    left:var(--left);
+
+    border-left:2px solid rgba(255,64,64,1);
+    border-right:2px solid rgba(255,64,64,1);
+}
+
+.WaveCounter {
+    position:absolute;
+    width:88px;
+    left:0px;
+    top:17px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.bar:first-child {
+    border-left: 0px none;
+}
+
+.WaveBar .spawnTimer {
+    background-color: #700000;
+}
+
+.WaveBar .waveTimer {
+    background-image: linear-gradient(to right, black, #404040);
 }
 
 .Floater {

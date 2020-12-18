@@ -137,13 +137,12 @@ class ResourceFloater extends FloaterEntity {
         for (final ResourceType type in resources.keys) {
             final double offset = iconOffsets[i];
             final double x = pos.x - totalWidth * 0.5 + offset;
-            final double transparency = ctx.globalAlpha;
-            Loader.getResource(engine.localisation.formatting.getIconPath("resource.${type.getRegistrationKey()}"), format: Formats.png, forceCanonical: true).then((ImageElement image) {
-                ctx.save();
-                ctx.globalAlpha = transparency;
-                ctx.drawImageScaled(image, x + 2, pos.y - iconSize, iconSize, iconSize);
-                ctx.restore();
-            });
+
+            final ImageElement icon = engine.localisation.formatting.getIconMaybe("resource.${type.getRegistrationKey()}");
+            if (icon != null) {
+                ctx.drawImageScaled(icon, x + 2, pos.y - iconSize, iconSize, iconSize);
+            }
+
             ctx.fillText(captions[i], x + iconSize + 5, pos.y);
             i++;
         }

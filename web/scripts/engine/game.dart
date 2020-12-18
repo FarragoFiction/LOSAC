@@ -13,6 +13,7 @@ import "../utility/extensions.dart";
 import "engine.dart";
 import "rules.dart";
 import "spatialhash.dart";
+import 'wavemanager.dart';
 
 class Game extends Engine {
 
@@ -24,9 +25,13 @@ class Game extends Engine {
 
     ResourceStockpile resourceStockpile = new ResourceStockpile();
     RuleSet rules = new RuleSet();
+    WaveManager waveManager;
+
 
     Game(Renderer renderer, Element uiContainer) : super(renderer, uiContainer) {
         this.selectionWindow = uiController.addComponent(new SelectionWindow(uiController));
+        uiController.addComponent(new WaveTracker(uiController));
+        this.waveManager = new WaveManager(this);
     }
 
     @override
@@ -40,16 +45,19 @@ class Game extends Engine {
     void logicUpdate([num dt = 0]) {
         super.logicUpdate(dt);
 
+        final double updateTime = dt / 1000;
 
+        waveManager.update(updateTime);
     }
 
-    void spawnEnemy(EnemyType enemyType, SpawnerObject spawner) {
+    Enemy spawnEnemy(EnemyType enemyType, SpawnerObject spawner) {
         final Enemy enemy = new Enemy(enemyType);
         enemy
             ..originSpawner = spawner
             ..rot_angle = spawner.rot_angle
             ..position.setFrom(spawner.node.position);
         this.addEntity(enemy);
+        return enemy;
     }
 
     void leakEnemy(Enemy enemy) {

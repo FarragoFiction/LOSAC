@@ -6,6 +6,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 
 import "engine/game.dart";
 import "engine/inputhandler.dart";
+import "engine/wavemanager.dart";
 import "entities/enemytype.dart";
 import 'entities/floaterentity.dart';
 import 'entities/projectiles/chaserprojectile.dart';
@@ -184,6 +185,17 @@ Future<void> main() async {
     testLevel.addObject(testPopup);
     game.addEntity(testPopup);
 
+    // spawn waves
+
+    for (int i=0; i<5; i++) {
+        final Wave testWave = new Wave();
+        for (int j = 0; j < 5; j++) {
+            testWave.entries.add(<WaveEntry>{new WaveEntry(testEnemyType, 0)});
+        }
+        game.waveManager.waves.add(testWave);
+    }
+
+    // init
     await game.initialise();
     game
         ..pathfinder = pathfinder
@@ -204,14 +216,14 @@ Future<void> main() async {
     renderer.centreOnObject(testLevel);
     r3d.initCameraBounds(testLevel);
 
-    int n = 0;
+    /*int n = 0;
     new Timer.periodic(const Duration(milliseconds: 1500), (Timer t) {
         game.spawnEnemy(testEnemyType, testSpawner1);
         n++;
         if (n >= 10) {
             t.cancel();
         }
-    });
+    });*/
 
     //game.input.listen("A", testCallback, allowRepeats: false);
 }

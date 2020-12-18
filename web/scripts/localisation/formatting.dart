@@ -10,6 +10,7 @@ class FormattingEngine {
 
     final LocalisationEngine _locEngine;
     final Map<String,String> _iconPaths = <String,String>{};
+    final Map<String,ImageElement> _iconImages = <String,ImageElement>{};
 
     FormattingEngine(LocalisationEngine this._locEngine);
 
@@ -187,6 +188,20 @@ class FormattingEngine {
             ..style.setProperty("--icon", 'url("$path")')
         ;
         element.append(iconContainer);
+    }
+
+    /// Gets the image for the icon if it's loaded, otherwise requests it and returns null
+    ImageElement getIconMaybe(String name) {
+
+        if (_iconImages.containsKey(name)) {
+            return _iconImages[name];
+        }
+        final String path = this.getIconPath(name);
+        Loader.getResource(path, format: Formats.png, forceCanonical: true).then((ImageElement icon) {
+            _iconImages[name] = icon;
+        });
+
+        return null;
     }
 }
 

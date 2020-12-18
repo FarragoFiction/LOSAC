@@ -11,6 +11,7 @@ export "progressbar.dart";
 export "resourcelist.dart";
 export "selectionwindow.dart";
 export "tooltip.dart";
+export "wavetracker.dart";
 
 class UIController {
     final Engine engine;
@@ -98,13 +99,17 @@ abstract class UIComponent {
         }
     }
 
+    Element getChildContainer() => _element;
+
     void resize() {}
 
     Element createElementAndPropagate() {
         final Element element = this.createElement();
+        _element = element;
 
+        final Element childContainer = getChildContainer();
         for (final UIComponent child in children) {
-            element.append(child.element);
+            childContainer.append(child.element);
         }
         return element;
     }
@@ -115,7 +120,7 @@ abstract class UIComponent {
         this.children.add(component);
         component.parent = this;
         if (this._element != null) {
-            this._element.append(component.element);
+            getChildContainer().append(component.element);
             this.resizeAndPropagate();
         }
         return component;
