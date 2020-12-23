@@ -1,9 +1,13 @@
 import "dart:html";
 
+import "../engine/entity.dart";
+
 class EnemyType {
     /// Localisation string identifier
     /// Will resolve patterns such as "enemy.(this value).name"
     String name = "default";
+
+    SlopeMode slopeMode = SlopeMode.conform;
 
     double health = 100;
     double speed = 25;

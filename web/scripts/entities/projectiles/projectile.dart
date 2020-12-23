@@ -1,13 +1,14 @@
-import 'dart:collection';
 import "dart:html";
 import "dart:math" as Math;
 
+import "package:CommonLib/Utility.dart";
 import "package:CubeLib/CubeLib.dart" as B;
 
 import "../../engine/game.dart";
 import '../../localisation/localisation.dart';
 import "../../targeting/targetingstrategy.dart";
 import '../../ui/ui.dart';
+import "../../utility/extensions.dart";
 import "../enemy.dart";
 import "../moverentity.dart";
 import "../tower.dart";
@@ -27,12 +28,25 @@ abstract class Projectile extends MoverEntity {
     double age = 0;
     double maxAge = 10; // might need changing elsewhere for very slow and long range projectiles, but why would you go that slow?
 
+    double previousZPosition = 0;
+
+    B.Vector2 originPos;
+    double originHeight;
+
     /// Not used by all types of projectile
     B.Vector2 targetPos;
+    double targetHeight;
 
-    factory Projectile(Tower parent, Enemy target, B.Vector2 targetPos) => parent.towerType.weapon.spawnProjectile(parent, target, targetPos);
+    double drawZ;
 
-    Projectile.impl(Tower this.parent, Enemy this.target, B.Vector2 this.targetPos) : projectileType = parent.towerType.weapon;
+    factory Projectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => parent.towerType.weapon.spawnProjectile(parent, target, targetPos, targetHeight);
+
+    Projectile.impl(Tower this.parent, Enemy this.target, B.Vector2 this.targetPos, double this.targetHeight) : projectileType = parent.towerType.weapon {
+        this.originPos = new B.Vector2()..setFrom(parent.position);
+        this.originHeight = parent.getZPosition() + parent.towerType.weaponHeight;
+        this.zPosition = originHeight;
+        this.previousZPosition = originHeight;
+    }
 
     void impact() {
         applyDamage();
@@ -101,6 +115,24 @@ abstract class Projectile extends MoverEntity {
             this.kill();
         }
     }
+
+    @override
+    void renderUpdate([num interpolation = 0]) {
+        previousPos ??= position.clone();
+        previousRot ??= rot_angle;
+        previousZPosition ??= zPosition;
+        drawPos ??= position.clone();
+
+        final double dx = this.position.x - previousPos.x;
+        final double dy = this.position.y - previousPos.y;
+        drawPos.set(previousPos.x + dx * interpolation, previousPos.y + dy * interpolation);
+        this.drawZ = previousZPosition + (zPosition - previousZPosition) * interpolation;
+
+        final double da = angleDiff(rot_angle, previousRot);
+        drawRot = previousRot + da * interpolation;
+
+        this.updateMeshPosition(position: drawPos, height:drawZ, rotation:drawRot);
+    }
 }
 
 abstract class WeaponType {
@@ -144,7 +176,7 @@ abstract class WeaponType {
         load(null);
     }
 
-    Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos);
+    Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight);
 
     void load(Map<dynamic,dynamic> json) {}
 

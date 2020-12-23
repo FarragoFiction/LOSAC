@@ -9,7 +9,7 @@ class BeamProjectile extends Projectile {
 
     BeamWeaponType get type => projectileType;
 
-    BeamProjectile(Tower parent, Enemy target, B.Vector2 targetPos) : super.impl(parent, target, targetPos) {
+    BeamProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) : super.impl(parent, target, targetPos, targetHeight) {
         //TODO: STUFF
     }
 }
@@ -19,5 +19,5 @@ class BeamWeaponType extends WeaponType {
     BeamWeaponType(TowerType towerType) : super(towerType);
 
     @override
-    Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos) => new BeamProjectile(parent, target, targetPos);
+    Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => new BeamProjectile(parent, target, targetPos, targetHeight);
 }

@@ -28,7 +28,7 @@ enum TowerState {
     busy
 }
 
-class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, Selectable {
+class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHashable<Tower>, Selectable {
     final TowerType towerType;
 
     final Set<Enemy> targets = <Enemy>{};
@@ -51,6 +51,8 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
     double turretDrawAngle = 0;
 
     GridCell gridCell;
+    @override
+    double get slopeTestRadius => Grid.cellSize * 0.5;
 
     @override
     String get name => "tower.${towerType.name}";
@@ -298,7 +300,8 @@ class Tower extends LevelObject with Entity, HasMatrix, SpatialHashable<Tower>, 
 
     void attack(Enemy target) {
         final B.Vector2 targetPos = getTargetLocation(target);
-        final Projectile p = new Projectile(this, target, targetPos);
+        final double targetHeight = level.levelHeightMap.getSmoothVal(targetPos.x, targetPos.y);
+        final Projectile p = new Projectile(this, target, targetPos, targetHeight);
         this.engine.addEntity(p);
     }
 

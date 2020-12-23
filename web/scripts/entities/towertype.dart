@@ -44,6 +44,8 @@ class TowerType with Registerable {
     /// How close the turret angle needs to be to fire, in radians.
     /// This might be greater than 0 for something like a missile launcher which doesn't require precise aim
     double fireAngle = 1.5;
+    /// Added to the z position of the tower to get the spawn height of projectiles
+    double weaponHeight = 0.0;
 
     WeaponType weapon;
 

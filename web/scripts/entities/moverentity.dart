@@ -1,5 +1,4 @@
 import "dart:html";
-import "dart:math" as Math;
 
 import "package:CommonLib/Utility.dart";
 import "package:CubeLib/CubeLib.dart" as B;
@@ -9,10 +8,7 @@ import "../level/levelobject.dart";
 import "../renderer/2d/matrix.dart";
 import "../utility/extensions.dart";
 
-enum SlopeMode {
-    upright,
-    conform
-}
+
 
 class MoverEntity extends LevelObject with Entity, HasMatrix {
     double speedMultiplier = 1.0;
@@ -26,7 +22,7 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     B.Vector2 drawPos;
     double drawRot;
 
-    SlopeMode slopeMode = SlopeMode.conform;
+
 
     /// Used in calculateBounds to override the main [LevelObject] rotated bounds code
     double boundsSize = 10;
@@ -62,7 +58,7 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
         this.updateMeshPosition(position: drawPos, rotation:drawRot);
     }
 
-    @override
+    /*@override
     double getZPosition() {
         drawPos ??= position.clone();
         double z = this.zPosition;
@@ -70,7 +66,7 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
             z += this.level.levelHeightMap.getSmoothVal(this.drawPos.x, this.drawPos.y);
         }
         return z;
-    }
+    }*/
 
     /*@override
     void drawToCanvas(CanvasRenderingContext2D ctx) {
@@ -114,34 +110,10 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
     @override
     Rectangle<num> calculateBounds() => new Rectangle<num>(this.position.x-boundsSize/2, this.position.y-boundsSize/2, boundsSize, boundsSize);
 
-    @override
-    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {
-        super.updateMeshPosition(position: position, height: height);
 
-        if (this.mesh == null || this.level == null) { return; }
-
-        if (this.slopeMode == SlopeMode.conform) {
-            position ??= this.position;
-            final B.Vector2 offset = new B.Vector2(0,this.boundsSize)..rotateInPlace(this.rot_angle);
-
-            final double right = this.level.levelHeightMap.getSmoothVal(position.x + offset.x, position.y + offset.y);
-            final double left = this.level.levelHeightMap.getSmoothVal(position.x - offset.x, position.y - offset.y);
-
-            final double roll = Math.atan2(left-right, this.boundsSize * 2);
-
-            final double front = this.level.levelHeightMap.getSmoothVal(position.x - offset.y, position.y + offset.x);
-            final double back = this.level.levelHeightMap.getSmoothVal(position.x + offset.y, position.y - offset.x);
-
-            final double pitch = Math.atan2(front-back, this.boundsSize * 2);
-
-            rotation ??= rot_angle;
-
-            this.mesh.rotation..x = roll..y = rotation..z = pitch;
-        }
-    }
 
     @override
-    B.Vector2 getModelPosition() => drawPos;
+    B.Vector2 getModelPosition() => drawPos ?? position;
     @override
     num getModelRotation() => drawRot;
 }

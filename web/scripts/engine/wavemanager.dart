@@ -2,6 +2,7 @@ import "dart:collection";
 
 import "../entities/enemy.dart";
 import "../entities/enemytype.dart";
+import "../resources/resourcetype.dart";
 import "game.dart";
 
 class WaveManager {
@@ -65,7 +66,7 @@ class WaveManager {
 
                         // spawn all the enemies for this step, add them to the active list
                         for (final WaveEntry entry in entries) {
-                            final Enemy enemy = engine.spawnEnemy(entry.type, engine.level.spawners[entry.spawner].pathObject);
+                            final Enemy enemy = engine.spawnEnemy(entry.type, engine.level.spawners[entry.spawner].pathObject)..bounty = entry.bounty;
                             activeEnemies.add(enemy);
                         }
                         // set spawn timer to the wave's delay, or default if absent
@@ -146,8 +147,9 @@ class Wave {
 class WaveEntry {
     final EnemyType type;
     final int spawner;
+    final ResourceValue bounty;
 
-    WaveEntry(EnemyType this.type, int this.spawner);
+    WaveEntry(EnemyType this.type, int this.spawner, ResourceValue this.bounty);
 }
 
 class WaveItemDescriptor {

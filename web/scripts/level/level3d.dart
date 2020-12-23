@@ -2,7 +2,6 @@ import "dart:html";
 
 import "package:CubeLib/CubeLib.dart" as B;
 
-import "../engine/engine.dart";
 import "../renderer/3d/renderable3d.dart";
 import "level.dart";
 import "levelobject.dart";

@@ -2,6 +2,7 @@ import "dart:html";
 
 import "package:CubeLib/CubeLib.dart" as B;
 
+import "../engine/entity.dart";
 import "../engine/game.dart";
 import "../engine/spatialhash.dart";
 import "../entities/targetmoverentity.dart";
@@ -9,14 +10,17 @@ import "../level/endcap.dart";
 import "../level/pathnode.dart";
 import "../level/selectable.dart";
 import "../renderer/3d/floateroverlay.dart";
+import "../resources/resourcetype.dart";
 import "../utility/extensions.dart";
 import "../utility/mathutils.dart";
 import "enemytype.dart";
 import "terraincollider.dart";
 
-class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollider, Selectable, HasFloater {
+class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>, TerrainCollider, Selectable, HasFloater {
+    Game get game => engine;
 
     SpawnerObject originSpawner;
+    ResourceValue bounty;
 
     double health;
     double get maxHealth => enemyType.health;
@@ -41,6 +45,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
     Enemy(EnemyType this.enemyType) : health = enemyType.health {
         this.baseSpeed = enemyType.speed;
         this.turnRate = enemyType.turnRate;
+        this.slopeMode = enemyType.slopeMode;
     }
 
     // drawing level progress for debug
@@ -66,6 +71,11 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
     void logicUpdate([num dt = 0]) {
         if (this.health <= 0) {
             this.kill();
+
+            if (this.bounty != null) {
+                game.resourceStockpile.add(bounty);
+                bounty.popup(engine, this.getWorldPosition(), this.getZPosition());
+            }
 
             if (this.engine is Game) {
                 final Game game = engine;
@@ -190,4 +200,7 @@ class Enemy extends TargetMoverEntity with SpatialHashable<Enemy>, TerrainCollid
 
         return true;
     }
+
+    @override
+    double get slopeTestRadius => boundsSize * 0.5;
 }

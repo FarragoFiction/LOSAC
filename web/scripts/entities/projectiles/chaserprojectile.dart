@@ -34,7 +34,7 @@ class ChaserProjectile extends Projectile with NewtonianMover {
     @override
     double get velocityAngleTransferLateral => type.velocityAngleTransferLateral;
 
-    ChaserProjectile(Tower parent, Enemy target, B.Vector2 targetPos) : super.impl(parent, target, targetPos) {
+    ChaserProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) : super.impl(parent, target, targetPos, targetHeight) {
         this.position.setFrom(this.parent.position);
         this.previousPos.setFrom(this.parent.position);
         if (parent.towerType.turreted) {
@@ -114,5 +114,5 @@ class ChaserWeaponType extends WeaponType {
     ChaserWeaponType(TowerType towerType) : super(towerType);
 
     @override
-    Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos) => new ChaserProjectile(parent, target, targetPos);
+    Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => new ChaserProjectile(parent, target, targetPos, targetHeight);
 }

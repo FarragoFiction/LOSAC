@@ -4,10 +4,8 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "package:collection/collection.dart";
 import "package:js/js.dart" as JS;
 
-import "../engine/engine.dart";
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
-import "../renderer/3d/floateroverlay.dart";
 import "../renderer/3d/models/meshprovider.dart";
 import "../renderer/3d/renderable3d.dart";
 import "../utility/extensions.dart";
@@ -39,7 +37,7 @@ class SimpleLevelObject with Renderable3D {
     double getZPosition() => this.zPosition;
 
     @override
-    void updateMeshPosition({B.Vector2 position, double height}) {
+    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {
         position ??= this.position;
         height ??= this.getZPosition();
         this.mesh?.position?.setFromGameCoords(position, height);
@@ -198,8 +196,8 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
     Rectangle<num> calculateBounds() => rectBounds(this, 10,10);
 
     @override
-    void updateMeshPosition({B.Vector2 position, double height}) {
-        super.updateMeshPosition(position: position, height: height);
+    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {
+        super.updateMeshPosition(position: position, height: height, rotation: rotation);
         this.mesh?.rotation?.y = this.rot_angle;
     }
 }

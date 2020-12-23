@@ -3,7 +3,6 @@ import "package:CubeLib/CubeLib.dart" as B;
 
 import '../../../level/levelobject.dart';
 import '../../../level/selectable.dart';
-import "../../../utility/extensions.dart";
 import "../renderer3d.dart";
 
 class MeshProvider<T extends SimpleLevelObject> {

@@ -2,7 +2,6 @@ import "dart:html";
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
-import "package:LoaderLib/Loader.dart";
 
 import "../engine/entity.dart";
 import "../level/levelobject.dart";

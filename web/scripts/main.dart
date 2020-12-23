@@ -10,6 +10,7 @@ import "engine/wavemanager.dart";
 import "entities/enemytype.dart";
 import 'entities/floaterentity.dart';
 import 'entities/projectiles/chaserprojectile.dart';
+import 'entities/projectiles/interpolatorprojectile.dart';
 import "entities/tower.dart";
 import "entities/towertype.dart";
 import "level/curve.dart";
@@ -167,8 +168,12 @@ Future<void> main() async {
     final EnemyType testEnemyType = new EnemyType();
     final TowerType testTowerType = new TowerType()
         ..buildCost.addResource(testResource, 10)
+        ..leadTargets = true
     ;
-    testTowerType.weapon = new ChaserWeaponType(testTowerType);
+    //testTowerType.weapon = new ChaserWeaponType(testTowerType);
+    testTowerType.weapon = new InterpolatorWeaponType(testTowerType)
+        ..projectileSpeed = 350
+    ;
     game.towerTypeRegistry.register(testTowerType);
 
     final TowerType upgradeTestTowerType = new TowerType()
@@ -190,7 +195,7 @@ Future<void> main() async {
     for (int i=0; i<5; i++) {
         final Wave testWave = new Wave();
         for (int j = 0; j < 5; j++) {
-            testWave.entries.add(<WaveEntry>{new WaveEntry(testEnemyType, 0)});
+            testWave.entries.add(<WaveEntry>{new WaveEntry(testEnemyType, 0, new ResourceValue()..addResource(testResource, 1))});
         }
         game.waveManager.waves.add(testWave);
     }
