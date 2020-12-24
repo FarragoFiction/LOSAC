@@ -27,6 +27,7 @@ class Level {
     Rectangle<num> bounds;
 
     Terrain terrain;
+    double gravity;
 
     Level() {
         connectibles = objects.whereType();

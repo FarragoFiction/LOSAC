@@ -125,4 +125,8 @@ abstract class TowerUtils {
         print("ran out of iterations");
         return pos;
     }
+
+    static double simpleBallisticArc(double z0, double v0, double g, double t) {
+        return z0 + v0 * t - 0.5 * g * t * t;
+    }
 }

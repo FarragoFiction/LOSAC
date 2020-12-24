@@ -29,6 +29,8 @@ abstract class Projectile extends MoverEntity {
     double maxAge = 10; // might need changing elsewhere for very slow and long range projectiles, but why would you go that slow?
 
     double previousZPosition = 0;
+    double elevation = 0;
+    double previousElevation = 0;
 
     B.Vector2 originPos;
     double originHeight;
@@ -38,6 +40,7 @@ abstract class Projectile extends MoverEntity {
     double targetHeight;
 
     double drawZ;
+    double drawElevation;
 
     factory Projectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => parent.towerType.weapon.spawnProjectile(parent, target, targetPos, targetHeight);
 
@@ -46,6 +49,7 @@ abstract class Projectile extends MoverEntity {
         this.originHeight = parent.getZPosition() + parent.towerType.weaponHeight;
         this.zPosition = originHeight;
         this.previousZPosition = originHeight;
+        this.engine = parent.engine; // this is a cheat but it helps
     }
 
     void impact() {
@@ -122,16 +126,34 @@ abstract class Projectile extends MoverEntity {
         previousRot ??= rot_angle;
         previousZPosition ??= zPosition;
         drawPos ??= position.clone();
+        previousElevation ??= elevation;
 
         final double dx = this.position.x - previousPos.x;
         final double dy = this.position.y - previousPos.y;
         drawPos.set(previousPos.x + dx * interpolation, previousPos.y + dy * interpolation);
         this.drawZ = previousZPosition + (zPosition - previousZPosition) * interpolation;
+        this.drawElevation = previousElevation + (elevation - previousElevation) * interpolation;
 
         final double da = angleDiff(rot_angle, previousRot);
         drawRot = previousRot + da * interpolation;
 
         this.updateMeshPosition(position: drawPos, height:drawZ, rotation:drawRot);
+    }
+
+    @override
+    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {
+        super.updateMeshPosition(position: position, height: height, rotation: rotation);
+        this.mesh?.rotation?.z = this.drawElevation;
+    }
+
+    @override
+    double getZPosition() => drawZ;
+
+    void updateElevation() {
+        final double movedHorizontal = (position - previousPos).length().abs();
+        final double movedVertical = zPosition - previousZPosition;
+
+        elevation = Math.atan2(-movedVertical, movedHorizontal);
     }
 }
 

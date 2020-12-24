@@ -7,4 +7,7 @@ class RuleSet {
 
     /// What fraction of purchase price should be refunded when a tower is sold?
     double sellReturn = 0.75;
+
+    /// Default gravity to use for projectiles if the level doesn't override it
+    double gravity = 300;
 }

@@ -29,6 +29,11 @@ import "utility/extensions.dart";
 import "utility/levelutils.dart";
 
 Future<void> main() async {
+    //testProjectileArc();
+    losac();
+}
+
+Future<void> losac() async {
     print("LOSAC yo");
 
     final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600);
@@ -287,4 +292,42 @@ void testInverseBilinear() {
     ctx.putImageData(idata, 0, 0);
 
     document.body.append(testCanvas);
+}
+
+void testProjectileArc() {
+    const int w = 400;
+    const int h = 300;
+    const int padding = 20;
+
+    const double distance = 600;
+    const double speed = 100;
+    const double gravity = 50;
+
+    const double y0 = 0;
+    const double y1 = 50;
+    const double dy = y1 - y0;
+
+    final CanvasElement canvas = new CanvasElement(width: padding * 2 + w, height: padding * 2 + h);
+    final CanvasRenderingContext2D ctx = canvas.context2D;
+
+    const double totalTime = distance / speed;
+    const double vy = (dy - (0.5 * -gravity * totalTime * totalTime)) / totalTime;
+
+    for (int ix = 0; ix<w; ix++) {
+        final double fraction = ix / w;
+        final double t = fraction * totalTime;
+
+        final double py = y0 + vy * t - 0.5 * gravity * t * t;
+        final double y = y0 + (y1-y0) * fraction;
+
+        ctx.fillStyle = "blue";
+        ctx.fillRect(padding + ix, (padding + h) - y, 1, 1);
+        ctx.fillStyle = "red";
+        ctx.fillRect(padding + ix, (padding + h) - py, 1, 1);
+
+        print("t,y,py: $t,$y,$py");
+        print("blue, red: ${padding + h - y},${padding + h - py}");
+    }
+
+    document.body.append(canvas);
 }

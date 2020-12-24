@@ -11,5 +11,5 @@ mixin Renderable3D {
     B.AbstractMesh mesh;
 
     void generateMesh() {}
-    void updateMeshPosition({B.Vector2 position, double height}) {}
+    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {}
 }
