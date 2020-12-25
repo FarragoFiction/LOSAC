@@ -27,10 +27,14 @@ import "renderer/renderer.dart";
 import "resources/resourcetype.dart";
 import "utility/extensions.dart";
 import "utility/levelutils.dart";
+import "utility/towerutils.dart";
 
 Future<void> main() async {
     //testProjectileArc();
     losac();
+
+    //print(TowerUtils.ballisticArc(300, 0, 350, 300, false));
+    //print(TowerUtils.ballisticArc(300, 0, 350, 300, true));
 }
 
 Future<void> losac() async {
@@ -56,7 +60,7 @@ Future<void> losac() async {
     renderer.addRenderable(terrain);
     testLevel.terrain = terrain;
 
-    final FloaterEntity testFloater = new RisingText("Test caption", "Floater")..zPosition = 20;
+    final FloaterEntity testFloater = new RisingText("ratratratratrat 🐀🐀🐀🐀🐀", "Floater")..zPosition = 20;
     testLevel.addObject(testFloater);
     game.addEntity(testFloater);
 
@@ -190,10 +194,6 @@ Future<void> losac() async {
     upgradeTestTowerType.weapon = new ChaserWeaponType(upgradeTestTowerType)..damage = 3;
     game.towerTypeRegistry.register(upgradeTestTowerType);
     testTowerType.upgradeList.add(upgradeTestTowerType);
-
-    final ResourcePopup testPopup = new ResourcePopup(upgradeTestTowerType.buildCost)..zPosition = 20;
-    testLevel.addObject(testPopup);
-    game.addEntity(testPopup);
 
     // spawn waves
 

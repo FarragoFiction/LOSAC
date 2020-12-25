@@ -5,6 +5,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "../entities/enemy.dart";
 import "../entities/tower.dart";
 import "../level/pathnode.dart";
+import "extensions.dart";
 
 abstract class TowerUtils {
 
@@ -128,5 +129,34 @@ abstract class TowerUtils {
 
     static double simpleBallisticArc(double z0, double v0, double g, double t) {
         return z0 + v0 * t - 0.5 * g * t * t;
+    }
+
+    static B.Vector2 ballisticArc(double distance, double height, double muzzleVel, double gravity, bool highArc) {
+        final double v = muzzleVel;
+        final double y = height;
+        final double x = distance;
+        final double g = gravity;
+
+        final double term1 = v*v*v*v - (g * ( (g * x * x) + (2 * y * v * v) ));
+
+        if (term1 >= 0) {
+            final double term2 = Math.sqrt(term1);
+            final double divisor = g * x;
+
+            if (divisor != 0.0) {
+                double root;
+                if (highArc) {
+                    root = (v * v + term2) / divisor;
+                } else {
+                    root = (v * v - term2) / divisor;
+                }
+
+                root = Math.atan(root);
+
+                return new B.Vector2(muzzleVel, 0)..rotateInPlace(root);
+            }
+        }
+
+        return null;
     }
 }
