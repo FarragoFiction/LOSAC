@@ -37,7 +37,10 @@ Future<void> main() async {
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, false));
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, true));
 
-    print(MathUtils.quartic(2, -7, 5, 31, -30).toList());
+    //print(MathUtils.quartic(2, -7, 5, 31, -30).toList());
+    //print(MathUtils.cubic(1.5, 3, 1.5, 1.5).toList()); // this gives 3 NaNs
+    //print(MathUtils.cubic(2, 3, 1.5, 1.5).toList());
+    testMathSolvers();
 }
 
 Future<void> losac() async {
@@ -333,4 +336,75 @@ void testProjectileArc() {
     }
 
     document.body.append(canvas);
+}
+
+void testMathSolvers() {
+    {
+        print("QUADRATICS:");
+        const int steps = 10;
+        const double offset = 1;
+        const double stepSize = 0.5;
+        double a,b,c;
+
+        for (int ci = 0; ci<steps; ci++) {
+            for (int bi = 0; bi<steps; bi++) {
+                for (int ai = 0; ai<steps; ai++) {
+                    a = ai * stepSize + offset;
+                    b = bi * stepSize + offset;
+                    c = ci * stepSize + offset;
+
+                    print("a: $a, b: $b, c: $c -> ${MathUtils.quadratic(a, b, c).toList()}");
+                }
+            }
+        }
+    }
+
+    {
+        print("CUBICS:");
+        const int steps = 5;
+        const double offset = 1.5;
+        const double stepSize = 0.5;
+        double a,b,c,d;
+
+        for (int di = 0; di<steps; di++) {
+            for (int ci = 0; ci < steps; ci++) {
+                for (int bi = 0; bi < steps; bi++) {
+                    for (int ai = 0; ai < steps; ai++) {
+                        a = ai * stepSize + offset;
+                        b = bi * stepSize + offset;
+                        c = ci * stepSize + offset;
+                        d = di * stepSize + offset;
+
+                        print("a: $a, b: $b, c: $c, d: $d -> ${MathUtils.cubic(a, b, c, d).toList()}");
+                    }
+                }
+            }
+        }
+    }
+
+    {
+        print("QUARTICS:");
+        const int steps = 5;
+        const double offset = 1.5;
+        const double stepSize = 0.5;
+        double a,b,c,d,e;
+
+        for (int ei = 0; ei<steps; ei++) {
+            for (int di = 0; di < steps; di++) {
+                for (int ci = 0; ci < steps; ci++) {
+                    for (int bi = 0; bi < steps; bi++) {
+                        for (int ai = 0; ai < steps; ai++) {
+                            a = ai * stepSize + offset;
+                            b = bi * stepSize + offset;
+                            c = ci * stepSize + offset;
+                            d = di * stepSize + offset;
+                            e = ei * stepSize + offset;
+
+                            print("a: $a, b: $b, c: $c, d: $d, e: $e -> ${MathUtils.quartic(a, b, c, d, e).toList()}");
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

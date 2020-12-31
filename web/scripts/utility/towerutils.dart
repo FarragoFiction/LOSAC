@@ -24,7 +24,7 @@ abstract class TowerUtils {
         final double c = tx*tx + ty*ty;
 
         // solve quadratic equation for those terms
-        final Math.Point<double> ts = MathUtils.quadratic(a, b, c);
+        final Math.Point<double> ts = MathUtils.quadraticBasic(a, b, c);
 
         // find smallest positive solution
         if (ts != null) {
@@ -54,7 +54,7 @@ abstract class TowerUtils {
         final double c = tx*tx + ty*ty;
 
         // solve quadratic equation for those terms
-        final Math.Point<double> ts = MathUtils.quadratic(a, b, c);
+        final Math.Point<double> ts = MathUtils.quadraticBasic(a, b, c);
 
         // find smallest positive solution
         if (ts != null) {
