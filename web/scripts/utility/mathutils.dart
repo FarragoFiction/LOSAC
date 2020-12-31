@@ -3,13 +3,15 @@ import "dart:math" as Math;
 import "package:CubeLib/CubeLib.dart" as B;
 
 abstract class MathUtils {
-    static const double epsilon = 1e-6;
+    static const double epsilon = 1e-9;
 
     static B.Vector3 tempVector1 = B.Vector3.Zero();
     static B.Vector3 tempVector2 = B.Vector3.Zero();
     static B.Vector3 tempVector3 = B.Vector3.Zero();
     static B.Vector3 tempVector4 = B.Vector3.Zero();
     static B.Vector3 tempVector5 = B.Vector3.Zero();
+
+    static double cubeRoot(double x) => x.sign * Math.pow(x.abs(), 1/3);
 
     static Math.Point<double> quadratic(double a, double b, double c) {
         if (a.abs() < epsilon) {
@@ -29,40 +31,41 @@ abstract class MathUtils {
         return null;
     }
 
-    static List<double> _quadratic(double a, double b, double c) {
-        final List<double> solutions = <double>[];
+    static Iterable<double> _quadratic(double a, double b, double c) sync* {
+        print("QUADRATIC: a: $a, b: $b, c: $c");
+        double p,q,D;
 
-        if (a.abs() < epsilon) {
-            if (b.abs() < epsilon) {
-                if (c.abs() < epsilon) {
-                    solutions.add(0);
-                }
-            } else {
-                solutions.add(-c/b);
-            }
+        p = b / (2*a);
+        q = c / a;
+
+        D = p*p - q;
+
+        if (D.abs() < epsilon) {
+            print("quadratic: single solution");
+            yield -p;
+        } else if (D < 0) {
+            print("quadratic: zero");
+            yield 0;
         } else {
-            double disc = b*b - 4*a*c;
-            if (disc >= 0) {
-                disc = Math.sqrt(disc);
-                a *= 2;
+            print("quadratic: two solutions");
+            final double sqrt_D = Math.sqrt(D);
 
-                solutions.add((-b-disc)/a);
-                solutions.add((-b+disc)/a);
-            }
+            yield sqrt_D - p;
+            yield -sqrt_D - p;
         }
-        return solutions;
     }
 
-    static List<double> cubic(double a, double b, double c, double d) {
-        double A,B,C;
+    static Iterable<double> cubic(double a, double b, double c, double d) sync* {
+        print("CUBIC: a: $a, b: $b, c: $c, d: $d");
+        double A,B,C,sub;
         double sq_A,p,q;
         double cb_p,D;
-
-        final List<double> solutions = <double>[];
 
         A = b/a;
         B = c/a;
         C = d/a;
+
+        sub = 1/3 * A;
 
         sq_A = A*A;
         p = 1/3 * (-1/3 * sq_A + B);
@@ -73,70 +76,75 @@ abstract class MathUtils {
 
         if (D.abs() < epsilon) {
             if (q.abs() < epsilon) {
+                print("cubic: triple solution");
                 // one triple solution
-                solutions.add(0);
+                yield -sub;
             } else {
+                print("cubic: single and double solution");
                 // one single and one double solution
-                final double u = Math.pow(-q, 1/3);
-                solutions.add(2 * u);
-                solutions.add(-u);
+                final double u = cubeRoot(-q);
+                yield (2 * u) - sub;
+                yield (-u) -sub;
             }
         } else if (D < 0) {
+            print("cubic: three solutions");
             // three real solutions
             final double phi = 1/3 * Math.acos(-q / Math.sqrt(-cb_p));
             final double t = 2 * Math.sqrt(-p);
 
-            solutions.add(t * Math.cos(phi));
-            solutions.add(t * Math.cos(phi + Math.pi / 3));
-            solutions.add(t * Math.cos(phi - Math.pi / 3));
+            yield (t * Math.cos(phi)) - sub;
+            yield (- t * Math.cos(phi + (Math.pi / 3))) - sub;
+            yield (- t * Math.cos(phi - (Math.pi / 3))) - sub;
         } else {
+            print("cubic: one solution");
             // one real solution
             final double sqrt_D = Math.sqrt(D);
-            final double u = Math.pow(sqrt_D - q, 1/3);
-            final double v = -Math.pow(sqrt_D + q, 1/3);
+            final double u = cubeRoot(sqrt_D - q);
+            final double v = -cubeRoot(sqrt_D + q);
 
-            solutions.add(u + v);
+            print("cubic: D: $D, sqrt_D: $sqrt_D, q: $q, u: $u, v: $v");
+
+            yield (u + v) - sub;
         }
-
-        if (!solutions.isEmpty) {
-            final double sub = 1/3 * A;
-
-            for (int i=0; i<solutions.length; i++) {
-                solutions[i] = solutions[i] - sub;
-            }
-        }
-
-        return solutions;
     }
 
-    static List<double> quartic(double a, double b, double c, double d, double e) {
-        double z,u,v;
+    // comparison with https://keisan.casio.com/exec/system/1181809416
+    // sourced from https://github.com/forrestthewoods/lib_fts/blob/master/code/fts_ballistic_trajectory.cs
+
+    static Iterable<double> quartic(double a, double b, double c, double d, double e) sync* {
+        print("QUARTIC: a: $a, b: $b, c: $c, d: $d, e: $e");
+        double z,u,v,sub;
         double A,B,C,D;
         double sq_A,p,q,r;
-
-        final List<double> solutions = <double>[];
 
         A = b/a;
         B = c/a;
         C = d/a;
         D = e/a;
 
+        sub = 1/4 * A;
+
         sq_A = A*A;
         p = -3/8 * sq_A + B;
         q = 1/8 * sq_A * A - 1/2 * A * B + C;
-        r = -3/256 * sq_A * sq_A + 1/16 * sq_A * B - 1/4 * A *C + D;
+        r = -3/256 * sq_A * sq_A + 1/16 * sq_A * B - 1/4 * A * C + D;
+
+        print("quartic: p: $p, q: $q, r: $r");
 
         if (r.abs() < epsilon) {
+            print("quartic: cubic result");
             // no absolute term: y(y^3 + py + q) = 0
 
-            solutions.addAll(cubic(1, 0, p, q));
+            yield* cubic(1, 0, p, q).map((double e) => e-sub);
         } else {
+            print("quartic: two quadratics result");
             // solve the resolvent cubic
 
-            final List<double> cubicResult = cubic(1, -1/2 * p, -r, 1/2 * r * p - 1/8 * q * q);
+            final Iterable<double> cubicResult = cubic(1, -1/2 * p, -r, 1/2 * r * p - 1/8 * q * q);
 
             // and take the real solution
-            z = cubicResult[0];
+            z = cubicResult.first;
+            print("quartic: cubic solution: $z");
 
             // to build two quadratic equations
             u = z*z-r;
@@ -148,7 +156,7 @@ abstract class MathUtils {
                 u = Math.sqrt(u);
             } else {
                 // no solution, array is empty
-                return solutions;
+                return;
             }
 
             if (v.abs() < epsilon) {
@@ -157,21 +165,11 @@ abstract class MathUtils {
                 v = Math.sqrt(v);
             } else {
                 // no solution, array is empty
-                return solutions;
+                return;
             }
 
-            solutions.addAll(_quadratic(1, q < 0 ? -v : v, z - u));
-            solutions.addAll(_quadratic(1, q < 0 ? v : -v, z + u));
+            yield* _quadratic(1, q < 0 ? -v : v, z - u).map((double e) => e-sub);
+            yield* _quadratic(1, q < 0 ? v : -v, z + u).map((double e) => e-sub);
         }
-
-        if (!solutions.isEmpty) {
-            final double sub = 1/4 * A;
-
-            for (int i=0; i<solutions.length; i++) {
-                solutions[i] = solutions[i] - sub;
-            }
-        }
-
-        return solutions;
     }
 }

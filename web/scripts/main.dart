@@ -32,12 +32,12 @@ import "utility/towerutils.dart";
 
 Future<void> main() async {
     //testProjectileArc();
-    losac();
+    //losac();
 
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, false));
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, true));
 
-    //print(MathUtils.quartic(1, -7, 5, 31, -30));
+    print(MathUtils.quartic(2, -7, 5, 31, -30).toList());
 }
 
 Future<void> losac() async {
