@@ -27,6 +27,7 @@ import "renderer/renderer.dart";
 import "resources/resourcetype.dart";
 import "utility/extensions.dart";
 import "utility/levelutils.dart";
+import "utility/mathutils.dart";
 import "utility/towerutils.dart";
 
 Future<void> main() async {
@@ -35,6 +36,8 @@ Future<void> main() async {
 
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, false));
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, true));
+
+    //print(MathUtils.quartic(1, -7, 5, 31, -30));
 }
 
 Future<void> losac() async {
