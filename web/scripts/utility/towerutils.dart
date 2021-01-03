@@ -2,6 +2,7 @@ import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
 
+import "../engine/game.dart";
 import "../entities/enemy.dart";
 import "../entities/tower.dart";
 import "../level/pathnode.dart";
@@ -73,7 +74,7 @@ abstract class TowerUtils {
         return -1;
     }
 
-    static double ballisticInterceptTime(B.Vector2 firePos, double fireHeight, B.Vector2 targetPos, double targetHeight, B.Vector2 targetVel, double projSpeed, double gravity) {
+    static double ballisticInterceptTime(B.Vector2 firePos, double fireHeight, B.Vector2 targetPos, double targetHeight, B.Vector2 targetVel, double projSpeed, double gravity, bool highArc) {
         if (gravity == 0) {
             // special case for no gravity, since the quartic would shit itself with a divide by zero
             return interceptTime(firePos, targetPos, targetVel, projSpeed);
@@ -95,9 +96,15 @@ abstract class TowerUtils {
         final double d = 2*tz*tvz + 2*tx*tvx + 2*ty*tvy;
         final double e = tvz*tvz + tx*tx + ty*ty;
 
+        final List<double> solutions = MathUtils.quartic(a, b, c, d, e).where((double d) => d > 0).toList();
 
-        // no solution
-        return -1;
+        if (solutions.isEmpty) {
+            // no solution
+            return -1;
+        }
+
+        // get the largest or smallest value depending on high arc preference
+        return solutions.reduce(highArc ? Math.max : Math.min);
     }
 
     static B.Vector2 interceptEnemy(Tower tower, Enemy enemy) {
@@ -114,7 +121,27 @@ abstract class TowerUtils {
 
         int iter = 0;
         while(iter < 1000) {
-            double time = interceptTime(tPos, pos - dir * enemy.speed * timeOffset, dir * enemy.speed, tower.towerType.weapon.projectileSpeed);
+            double time;
+            if (tower.towerType.useBallisticIntercept) {
+                /*if (iter > 0) {
+                    print("test abort iteration $iter");
+                    return null;
+                }*/
+                final Game game = tower.engine;
+                final B.Vector2 offsetPos = pos - dir * enemy.speed * timeOffset;
+                time = ballisticInterceptTime(
+                    tPos,
+                    tower.getZPosition() + tower.towerType.weaponHeight,
+                    offsetPos,
+                    tower.level.levelHeightMap.getSmoothVal(offsetPos.x, offsetPos.y),
+                    dir * enemy.speed,
+                    tower.towerType.weapon.projectileSpeed,
+                    tower.level.gravity ?? game.rules.gravity,
+                    tower.towerType.weapon.useBallisticHighArc
+                );
+            } else {
+                time = interceptTime(tPos, pos - dir * enemy.speed * timeOffset, dir * enemy.speed, tower.towerType.weapon.projectileSpeed);
+            }
             if (time == -1) { return null; }
             time -= timeOffset;
 

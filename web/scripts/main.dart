@@ -32,7 +32,7 @@ import "utility/towerutils.dart";
 
 Future<void> main() async {
     //testProjectileArc();
-    //losac();
+    losac();
 
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, false));
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, true));
@@ -40,7 +40,7 @@ Future<void> main() async {
     //print(MathUtils.quartic(2, -7, 5, 31, -30).toList());
     //print(MathUtils.cubic(1.5, 3, 1.5, 1.5).toList()); // this gives 3 NaNs
     //print(MathUtils.cubic(2, 3, 1.5, 1.5).toList());
-    testMathSolvers();
+    //testMathSolvers();
 }
 
 Future<void> losac() async {

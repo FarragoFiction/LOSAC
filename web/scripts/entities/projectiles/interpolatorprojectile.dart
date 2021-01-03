@@ -145,6 +145,11 @@ class InterpolatorWeaponType extends WeaponType {
     String textProjectile = "🐎"; // HORNSE
     String cssClass = "floater";
 
+    @override
+    bool get useBallisticIntercept => (gravityMode == InterpolatorWeaponGravityMode.ballistic) || (gravityMode == InterpolatorWeaponGravityMode.ballisticHigh);
+    @override
+    bool get useBallisticHighArc => gravityMode == InterpolatorWeaponGravityMode.ballisticHigh;
+
     InterpolatorWeaponType(TowerType towerType) : super(towerType);
 
     @override

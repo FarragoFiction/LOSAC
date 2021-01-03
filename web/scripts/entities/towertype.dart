@@ -109,4 +109,6 @@ class TowerType with Registerable {
 
         tooltip.appendFormattedLocalisation("tower.${getRegistrationKey()}.description", localisationEngine);
     }
+
+    bool get useBallisticIntercept => weapon.useBallisticIntercept;
 }

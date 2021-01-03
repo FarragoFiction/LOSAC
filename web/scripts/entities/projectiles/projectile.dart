@@ -180,6 +180,9 @@ abstract class WeaponType {
     /// Weapon projectile speed, in pixels per second at 100% zoom.
     double projectileSpeed = 100;
 
+    bool get useBallisticIntercept => false;
+    bool get useBallisticHighArc => false;
+
     /// Number of projectiles in a single burst.
     /// The burst is made of this many projectiles with burstTime times the normal delay between,
     /// followed by this many times 1-burstTime delay before the next burst
