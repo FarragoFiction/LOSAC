@@ -100,6 +100,7 @@ Future<void> losac() async {
 
     final Grid sideGrid = new Grid(4,1)
         ..position.set(200, 160)
+        ..zPosition = 50
         ..rot_angle = 0.75
         ..meshProvider = gridMeshProvider;
     sideGrid.updateConnectors();
@@ -113,7 +114,10 @@ Future<void> losac() async {
         //..renderSegments = true
     ;
 
-    testPath.addVertex(new CurveVertex()..position.set(50, 30)..rot_angle = -0.3..handle2 = 60);
+    testPath.addVertex(new CurveVertex()..position.set(50, 30)
+        ..zPosition = 50
+        ..rot_angle = -0.3..handle2 = 60)
+    ;
     testPath.addVertex(new CurveVertex()..position.set(220, 40)
         ..zPosition = 100
         ..rot_angle = 0.9..handle1 = 60..handle2 = 60);

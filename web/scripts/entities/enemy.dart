@@ -25,6 +25,8 @@ class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>
     double health;
     double get maxHealth => enemyType.health;
 
+    double leakDamage;
+
     PathNode currentNode;
     PathNode targetNode;
 
@@ -46,6 +48,7 @@ class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>
         this.baseSpeed = enemyType.speed;
         this.turnRate = enemyType.turnRate;
         this.slopeMode = enemyType.slopeMode;
+        this.leakDamage = enemyType.leakDamage;
     }
 
     // drawing level progress for debug

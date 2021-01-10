@@ -14,6 +14,12 @@ import "entity.dart";
 import "inputhandler.dart";
 import "registry.dart";
 
+enum EngineRunState {
+    stopped,
+    running,
+    paused,
+}
+
 abstract class Engine {
     Renderer3D renderer;
     Level level;
@@ -27,7 +33,7 @@ abstract class Engine {
     UIController uiController;
     bool clearSelectionOnRemove = true;
 
-    bool started = false;
+    EngineRunState runState = EngineRunState.stopped;
     int currentFrame = 0;
     num lastFrameTime = 0;
     double delta = 0;
@@ -74,31 +80,36 @@ abstract class Engine {
     }
 
     void start() {
-        if (started) { return; }
-        started = true;
+        if (runState != EngineRunState.stopped) { return; }
+        runState = EngineRunState.running;
 
         renderer.runRenderLoop(mainLoop);
     }
 
     void stop() {
-        if (!started) { return; }
-        started = false;
-        window.cancelAnimationFrame(currentFrame);
+        if (runState == EngineRunState.stopped) { return; }
+        runState = EngineRunState.stopped;
+
+        //renderer.stopRenderLoop();
     }
 
-    void mainLoop(double frameTime) {
-        delta += frameTime;
+    bool userCanAct() => runState != EngineRunState.stopped;
 
-        int stepsThisFrame = 0;
-        while (delta >= logicStep) {
-            stepsThisFrame++;
-            if (stepsThisFrame > maxLogicStepsPerFrame) {
-                final int skipped = (delta / logicStep).floor();
-                delta -= skipped * logicStep;
-                print("Skipping $skipped logic steps");
-            } else {
-                this.logicUpdate(logicStep);
-                delta -= logicStep;
+    void mainLoop(double frameTime) {
+        if (runState == EngineRunState.running) {
+            delta += frameTime;
+
+            int stepsThisFrame = 0;
+            while (delta >= logicStep) {
+                stepsThisFrame++;
+                if (stepsThisFrame > maxLogicStepsPerFrame) {
+                    final int skipped = (delta / logicStep).floor();
+                    delta -= skipped * logicStep;
+                    print("Skipping $skipped logic steps");
+                } else {
+                    this.logicUpdate(logicStep);
+                    delta -= logicStep;
+                }
             }
         }
 
@@ -178,6 +189,7 @@ abstract class Engine {
 
     void selectObject(Selectable selectable) {
         if (selected == null) {
+            if (runState == EngineRunState.stopped) { return; }
             if (selectable != null) {
                 // select object
                 this.selected = selectable;

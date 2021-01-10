@@ -50,7 +50,7 @@ class UIButton extends UIComponent with HasTooltip {
         }
     }
 
-    bool usable() => !clicked;
+    bool usable() => controller.engine.userCanAct() && !clicked;
     Future<void> onUse() async {}
 
     @override

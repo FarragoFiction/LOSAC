@@ -133,7 +133,8 @@ abstract class TowerUtils {
                     tPos,
                     tower.getZPosition() + tower.towerType.weaponHeight,
                     offsetPos,
-                    tower.level.levelHeightMap.getSmoothVal(offsetPos.x, offsetPos.y),
+                    //tower.level.levelHeightMap.getSmoothVal(offsetPos.x, offsetPos.y),
+                    enemy.getZPosition(), // as good as the line above (they're both wrong) but cheaper
                     dir * enemy.speed,
                     tower.towerType.weapon.projectileSpeed,
                     tower.level.gravity ?? game.rules.gravity,

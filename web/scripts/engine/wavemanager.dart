@@ -85,8 +85,7 @@ class WaveManager {
         activeEnemies.removeWhere((Enemy e) => e.dead);
 
         if (doneSpawning && activeEnemies.isEmpty) {
-            print("victory!");
-            // TODO: proceed to victory
+            engine.win();
         }
     }
 

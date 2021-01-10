@@ -23,6 +23,7 @@ abstract class Renderer {
 
     void initUiEventHandlers() {}
     void runRenderLoop(RenderLoopFunction loop);
+    void stopRenderLoop();
 
     void onMouseDown(MouseEvent e);
     void onMouseUp(MouseEvent e);

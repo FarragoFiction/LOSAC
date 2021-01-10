@@ -10,4 +10,7 @@ class RuleSet {
 
     /// Default gravity to use for projectiles if the level doesn't override it
     double gravity = 300;
+
+    /// Maximum life value to start a level with
+    int maxLife = 100;
 }

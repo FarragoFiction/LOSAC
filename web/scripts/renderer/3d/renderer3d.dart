@@ -126,6 +126,11 @@ class Renderer3D extends Renderer {
     }
 
     @override
+    void stopRenderLoop() {
+        babylon.stopRenderLoop();
+    }
+
+    @override
     void draw([double interpolation = 0]) {
         this.updateSelectionIndicator(interpolation);
         this.scene.render();

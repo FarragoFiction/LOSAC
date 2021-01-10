@@ -22,10 +22,14 @@ class Game extends Engine {
 
     UIComponent selectionWindow;
     UIComponent resourceList;
+    UIComponent lifeDisplay;
 
     ResourceStockpile resourceStockpile = new ResourceStockpile();
     RuleSet rules = new RuleSet();
     WaveManager waveManager;
+
+    int maxLife;
+    double currentLife;
 
 
     Game(Renderer renderer, Element uiContainer) : super(renderer, uiContainer) {
@@ -38,7 +42,11 @@ class Game extends Engine {
     Future<void> initialise() async {
         await super.initialise();
 
+        this.maxLife = rules.maxLife;
+        this.currentLife = rules.maxLife.toDouble();
+
         this.resourceList = uiController.addComponent(new ResourceList(uiController));
+        //this.lifeDisplay = uiController.addComponent(new LifeDisplay(uiController));
     }
 
     @override
@@ -61,7 +69,34 @@ class Game extends Engine {
     }
 
     void leakEnemy(Enemy enemy) {
+        this.addLife(-enemy.leakDamage);
+
+        if (runState == EngineRunState.stopped) { return; } // don't reset position if this is the deathblow
         enemy.setPositionTo(enemy.originSpawner.position, enemy.originSpawner.rot_angle);
+    }
+
+    void addLife(double amount) {
+        currentLife = (currentLife + amount).clamp(0, maxLife);
+        if (currentLife <= 0) {
+            this.lose();
+        }
+    }
+
+    void lose() {
+        print("defeat!");
+
+        _endGame();
+    }
+
+    void win() {
+        print("victory!");
+
+        _endGame();
+    }
+
+    void _endGame() {
+        runState = EngineRunState.stopped;
+        selectObject(null);
     }
 
     @override
