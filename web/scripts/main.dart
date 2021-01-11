@@ -66,9 +66,9 @@ Future<void> losac() async {
     renderer.addRenderable(terrain);
     testLevel.terrain = terrain;
 
-    final FloaterEntity testFloater = new RisingText("ratratratratrat 🐀🐀🐀🐀🐀", "Floater")..zPosition = 20;
+    /*final FloaterEntity testFloater = new RisingText("ratratratratrat 🐀🐀🐀🐀🐀", "Floater")..zPosition = 20;
     testLevel.addObject(testFloater);
-    game.addEntity(testFloater);
+    game.addEntity(testFloater);*/
 
     // grid
 

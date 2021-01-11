@@ -18,3 +18,13 @@ translations:
   ui.cancelupgrade.description: "Cancel the upgrading of this tower, refunding @[item]100%@ of the resources spent on the upgrade."
   ui.cancelsell.name: "Cancel Sale"
   ui.cancelsell.description: "Cancel the sale of this tower, allowing it to continue operation."
+
+  ui.life.name: "Life"
+  ui.life.description: "When this reaches zero, you lose!\n\nWhenever an enemy reaches an exit, an amount of life is lost, and that enemy is returned to its spawn location. The amount lost varies between enemy types."
+
+  ui.gameover.victory.name: "Victory!"
+  ui.gameover.victory.description: "You have successfully defeated all attacking forces!"
+  ui.gameover.defeat.name: "Defeat!"
+  ui.gameover.defeat.description: "Too many enemies reached an exit, and you ran out of life!"
+  ui.gameover.continue: "View Map"
+  ui.gameover.exit: "Return to Main Menu"

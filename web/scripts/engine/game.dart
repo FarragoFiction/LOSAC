@@ -46,7 +46,7 @@ class Game extends Engine {
         this.currentLife = rules.maxLife.toDouble();
 
         this.resourceList = uiController.addComponent(new ResourceList(uiController));
-        //this.lifeDisplay = uiController.addComponent(new LifeDisplay(uiController));
+        this.lifeDisplay = uiController.addComponent(new LifeDisplay(uiController));
     }
 
     @override
@@ -86,12 +86,14 @@ class Game extends Engine {
         print("defeat!");
 
         _endGame();
+        uiController.addComponent(new GameOverBox(uiController, false));
     }
 
     void win() {
         print("victory!");
 
         _endGame();
+        uiController.addComponent(new GameOverBox(uiController, true));
     }
 
     void _endGame() {

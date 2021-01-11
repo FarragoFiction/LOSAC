@@ -58,6 +58,22 @@ canvas {
     color:#FF2222;
 }
 
+button {
+    background-color:#202020;
+    font-family: "courier new", "courier", monospace;
+    font-size: 14px;
+    color: #E0E0E0;
+    border: 1px solid #707070;
+    border-radius: 0;
+    cursor: pointer;
+}
+button:hover {
+    border: 1px solid #BBBBBB;
+}
+button:active {
+    border: 1px solid #FFFFFF;
+}
+
 /* ######################################################################## */
 
 .SelectionWindow {
@@ -287,17 +303,25 @@ canvas {
     background-color: black;
 }
 
-.ProgressBarInner {
+.ProgressBarInner, .ProgressBarGhost {
     position:absolute;
     width: calc(var(--progress) * 100%);
     height:100%;
     left:0px;
     top:0px;
-
+}
+.ProgressBarInner {
     transition: width 0.05s;
     transition-timing-function: linear;
 
     background-color: #AAAAAA;
+}
+.ProgressBarGhost {
+    transition: width 0.5s;
+    transition-timing-function: linear;
+    transition-delay: 0.5s;
+
+    background-color: #202020;
 }
 
 .WaveTracker {
@@ -372,6 +396,68 @@ canvas {
     font-weight: bold;
 
     text-shadow: 1px 1px black;
+}
+
+.LifeDisplay {
+    width:34vw;
+    height:30px;
+    top:50px;
+    left:33vw;
+}
+
+.LifeDisplay .ProgressBar {
+    top: 0px;
+    width: calc(34vw - 10px);
+    height: 25px;
+    left:5px;
+}
+
+.LifeDisplay .ProgressBarInner {
+    background-color: #DD2222;
+}
+.LifeDisplay .ProgressBarGhost {
+    background-color: #771111;
+}
+.LifeDisplay .text {
+    position:absolute;
+    width:100%;
+    top:2px;
+    left:0;
+    text-align:center;
+    color:white;
+    text-shadow: 0 0 4px black, 0 0 3px black, 0 0 3px black;
+    font-size: 20px;
+    font-weight:bold;
+}
+
+.GameOver {
+    background-color: rgba(0,0,0,0.5);
+}
+.GameOver div {
+    position:absolute;
+    left:50vw;
+    top:50vh;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    padding:0 5px 15px 5px;
+}
+.GameOver p {
+    width:80%;
+    margin: 4px auto 20px auto;
+}
+.GameOver button {
+    display:block;
+    margin:4px auto 4px auto;
+    width: 250px;
+    height: 40px;
+}
+
+.ExitButton {
+    left:50vw;
+    top: 85px;
+    transform:translate(-50%,0);
+    padding: 6px 10px 6px 10px;
+    box-shadow: 0 0 3px black;
 }
 
 /* ######################################################################## */

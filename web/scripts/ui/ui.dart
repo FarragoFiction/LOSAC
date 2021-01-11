@@ -7,6 +7,7 @@ import 'tooltip.dart';
 export '../localisation/formatting.dart';
 export "button.dart";
 export "buttongrid.dart";
+export "gameover.dart";
 export "lifedisplay.dart";
 export "progressbar.dart";
 export "resourcelist.dart";
