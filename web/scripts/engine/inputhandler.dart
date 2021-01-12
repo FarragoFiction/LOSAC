@@ -1,3 +1,4 @@
+import 'dart:async';
 import "dart:html";
 
 import "package:CubeLib/CubeLib.dart" as B;
@@ -204,23 +205,14 @@ abstract class InputHandler {
             e.preventDefault();
         }
     }
+
+    void destroy() {}
 }
-
-/*class InputHandler2D extends InputHandler {
-    InputHandler2D(Engine engine) : super(engine) {
-        engine.container.onMouseDown.listen(_onMouseDown);
-        window.onMouseUp.listen(_onMouseUp);
-        window.onMouseMove.listen(_onMouseMove);
-        engine.container.onMouseWheel.listen(_onMouseWheel);
-
-        window.onKeyDown.listen(_onKeyDown);
-        window.onKeyUp.listen(_onKeyUp);
-    }
-}*/
 
 class InputHandler3D extends InputHandler {
     Renderer3D get renderer => this.engine.renderer;
 
+    StreamSubscription<MouseEvent> mouseOut;
 
     InputHandler3D(Engine engine) : super(engine) {
         renderer.scene.onKeyboardObservable.add(JS.allowInterop((B.KeyboardInfo info, B.EventState state) {
@@ -243,7 +235,12 @@ class InputHandler3D extends InputHandler {
             }
         }));
 
-        window.onMouseOut.listen(this._onMouseOut);
+        mouseOut = window.onMouseOut.listen(this._onMouseOut);
+    }
+
+    @override
+    void destroy() {
+        mouseOut.cancel();
     }
 }
 

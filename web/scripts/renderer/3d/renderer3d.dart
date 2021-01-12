@@ -50,6 +50,7 @@ class Renderer3D extends Renderer {
     GridCell towerPreviewCell;
 
     StreamSubscription<Event> resizeHandler;
+    StreamSubscription<MouseEvent> _rightClick;
 
     Element pointerElement;
 
@@ -66,7 +67,7 @@ class Renderer3D extends Renderer {
         this.scene = new B.Scene(this.babylon);
         this.container = this.canvas;
 
-        this.canvas.onContextMenu.listen((MouseEvent event) {
+        _rightClick = this.canvas.onContextMenu.listen((MouseEvent event) {
             event.preventDefault();
         });
 
@@ -195,7 +196,9 @@ class Renderer3D extends Renderer {
             final Renderable3D renderable = object;
             if (renderable.mesh != null) {
                 this.scene.removeMesh(renderable.mesh);
+                renderable.mesh.metadata = null;
                 renderable.mesh.dispose();
+                renderable.mesh = null;
             }
         }
     }
@@ -279,8 +282,16 @@ class Renderer3D extends Renderer {
     @override
     void destroy() {
         this.babylon.dispose();
+        this.babylon = null;
+        this.depthTexture.dispose();
+        this.depthTexture = null;
+        this.depthRenderer.dispose();
+        this.depthRenderer = null;
         this.floaterOverlay.destroy();
         resizeHandler.cancel();
+        _rightClick.cancel();
+        this.canvas.remove();
+        this._floaterCanvas.remove();
     }
 
     void createDataMapDebugModel<D,A extends List<D>>(DataMap<D,A> map) {

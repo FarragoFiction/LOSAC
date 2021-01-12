@@ -98,4 +98,8 @@ class Pathfinder {
     Future<void> flipNodeState(Iterable<PathNode> nodes) async {
         return worker.sendCommand(Commands.flipNodeState, payload: nodes.map((PathNode node) => node.id).toList());
     }
+
+    void destroy() {
+        worker.destroyWorker();
+    }
 }

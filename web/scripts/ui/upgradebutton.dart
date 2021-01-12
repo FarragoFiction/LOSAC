@@ -1,3 +1,4 @@
+import 'dart:async';
 import "dart:html";
 
 import "../engine/game.dart";
@@ -14,20 +15,23 @@ class UpgradeButton extends UIButton {
     Tower get selected => selectionDisplay.selected;
     Game get game => engine;
 
+    StreamSubscription<MouseEvent> _mouseOver;
+    StreamSubscription<MouseEvent> _mouseOut;
+
     UpgradeButton(UIController controller, TowerSelectionDisplay this.selectionDisplay, TowerType this.towerType) : super(controller);
 
     @override
     Element createElement() {
         final Element e = super.createElement();
 
-        e.onMouseOver.listen((MouseEvent e) {
+        _mouseOver = e.onMouseOver.listen((MouseEvent e) {
             final Renderer3D r = engine.renderer;
             if (selected != null && canBuildHere()) {
                 r.updateTowerPreview(towerType, selected.gridCell);
             }
         });
 
-        e.onMouseOut.listen((MouseEvent e) {
+        _mouseOut = e.onMouseOut.listen((MouseEvent e) {
             final Renderer3D r = engine.renderer;
             r.clearTowerPreview();
         });
@@ -81,5 +85,12 @@ class UpgradeButton extends UIButton {
 
         if (blocks) { tooltip..append(new BRElement())..appendFormattedLocalisation("error.build.blocked", engine.localisation); }
         if (resources) { tooltip..append(new BRElement())..appendFormattedLocalisation("error.build.resources", engine.localisation); }
+    }
+
+    @override
+    void dispose() {
+        super.dispose();
+        _mouseOver.cancel();
+        _mouseOut.cancel();
     }
 }

@@ -152,4 +152,12 @@ class Game extends Engine {
         super.selectObject(selectable);
         selectionWindow.updateAndPropagate();
     }
+
+    @override
+    void destroy() {
+        super.destroy();
+        selectionWindow = null;
+        resourceList = null;
+        lifeDisplay = null;
+    }
 }

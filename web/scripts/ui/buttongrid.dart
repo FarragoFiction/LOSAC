@@ -1,3 +1,4 @@
+import 'dart:async';
 import "dart:html";
 
 import "../utility/extensions.dart";
@@ -13,6 +14,9 @@ class ButtonGrid extends UIComponent {
 
     Set<UIButton> buttons = <UIButton>{};
 
+    StreamSubscription<MouseEvent> _scrollLeftClick;
+    StreamSubscription<MouseEvent> _scrollRightClick;
+
     ButtonGrid(UIController controller) : super(controller) {
         this.buttonContainer = this.addChild(new _ButtonGridInner(controller));
     }
@@ -23,21 +27,18 @@ class ButtonGrid extends UIComponent {
             ..className = "ButtonGrid"
         ;
 
-        this.scrollLeft = new DivElement()
-            ..className = "ButtonGridScroll left"
-            ..onClick.listen((Event e) {
-                this
-                    ..scrollStep -= 1
-                    ..updateScrolling();
-            })
-        ;
+        this.scrollLeft = new DivElement()..className = "ButtonGridScroll left";
+        _scrollLeftClick = scrollLeft.onClick.listen((Event e) {
+            this
+                ..scrollStep -= 1
+                ..updateScrolling();
+        });
         outer.append(scrollLeft);
 
         outer.append(buttonContainer.element);
 
-        this.scrollRight = new DivElement()
-            ..className = "ButtonGridScroll right"
-            ..onClick.listen((Event e) {
+        this.scrollRight = new DivElement()..className = "ButtonGridScroll right";
+        _scrollRightClick = scrollRight.onClick.listen((Event e) {
                 this
                     ..scrollStep += 1
                     ..updateScrolling();
@@ -118,6 +119,13 @@ class ButtonGrid extends UIComponent {
         }
 
         this.buttonContainer.element.style.setProperty("--scroll", "${-offset}px");
+    }
+
+    @override
+    void dispose() {
+        super.dispose();
+        _scrollLeftClick.cancel();
+        _scrollRightClick.cancel();
     }
 }
 

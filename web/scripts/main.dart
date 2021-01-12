@@ -32,7 +32,7 @@ import "utility/towerutils.dart";
 
 Future<void> main() async {
     //testProjectileArc();
-    losac();
+    //losac();
 
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, false));
     //print(TowerUtils.ballisticArc(300, 0, 350, 300, true));
@@ -41,202 +41,245 @@ Future<void> main() async {
     //print(MathUtils.cubic(1.5, 3, 1.5, 1.5).toList()); // this gives 3 NaNs
     //print(MathUtils.cubic(2, 3, 1.5, 1.5).toList());
     //testMathSolvers();
+
+    MainMenu.connectStartButton();
 }
 
-Future<void> losac() async {
-    print("LOSAC yo");
+abstract class MainMenu {
 
-    final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600);
-    final CanvasElement floaterCanvas = new CanvasElement(width: 800, height: 600);
+    static void connectStartButton() {
+        querySelector("#startgame").onClick.first.then((MouseEvent e) async {
+            querySelector("#loadscreen").classes.remove("hidden");
+            querySelector("#menu").classes.add("hidden");
 
-    querySelector("#canvascontainer").append(testCanvas);
-    querySelector("#floatercontainer").append(floaterCanvas);
+            await losac();
 
-    /*final DivElement fpsElement = new DivElement();
+            querySelector("#loadscreen").classes.add("hidden");
+        });
+    }
+
+    static Future<void> exitToMenu(Future<void> Function() cleanup) async {
+        querySelector("#loadscreen").classes.remove("hidden");
+
+        await cleanup();
+        
+        final Element container = querySelector("#container");
+        final Element newContainer = container.clone(true);
+        container.replaceWith(newContainer);
+
+        querySelector("#menu").classes.remove("hidden");
+        connectStartButton();
+        querySelector("#loadscreen").classes.add("hidden");
+    }
+
+    static Future<void> losac() async {
+        print("LOSAC yo");
+
+        final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600);
+        final CanvasElement floaterCanvas = new CanvasElement(width: 800, height: 600);
+
+        querySelector("#canvascontainer").append(testCanvas);
+        querySelector("#floatercontainer").append(floaterCanvas);
+
+        /*final DivElement fpsElement = new DivElement();
     document.body.append(fpsElement);*/
 
-    final Renderer renderer = new Renderer3D(testCanvas, floaterCanvas);
-    await renderer.initialise();
-    final Game game = new Game(renderer, querySelector("#uicontainer"));
+        final Renderer renderer = new Renderer3D(testCanvas, floaterCanvas);
+        await renderer.initialise();
+        final Game game = new Game(renderer, querySelector("#uicontainer"));
 
-    final Pathfinder pathfinder = new Pathfinder();
-    final Level testLevel = new Level3D();
+        final Pathfinder pathfinder = new Pathfinder();
+        final Level testLevel = new Level3D();
 
-    final Terrain terrain = new Terrain();
-    renderer.addRenderable(terrain);
-    testLevel.terrain = terrain;
+        final Terrain terrain = new Terrain();
+        renderer.addRenderable(terrain);
+        testLevel.terrain = terrain;
 
-    /*final FloaterEntity testFloater = new RisingText("ratratratratrat 🐀🐀🐀🐀🐀", "Floater")..zPosition = 20;
+        /*final FloaterEntity testFloater = new RisingText("ratratratratrat 🐀🐀🐀🐀🐀", "Floater")..zPosition = 20;
     testLevel.addObject(testFloater);
     game.addEntity(testFloater);*/
 
-    // grid
+        // grid
 
-    final GridMeshProvider gridMeshProvider = new DebugGridMeshProvider(renderer);
-    final CurveMeshProvider curveMeshProvider = new DebugCurveMeshProvider(renderer);
-    final EndCapMeshProvider endCapMeshProvider = new DebugEndCapMeshProvider(renderer);
+        final GridMeshProvider gridMeshProvider = new DebugGridMeshProvider(renderer);
+        final CurveMeshProvider curveMeshProvider = new DebugCurveMeshProvider(renderer);
+        final EndCapMeshProvider endCapMeshProvider = new DebugEndCapMeshProvider(renderer);
 
-    final Grid testGrid = new Grid(6, 10)
-        ..position.set(500,400)
-        ..zPosition = 50
-        ..rot_angle = 0.1
-        ..generateLevelHeightData = false
-        ..meshProvider = gridMeshProvider;
+        final Grid testGrid = new Grid(6, 10)
+            ..position.set(500, 400)
+            ..zPosition = 50
+            ..rot_angle = 0.1
+            ..generateLevelHeightData = false
+            ..meshProvider = gridMeshProvider;
 
-    List<GridCell> cells = testGrid.getCells(0, 4, 1, 5);
-    for (final GridCell c in cells) {
-        c.state = GridCellState.hole;
-    }
+        List<GridCell> cells = testGrid.getCells(0, 4, 1, 5);
+        for (final GridCell c in cells) {
+            c.state = GridCellState.hole;
+        }
 
-    cells = testGrid.getCells(4, 4, 5, 5);
-    for (final GridCell c in cells) {
-        c.state = GridCellState.hole;
-    }
+        cells = testGrid.getCells(4, 4, 5, 5);
+        for (final GridCell c in cells) {
+            c.state = GridCellState.hole;
+        }
 
-    testGrid.updateConnectors();
-    testLevel.addObject(testGrid);
+        testGrid.updateConnectors();
+        testLevel.addObject(testGrid);
 
-    // side grid
+        // side grid
 
-    final Grid sideGrid = new Grid(4,1)
-        ..position.set(200, 160)
-        ..zPosition = 50
-        ..rot_angle = 0.75
-        ..meshProvider = gridMeshProvider;
-    sideGrid.updateConnectors();
-    testLevel.addObject(sideGrid);
+        final Grid sideGrid = new Grid(4, 1)
+            ..position.set(200, 160)
+            ..zPosition = 50
+            ..rot_angle = 0.75
+            ..meshProvider = gridMeshProvider;
+        sideGrid.updateConnectors();
+        testLevel.addObject(sideGrid);
 
-    // curve
+        // curve
 
-    final Curve testPath = new Curve()
-        ..meshProvider = curveMeshProvider
+        final Curve testPath = new Curve()
+            ..meshProvider = curveMeshProvider
         //..renderVertices=true
         //..renderSegments = true
-    ;
+            ;
 
-    testPath.addVertex(new CurveVertex()..position.set(50, 30)
-        ..zPosition = 50
-        ..rot_angle = -0.3..handle2 = 60)
-    ;
-    testPath.addVertex(new CurveVertex()..position.set(220, 40)
-        ..zPosition = 100
-        ..rot_angle = 0.9..handle1 = 60..handle2 = 60);
-    testPath.addVertex(new CurveVertex()..position.set(280, 180)..rot_angle = 0.5..handle1 = 50);
+        testPath.addVertex(new CurveVertex()
+            ..position.set(50, 30)
+            ..zPosition = 50
+            ..rot_angle = -0.3
+            ..handle2 = 60)
+        ;
+        testPath.addVertex(new CurveVertex()
+            ..position.set(220, 40)
+            ..zPosition = 100
+            ..rot_angle = 0.9
+            ..handle1 = 60
+            ..handle2 = 60);
+        testPath.addVertex(new CurveVertex()
+            ..position.set(280, 180)
+            ..rot_angle = 0.5
+            ..handle1 = 50);
 
-    testPath.updateConnectors();
-    testPath.endConnector.connectAndOrient(testGrid.getCell(0, 0).left);
+        testPath.updateConnectors();
+        testPath.endConnector.connectAndOrient(testGrid
+            .getCell(0, 0)
+            .left);
 
-    testPath.rebuildSegments();
+        testPath.rebuildSegments();
 
-    testPath.recentreOrigin();
+        testPath.recentreOrigin();
 
-    testLevel.addObject(testPath);
+        testLevel.addObject(testPath);
 
-    // entrances and exit
+        // entrances and exit
 
-    final ExitObject testExit = new ExitObject()
-        ..meshProvider = endCapMeshProvider;//..pos_x=500..pos_y=500;
+        final ExitObject testExit = new ExitObject()
+            ..meshProvider = endCapMeshProvider; //..pos_x=500..pos_y=500;
 
-    testExit.connector.connectAndOrient(testPath.startConnector);
+        testExit.connector.connectAndOrient(testPath.startConnector);
 
-    testPath.rebuildSegments();
+        testPath.rebuildSegments();
 
-    testPath.recentreOrigin();
+        testPath.recentreOrigin();
 
-    testLevel.addObject(testExit);
+        testLevel.addObject(testExit);
 
-    final SpawnerObject testSpawner1 = new SpawnerObject()
-        ..meshProvider = endCapMeshProvider;
-    testSpawner1.connector.connectAndOrient(testGrid.getCell(0, 9).down);
-    testLevel.addObject(testSpawner1);
+        final SpawnerObject testSpawner1 = new SpawnerObject()
+            ..meshProvider = endCapMeshProvider;
+        testSpawner1.connector.connectAndOrient(testGrid
+            .getCell(0, 9)
+            .down);
+        testLevel.addObject(testSpawner1);
 
-    // build path nodes
+        // build path nodes
 
-    testLevel.derivePathNodes();
+        testLevel.derivePathNodes();
 
-    // send node data, evaluate connectivity
-    await pathfinder.transferNodeData(testLevel);
+        // send node data, evaluate connectivity
+        await pathfinder.transferNodeData(testLevel);
 
-    final Renderer3D r3d = renderer;
+        final Renderer3D r3d = renderer;
 
-    testLevel.buildDataMaps();
+        testLevel.buildDataMaps();
 
-    //testLevel.domainMap.updateDebugCanvas();
-    //document.body.append(testLevel.domainMap.debugCanvas);
-    //r3d.createDataMapDebugModel(testLevel.domainMap);
+        //testLevel.domainMap.updateDebugCanvas();
+        //document.body.append(testLevel.domainMap.debugCanvas);
+        //r3d.createDataMapDebugModel(testLevel.domainMap);
 
-    //testLevel.levelHeightMap.updateDebugCanvas();
-    //document.body.append(testLevel.levelHeightMap.debugCanvas);
-    //r3d.createDataMapDebugModel(testLevel.levelHeightMap);
+        //testLevel.levelHeightMap.updateDebugCanvas();
+        //document.body.append(testLevel.levelHeightMap.debugCanvas);
+        //r3d.createDataMapDebugModel(testLevel.levelHeightMap);
 
-    //testLevel.cameraHeightMap.updateDebugCanvas();
-    //document.body.append(testLevel.cameraHeightMap.debugCanvas);
-    //r3d.createDataMapDebugModel(testLevel.cameraHeightMap);
+        //testLevel.cameraHeightMap.updateDebugCanvas();
+        //document.body.append(testLevel.cameraHeightMap.debugCanvas);
+        //r3d.createDataMapDebugModel(testLevel.cameraHeightMap);
 
 
-    await pathfinder.transferDomainMap(testLevel);
-    await pathfinder.recalculatePathData(testLevel);
+        await pathfinder.transferDomainMap(testLevel);
+        await pathfinder.recalculatePathData(testLevel);
 
-    final ResourceType testResource = new ResourceType();
-    game.resourceTypeRegistry.register(testResource);
-    final ResourceType testResource2 = new ResourceType()..name="second";
-    game.resourceTypeRegistry.register(testResource2);
+        final ResourceType testResource = new ResourceType();
+        game.resourceTypeRegistry.register(testResource);
+        final ResourceType testResource2 = new ResourceType()
+            ..name = "second";
+        game.resourceTypeRegistry.register(testResource2);
 
-    game.resourceStockpile.addResource(testResource, 20);
+        game.resourceStockpile.addResource(testResource, 20);
 
-    final EnemyType testEnemyType = new EnemyType();
-    final TowerType testTowerType = new TowerType()
-        ..buildCost.addResource(testResource, 10)
-        ..leadTargets = true
-    ;
-    //testTowerType.weapon = new ChaserWeaponType(testTowerType);
-    testTowerType.weapon = new InterpolatorWeaponType(testTowerType)
-        ..projectileSpeed = 350
-    ;
-    game.towerTypeRegistry.register(testTowerType);
+        final EnemyType testEnemyType = new EnemyType();
+        final TowerType testTowerType = new TowerType()
+            ..buildCost.addResource(testResource, 10)
+            ..leadTargets = true
+        ;
+        //testTowerType.weapon = new ChaserWeaponType(testTowerType);
+        testTowerType.weapon = new InterpolatorWeaponType(testTowerType)
+            ..projectileSpeed = 350
+        ;
+        game.towerTypeRegistry.register(testTowerType);
 
-    final TowerType upgradeTestTowerType = new TowerType()
-        ..name="upgradetest"
-        ..buildable=false
-        ..buildCost.addResource(testResource, 25)
-        ..buildCost.addResource(testResource2, 1)
-    ;
-    upgradeTestTowerType.weapon = new ChaserWeaponType(upgradeTestTowerType)..damage = 3;
-    game.towerTypeRegistry.register(upgradeTestTowerType);
-    testTowerType.upgradeList.add(upgradeTestTowerType);
+        final TowerType upgradeTestTowerType = new TowerType()
+            ..name = "upgradetest"
+            ..buildable = false
+            ..buildCost.addResource(testResource, 25)
+            ..buildCost.addResource(testResource2, 1)
+        ;
+        upgradeTestTowerType.weapon = new ChaserWeaponType(upgradeTestTowerType)
+            ..damage = 3;
+        game.towerTypeRegistry.register(upgradeTestTowerType);
+        testTowerType.upgradeList.add(upgradeTestTowerType);
 
-    // spawn waves
+        // spawn waves
 
-    for (int i=0; i<5; i++) {
-        final Wave testWave = new Wave();
-        for (int j = 0; j < 5; j++) {
-            testWave.entries.add(<WaveEntry>{new WaveEntry(testEnemyType, 0, new ResourceValue()..addResource(testResource, 1))});
+        for (int i = 0; i < 5; i++) {
+            final Wave testWave = new Wave();
+            for (int j = 0; j < 5; j++) {
+                testWave.entries.add(<WaveEntry>{new WaveEntry(testEnemyType, 0, new ResourceValue()..addResource(testResource, 1))});
+            }
+            game.waveManager.waves.add(testWave);
         }
-        game.waveManager.waves.add(testWave);
-    }
 
-    // init
-    await game.initialise();
-    game
-        ..pathfinder = pathfinder
-        ..setLevel(testLevel)
+        // init
+        await game.initialise();
+        game
+            ..pathfinder = pathfinder
+            ..setLevel(testLevel)
         //..fpsElement = fpsElement
-        ..start();
+            ..start();
 
-    {
-        final Tower tower = new Tower(testTowerType);
-        await sideGrid.placeTower(3, 0, tower);
-    }
+        {
+            final Tower tower = new Tower(testTowerType);
+            await sideGrid.placeTower(3, 0, tower);
+        }
 
-    {
-        final Tower tower = new Tower(testTowerType);
-        await testGrid.placeTower(3, 8, tower);
-    }
+        {
+            final Tower tower = new Tower(testTowerType);
+            await testGrid.placeTower(3, 8, tower);
+        }
 
-    renderer.centreOnObject(testLevel);
-    r3d.initCameraBounds(testLevel);
+        renderer.centreOnObject(testLevel);
+        r3d.initCameraBounds(testLevel);
 
-    /*int n = 0;
+        /*int n = 0;
     new Timer.periodic(const Duration(milliseconds: 1500), (Timer t) {
         game.spawnEnemy(testEnemyType, testSpawner1);
         n++;
@@ -245,7 +288,10 @@ Future<void> losac() async {
         }
     });*/
 
-    //game.input.listen("A", testCallback, allowRepeats: false);
+        //game.input.listen("A", testCallback, allowRepeats: false);
+    }
+
+
 }
 
 /*bool testCallback(String key, KeyEventType type, bool shift, bool control, bool alt) {

@@ -460,6 +460,63 @@ button:active {
     box-shadow: 0 0 3px black;
 }
 
+.MainMenu {
+    text-align:center;
+    background-color: #551111;
+
+    font-family: "courier new", "courier", monospace;
+    color: white;
+    box-shadow: 0 0 30vh black inset;
+}
+.MainMenu button {
+    font-size: 32px;
+    font-weight:bold;
+    width:400px;
+    height:50px;
+    margin-top: 15px;
+    box-shadow: 0 0 10px black;
+}
+
+.LoadScreen {
+    text-align:center;
+
+    background:url("assets/images/spirograph_spin.svg") no-repeat center;
+    background-color: #551111;
+    background-size:contain;
+    background-origin: content-box;
+    padding: 20vh;
+    box-sizing:border-box;
+
+    font-family: "courier new", "courier", monospace;
+    color: white;
+    box-shadow: 0 0 30vh black inset;
+}
+
+
+.note {
+    position: relative;
+    left: 55px;
+
+    background-color: #DDDDCC;
+    width:1000px;
+    text-align:left;
+    padding: 10px 30px 20px 30px;
+
+    color: #0d378e;
+    font-weight: bold;
+    margin: 0 auto 0 auto;
+    box-shadow: 5px 8px 10px rgba(0,0,0,0.4);
+}
+.note::after {
+    position:absolute;
+    content:"";
+    width: 300px;
+    height: 620px;
+    background-image: url("assets/images/pl.png");
+    top:0px;
+    left: -245px;
+}
+
 /* ######################################################################## */
 
 .top { top: 0px; }

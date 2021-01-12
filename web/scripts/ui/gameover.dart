@@ -1,5 +1,6 @@
 import 'dart:html';
 
+import "../main.dart";
 import 'ui.dart';
 
 class GameOverBox extends UIComponent {
@@ -30,7 +31,8 @@ class GameOverBox extends UIComponent {
                     ..appendFormattedLocalisation("ui.gameover.exit", engine.localisation)
                     ..onClick.first.then((MouseEvent e) {
                         print("exit to menu");
-                        // TODO: exit to menu here
+
+                        MainMenu.exitToMenu(() async => engine.destroy());
                     })
                 )
             )
@@ -51,7 +53,8 @@ class ExitButton extends UIComponent {
             ..appendFormattedLocalisation("ui.gameover.exit", engine.localisation)
             ..onClick.first.then((MouseEvent e) {
                 print("exit to menu");
-                // TODO: exit to menu here
+
+                MainMenu.exitToMenu(() async => engine.destroy());
             })
         ;
     }

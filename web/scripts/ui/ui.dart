@@ -16,8 +16,8 @@ export "tooltip.dart";
 export "wavetracker.dart";
 
 class UIController {
-    final Engine engine;
-    final Element container;
+    Engine engine;
+    Element container;
 
     final Set<UIComponent> components = <UIComponent>{};
 
@@ -57,6 +57,14 @@ class UIController {
             }
         }
         return null;
+    }
+
+    void destroy() {
+        for (final UIComponent component in components) {
+            component.dispose();
+        }
+        container = null;
+        engine = null;
     }
 }
 
@@ -155,6 +163,7 @@ abstract class UIComponent {
     void dispose() {
         this.disposed = true;
         this.element.remove();
+        this._element = null;
         for (final UIComponent child in children) {
             child.dispose();
         }

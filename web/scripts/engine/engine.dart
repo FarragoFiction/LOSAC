@@ -175,6 +175,7 @@ abstract class Engine {
         if (clearSelectionOnRemove && entity == selected) {
             this.selectObject(null);
         }
+        entity.dispose();
     }
 
     void setLevel(Level level) {
@@ -230,6 +231,22 @@ abstract class Engine {
         }
 
         return true;
+    }
+
+    void destroy() {
+        for (final Entity entity in this.entities) {
+            entity.dispose();
+        }
+        entities.clear();
+        entities = null;
+        renderer.destroy();
+        renderer = null;
+        input.destroy();
+        input = null;
+        uiController.destroy();
+        uiController = null;
+        pathfinder.destroy();
+        pathfinder = null;
     }
 }
 

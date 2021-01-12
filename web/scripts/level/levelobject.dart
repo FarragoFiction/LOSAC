@@ -42,6 +42,8 @@ class SimpleLevelObject with Renderable3D {
         height ??= this.getZPosition();
         this.mesh?.position?.setFromGameCoords(position, height);
     }
+
+    void dispose() {}
 }
 
 class LevelObject extends SimpleLevelObject { //with HasFloater { // floater test
@@ -75,6 +77,18 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
 
         subObjects = new UnmodifiableSetView<LevelObject>(_subObjects);
         initMixins();
+    }
+
+    @override
+    void dispose() {
+        final B.Vector2WithCallback v = this.position;
+        v.extension_setCallback(null);
+        this.position = null;
+        if (this.mesh != null) {
+            this.mesh.dispose();
+            this.mesh.metadata = null;
+            this.mesh = null;
+        }
     }
 
     void initMixins(){}

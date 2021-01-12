@@ -1,3 +1,4 @@
+import 'dart:async';
 import "dart:html";
 
 import 'ui.dart';
@@ -12,6 +13,8 @@ class UIButton extends UIComponent with HasTooltip {
 
     bool clicked = false;
 
+    StreamSubscription<MouseEvent> _click;
+
     UIButton(UIController controller) : super(controller);
 
     @override
@@ -20,7 +23,7 @@ class UIButton extends UIComponent with HasTooltip {
             ..className="Button"
         ;
 
-        e.onClick.listen((MouseEvent event) async {
+        _click = e.onClick.listen((MouseEvent event) async {
             if (!usable()) { return; }
 
             clicked = true;
@@ -55,6 +58,12 @@ class UIButton extends UIComponent with HasTooltip {
 
     @override
     Future<void> populateTooltip(Element tooltip) async {}
+
+    @override
+    void dispose() {
+        super.dispose();
+        _click.cancel();
+    }
 }
 
 
