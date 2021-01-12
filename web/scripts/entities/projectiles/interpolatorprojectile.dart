@@ -138,7 +138,7 @@ class InterpolatorTextProjectile extends InterpolatorProjectile with HasFloater 
 }
 
 class InterpolatorWeaponType extends WeaponType {
-    InterpolatorWeaponGravityMode gravityMode = InterpolatorWeaponGravityMode.ballisticHigh;
+    InterpolatorWeaponGravityMode gravityMode = InterpolatorWeaponGravityMode.simpleBallistic;
 
     // these bits are for the text projectiles... which aren't really intended for use but have fun if you work out how lol
     bool useTextProjectiles = false;
