@@ -162,7 +162,7 @@ abstract class UIComponent {
 
     void dispose() {
         this.disposed = true;
-        this.element.remove();
+        this._element?.remove();
         this._element = null;
         for (final UIComponent child in children) {
             child.dispose();
