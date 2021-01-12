@@ -499,13 +499,24 @@ button:active {
 
     background-color: #DDDDCC;
     width:1000px;
+    height:760px;
     text-align:left;
-    padding: 10px 30px 20px 30px;
+    max-height: calc(100vh - 200px);
 
     color: #0d378e;
     font-weight: bold;
     margin: 0 auto 0 auto;
     box-shadow: 5px 8px 10px rgba(0,0,0,0.4);
+}
+.note div {
+    position:relative;
+    top:0;
+    left:0;
+    padding: 10px 30px 20px 30px;
+    height:100%;
+    width:100%;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 .note::after {
     position:absolute;

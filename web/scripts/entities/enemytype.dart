@@ -10,11 +10,11 @@ class EnemyType {
     SlopeMode slopeMode = SlopeMode.conform;
 
     double health = 100;
-    double speed = 250;//25;
-    double turnRate = 10;//1.0;
+    double speed = 25;
+    double turnRate = 1.0;
     double size = 10;
 
-    double leakDamage = 1000;//5.0;
+    double leakDamage = 5.0;
 
     void draw2D(CanvasRenderingContext2D ctx) {
         ctx.fillStyle="#FF0000";
