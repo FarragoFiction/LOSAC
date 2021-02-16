@@ -1,7 +1,13 @@
 import "dart:html";
 
+import 'package:CommonLib/Logging.dart';
+import "package:LoaderLib/Archive.dart";
+import "package:LoaderLib/Loader.dart";
+import 'package:yaml/yaml.dart' as YAML;
+
 import "../entities/enemy.dart";
 import "../entities/towertype.dart";
+import "../formats/yamlformat.dart";
 import "../level/level.dart";
 import "../level/pathnode.dart";
 import '../level/selectable.dart';
@@ -10,6 +16,7 @@ import "../pathfinder/pathfinder.dart";
 import "../renderer/3d/renderer3d.dart";
 import "../resources/resourcetype.dart";
 import '../ui/ui.dart';
+import "../utility/fileutils.dart";
 import "entity.dart";
 import "inputhandler.dart";
 import "registry.dart";
@@ -21,6 +28,13 @@ enum EngineRunState {
 }
 
 abstract class Engine {
+    static const String archivePath = "losac/";
+    static const String dataPath = "assets/data/";
+
+    static final YAMLFormat yamlFormat = new YAMLFormat();
+    static final Logger logger = new Logger("Engine", false);
+
+    DataPack overrideDataPack;
     Renderer3D renderer;
     Level level;
     Set<Entity> entities = <Entity>{};
@@ -247,6 +261,87 @@ abstract class Engine {
         uiController = null;
         pathfinder.destroy();
         pathfinder = null;
+
+        if (overrideDataPack != null) {
+            Loader.unmountDataPack(overrideDataPack);
+        }
+    }
+
+    Future<void> loadLevelArchive(Archive levelArchive) async {
+        // Ok, loading a level is a pretty complex process which goes through several stages.
+        // Because levels can hold overridden data, we need to check first for a data pack embedded in the level
+        // and then load the resources, enemies, towers and level *after* that, since they could be replaced in the data pack.
+        // Notably this function *does not* start the simulation running, because we will need to do more stuff for the editor and game.
+
+        // first things first, check for and mount any override datapack included in the level
+        // if present, this gets unmounted when the engine is destroyed
+        final Archive dataPackArchive = await levelArchive.getFile("${archivePath}datapack.zip");
+        if (dataPackArchive != null) {
+            overrideDataPack = Loader.mountDataPack(dataPackArchive.rawArchive);
+        }
+
+        // Now we load the default data files, including resources, enemies and towers.
+        // These will be overridden if the datapack above contains replacements
+        await loadBaseDataFiles();
+
+    }
+
+    Future<void> loadBaseDataFiles() async {
+        // First are resource types, enemies and towers rely on these so we have to wait for it to be complete
+        await _loadResourceDefinitions();
+    }
+
+    Future<void> _loadResourceDefinitions() async {
+        // The pattern in these definition loading functions will be getting a file list yaml, which then tells us which files to load.
+        // In a non-web environment this wouldn't be necessary as we'd just read the folder contents, but web is web and security matters so we can't.
+        // It's done this way because if a mod wants to *add* new types of things, it can just override the list to add a new file instead of including the defaults too
+        YAML.YamlDocument files;
+        try {
+            files = await Loader.getResource("${dataPath}resources/files.yaml", format: Engine.yamlFormat);
+        } on LoaderException {
+            logger.warn("Could not load resource type file list, skipping loading resource types!");
+            return;
+        }
+
+        if (files.contents.value is YAML.YamlList) {
+            final YAML.YamlList fileList = files.contents.value;
+            for (final String filename in fileList) {
+                if(!FileUtils.validateFilename(filename)) {
+                    logger.warn("Skipping invalid resource type file name: $filename");
+                    continue;
+                }
+
+                YAML.YamlDocument file;
+                try {
+                    file = await Loader.getResource("${dataPath}resources/$filename", format: Engine.yamlFormat);
+                } on LoaderException {
+                    logger.warn("Skipping unloadable resource type file: $filename");
+                    continue;
+                }
+
+                if (!(file.contents.value is YAML.YamlList)) {
+                    logger.warn("Resource type file $filename is malformed, should be a list of resource objects");
+                    continue;
+                }
+
+                final YAML.YamlList resources = file.contents.value;
+                for (final dynamic entry in resources) {
+                    if (!(entry is YAML.YamlMap)) {
+                        logger.warn("Skipping malformed resource type definition in $filename, should be a resource object.");
+                        continue;
+                    }
+
+                    final YAML.YamlMap resourceDefinition = entry;
+                    final ResourceType resourceType = new ResourceType.load(resourceDefinition);
+
+                    if (resourceType != null) {
+                        resourceTypeRegistry.register(resourceType);
+                    }
+                }
+            }
+        } else {
+            logger.warn("Resource type file list is malformed, it should be a list of file names.");
+        }
     }
 }
 

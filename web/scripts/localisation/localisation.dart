@@ -16,8 +16,6 @@ class LocalisationEngine {
     /// Matches sequences between paired &s (group 1)
     static final RegExp iconPattern = new RegExp(r"&([^&]+)&");
 
-    static final YAMLFormat yamlFormat = new YAMLFormat();
-
     Engine engine;
     FormattingEngine formatting;
 
@@ -39,7 +37,7 @@ class LocalisationEngine {
 
     Future<void> initialise() async {
         await formatting.initialise();
-        final YamlDocument languagesFile = await Loader.getResource("$locPath/$masterFile", format: yamlFormat);
+        final YamlDocument languagesFile = await Loader.getResource("$locPath/$masterFile", format: Engine.yamlFormat);
 
         final YamlMap languageDefs = languagesFile.contents.value["languages"];
 
@@ -123,7 +121,7 @@ class Language {
     }
 
     Future<void> load() async {
-        final YamlDocument languageFile = await Loader.getResource("${LocalisationEngine.locPath}/$path", format: LocalisationEngine.yamlFormat);
+        final YamlDocument languageFile = await Loader.getResource("${LocalisationEngine.locPath}/$path", format: Engine.yamlFormat);
         final YamlList files = languageFile.contents.value["files"];
 
         String relativePath = (path.split("/")..removeLast()).join("/");
@@ -135,7 +133,7 @@ class Language {
 
         // load the contents of the listed files into the translation table
         for (final String fileName in files) {
-            final YamlDocument file = await Loader.getResource("${LocalisationEngine.locPath}$relativePath/$fileName", format: LocalisationEngine.yamlFormat);
+            final YamlDocument file = await Loader.getResource("${LocalisationEngine.locPath}$relativePath/$fileName", format: Engine.yamlFormat);
             final YamlMap entries = file.contents.value["translations"];
 
             for (final dynamic key in entries.keys) {

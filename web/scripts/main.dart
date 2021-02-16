@@ -3,12 +3,12 @@ import 'dart:html';
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:LoaderLib/Loader.dart";
 
+import "engine/engine.dart";
 import "engine/game.dart";
-import "engine/inputhandler.dart";
 import "engine/wavemanager.dart";
 import "entities/enemytype.dart";
-import 'entities/floaterentity.dart';
 import 'entities/projectiles/chaserprojectile.dart';
 import 'entities/projectiles/interpolatorprojectile.dart';
 import "entities/tower.dart";
@@ -25,12 +25,11 @@ import 'renderer/3d/models/gridmeshprovider.dart';
 import "renderer/3d/renderer3d.dart";
 import "renderer/renderer.dart";
 import "resources/resourcetype.dart";
-import "utility/extensions.dart";
 import "utility/levelutils.dart";
 import "utility/mathutils.dart";
-import "utility/towerutils.dart";
 
 Future<void> main() async {
+    Formats.addMapping(Engine.yamlFormat, "yaml");
     //testProjectileArc();
     //losac();
 
@@ -87,6 +86,10 @@ abstract class MainMenu {
         final Renderer renderer = new Renderer3D(testCanvas, floaterCanvas);
         await renderer.initialise();
         final Game game = new Game(renderer, querySelector("#uicontainer"));
+
+        // LOADING TEST ####################################
+        await game.loadBaseDataFiles();
+        // LOADING TEST ####################################
 
         final Pathfinder pathfinder = new Pathfinder();
         final Level testLevel = new Level3D();

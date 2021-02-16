@@ -1,0 +1,14 @@
+# Resource Types
+#
+# Available properties:
+#
+# name: The registration key of the resource, used in references and localisation. Must be unique.
+# minimum: Minimum stockpile count for this resource. Not sure why you'd need this but it's available.
+# maximum: Maximum stockpile size, beyond which resources are discarded. Maybe handy for some special cases.
+
+- name: default1
+
+- name: default2
+  maximum: 5
+
+- name: default3
