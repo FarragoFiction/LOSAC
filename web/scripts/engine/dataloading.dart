@@ -17,19 +17,13 @@ abstract class DataLoading {
         // First are resource types, enemies and towers rely on these so we have to wait for it to be complete
         await loadDefinitionFile("resources", "Resource Type", ResourceType.load, engine.resourceTypeRegistry.register);
 
-        // Now the path splits into two halves - waves rely upon enemies, but towers rely on neither of those
-        // This means we can load towers alongside a function which loads enemies and waves sequentially
+        // Now the path splits into two halves - enemies and towers
+        // Neither relies on the other which means we can load them at the same time with some Future funkiness
+        // This doesn't really do a whole lot for us because it's still one thread but hey, the http requests can happen concurrently at least
         await Future.wait(<Future<void>>[
-            // load enemies, then waves
-            () async {
-                await loadDefinitionFile("enemies", "Enemy Type", EnemyType.load, engine.enemyTypeRegistry.register);
-                // TODO: load waves here
-            }(),
-            // load towers at the same time as that's going on
+            loadDefinitionFile("enemies", "Enemy Type", EnemyType.load, engine.enemyTypeRegistry.register),
             // TODO: load towers here
         ]);
-
-        // anything which relies on those like... I guess cutscenes or something? go after those
     }
 
     static Future<void> loadDefinitionFile<T>(String subPath, String typeDesc, Mapping<YAML.YamlMap,T> generator, Lambda<T> consumer) async {
