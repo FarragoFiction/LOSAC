@@ -2,10 +2,13 @@ import "package:yaml/yaml.dart";
 
 import "../engine/engine.dart";
 import "../engine/registry.dart";
+import "../utility/fileutils.dart";
 
 export "stockpile.dart";
 
 class ResourceType with Registerable {
+    static const String typeDesc = "Resource Type";
+
     /// Localisation string
     /// Will resolve patterns such as "resource.(this value).name"
     String name = "default";
@@ -22,35 +25,20 @@ class ResourceType with Registerable {
 
     ResourceType();
 
-    factory ResourceType.load(YamlMap yaml) {
-        final ResourceType resource = new ResourceType();
+    // This needs to be a method rather than a constructor because it's passed as an argument in the data loader
+    // ignore: prefer_constructors_over_static_methods
+    static ResourceType load(YamlMap yaml) {
+        final ResourceType object = new ResourceType();
 
         // reject if no name
-        if (yaml.containsKey("name")) {
-            resource.name = yaml["name"];
-        } else {
-            Engine.logger.warn("Resource type missing name, skipping");
+        if (!FileUtils.setFromData(yaml, "name", typeDesc, "unknown", (dynamic d) => object.name = d)) {
+            Engine.logger.warn("$typeDesc missing name, skipping");
             return null;
         }
 
-        if (yaml.containsKey("maximum")) {
-            try {
-                resource.maximum = yaml["maximum"];
-            // ignore: avoid_catching_errors
-            } on TypeError {
-                Engine.logger.warn("Resource type '${resource.name}' ignoring invalid maximum value: ${yaml["maximum"]}");
-            }
-        }
+        FileUtils.setFromData(yaml, "maximum", typeDesc, object.name, (dynamic d) => object.maximum = d);
+        FileUtils.setFromData(yaml, "minimum", typeDesc, object.name, (dynamic d) => object.minimum = d);
 
-        if (yaml.containsKey("minimum")) {
-            try {
-                resource.minimum = yaml["minimum"];
-            } catch(e) {
-                print(e);
-                Engine.logger.warn("Resource type '${resource.name}' ignoring invalid minimum value: ${yaml["minimum"]}");
-            }
-        }
-
-        return resource;
+        return object;
     }
 }

@@ -1,0 +1,33 @@
+# Enemy Types
+#
+# Available properties:
+#
+# name (text, unique, required): The registration key of the enemy, used in references and localisation. Must be unique.
+#
+# health (number): Maximum health of this enemy
+# speed (number): Movement speed
+# turnRate (number): Turning rate in radians per second
+# size (number): Collision size
+#
+# leakDamage (number): Amount of health lost when this enemy reaches an exit point
+
+- name: grunt
+
+- name: chonk
+  health: 200
+  size: 15
+  leakDamage: 8
+
+- name: speedster
+  health: 20
+  size: 5
+  speed: 50
+  turnRate: 3
+  leakDamage: 2
+
+- name: boss
+  health: 2000
+  size: 20
+  turnRate: 0.5
+  speed: 10
+  leakDamage: 20
