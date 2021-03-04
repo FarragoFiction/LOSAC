@@ -1,0 +1,7 @@
+# Tower Types
+#
+# Available properties:
+#
+# name (text, unique, required): The registration key of the tower, used in references and localisation. Must be unique.
+
+- name: basic

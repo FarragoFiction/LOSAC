@@ -45,7 +45,7 @@ abstract class DataLoading {
         // validate the filenames and fire off each file to be processed asynchronously
         final List<List<T>> allFiles = await Future.wait(
             fileList.where(
-                    (dynamic file) {
+                (dynamic file) {
                     if((!(file is String)) || (!FileUtils.validateFilename(file))) {
                         logger.warn("Skipping invalid resource type file name: $file");
                         return false;

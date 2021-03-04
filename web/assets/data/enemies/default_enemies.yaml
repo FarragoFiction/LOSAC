@@ -4,12 +4,12 @@
 #
 # name (text, unique, required): The registration key of the enemy, used in references and localisation. Must be unique.
 #
-# health (number): Maximum health of this enemy
-# speed (number): Movement speed
-# turnRate (number): Turning rate in radians per second
-# size (number): Collision size
+# health (number, default 100): Maximum health of this enemy
+# speed (number, default 25): Movement speed
+# turnRate (number, default 1): Turning rate in radians per second
+# size (number, default 10): Collision size
 #
-# leakDamage (number): Amount of health lost when this enemy reaches an exit point
+# leakDamage (number, default 5): Amount of health lost when this enemy reaches an exit point
 
 - name: grunt
 

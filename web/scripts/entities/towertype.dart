@@ -2,6 +2,7 @@ import "dart:html";
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:yaml/yaml.dart";
 
 import "../engine/engine.dart";
 import "../engine/game.dart";
@@ -10,10 +11,13 @@ import "../localisation/localisation.dart";
 import "../resources/resourcetype.dart";
 import "../targeting/strategies.dart";
 import "../ui/ui.dart";
+import "../utility/fileutils.dart";
 import "enemy.dart";
 import "projectiles/projectile.dart";
 
 class TowerType with Registerable {
+    static const String typeDesc = "Tower Type";
+
     /// "close enough" angle delta for turrets - within this, we are considered to be pointing at the target
     static const double fireAngleFuzz = 0.01;
     static final TargetingStrategy<Enemy> defaultTargetingStrategy = new ProgressTargetingStrategy() + new StickyTargetingStrategy() * 0.1;
@@ -50,10 +54,6 @@ class TowerType with Registerable {
     WeaponType weapon;
 
     B.Mesh mesh;
-
-    /*TowerType() {
-        weapon = new ChaserWeaponType(this);
-    }*/
 
     void draw2D(CanvasRenderingContext2D ctx) {
         ctx.fillStyle="#A0A0A0";
@@ -111,4 +111,20 @@ class TowerType with Registerable {
     }
 
     bool get useBallisticIntercept => weapon.useBallisticIntercept;
+
+    // Loading stuff ------------------------------------------------------
+
+    // This needs to be a method rather than a constructor because it's passed as an argument in the data loader
+    // ignore: prefer_constructors_over_static_methods
+    static TowerType load(YamlMap yaml) {
+        final TowerType object = new TowerType();
+
+        // reject if no name
+        if (!FileUtils.setFromData(yaml, "name", typeDesc, "unknown", (dynamic d) => object.name = d)) {
+            Engine.logger.warn("$typeDesc missing name, skipping");
+            return null;
+        }
+
+        return object;
+    }
 }
