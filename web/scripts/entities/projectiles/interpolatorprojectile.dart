@@ -21,23 +21,23 @@ enum InterpolatorWeaponGravityMode {
     simpleBallistic,
     /// True ballistic trajectory where muzzle velocity remains constant but elevation changes.
     /// Takes the lower of the two angles available, falls back to simpleBallistic when no valid angle exists.
-    ballistic, // TODO: implement ballistic and ballisticHigh
+    ballistic,
     /// As ballistic but takes the higher of the two angles. Falls back to simpleBallistic when no valid angle exists.
     ballisticHigh,
 }
 
 class InterpolatorProjectile extends Projectile {
 
-    InterpolatorWeaponType get type => projectileType;
-    Game get game => engine;
+    InterpolatorWeaponType get type => projectileType as InterpolatorWeaponType;
+    Game get game => engine as Game;
 
     double travelFraction = 0;
     double travelSpeed = 1.0;
 
     // arc calculation stuff, since it doesn't need to be recalculated
-    double _distance;
-    double _totalTime;
-    double _v0;
+    late double _distance;
+    double? _totalTime;
+    late double _v0;
 
     InterpolatorProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) : super.impl(parent, target, targetPos, targetHeight) {
         this.position.setFrom(this.parent.position);
@@ -46,32 +46,32 @@ class InterpolatorProjectile extends Projectile {
         this.previousRot = rot_angle;
 
         // xy distance from origin to target
-        _distance = (targetPos - this.position).length();
+        _distance = (targetPos - this.position).length().toDouble();
 
 
         // stuff needed for ballistics, no point setting it up if we're not using gravity
         if (type.gravityMode == InterpolatorWeaponGravityMode.ballistic || type.gravityMode == InterpolatorWeaponGravityMode.ballisticHigh) {
-            final B.Vector2 trajectory = TowerUtils.ballisticArc(_distance, targetHeight - originHeight, type.projectileSpeed, _gravity, type.gravityMode == InterpolatorWeaponGravityMode.ballisticHigh);
+            final B.Vector2? trajectory = TowerUtils.ballisticArc(_distance, targetHeight - originHeight, type.projectileSpeed, _gravity, type.gravityMode == InterpolatorWeaponGravityMode.ballisticHigh);
 
             if (trajectory != null) {
                 // total expected travel time
                 _totalTime = _distance / trajectory.x;
-                _v0 = trajectory.y;
+                _v0 = trajectory.y.toDouble();
             }
         }
 
         if (type.gravityMode == InterpolatorWeaponGravityMode.simpleBallistic || _totalTime == null) {
             // total expected travel time
-            _totalTime = _distance / parent.towerType.weapon.projectileSpeed;
+            _totalTime = _distance / parent.towerType.weapon!.projectileSpeed;
             // initial z velocity for simple ballistic
-            _v0 = ((targetHeight - originHeight) + (0.5 * _gravity * _totalTime * _totalTime)) / _totalTime;
+            _v0 = ((targetHeight - originHeight) + (0.5 * _gravity * _totalTime! * _totalTime!)) / _totalTime!;
         }
 
-        this.travelSpeed = 1.0 / _totalTime;
-        this.maxAge = 2 * _totalTime; // 2 because we're hedging bets here, it should never be more than the total time in practice;
+        this.travelSpeed = 1.0 / _totalTime!;
+        this.maxAge = 2 * _totalTime!; // 2 because we're hedging bets here, it should never be more than the total time in practice;
     }
 
-    double get _gravity => game.level.gravity ?? game.rules.gravity;
+    double get _gravity => game.level!.gravity ?? game.rules.gravity;
 
     @override
     void logicUpdate([num dt = 0]) {
@@ -97,7 +97,7 @@ class InterpolatorProjectile extends Projectile {
         case InterpolatorWeaponGravityMode.ballistic:
         case InterpolatorWeaponGravityMode.ballisticHigh:
             // simple ballistic, cheap and good enough for fast projectiles
-            this.zPosition = TowerUtils.simpleBallisticArc(originHeight, _v0, _gravity, travelFraction * _totalTime);
+            this.zPosition = TowerUtils.simpleBallisticArc(originHeight, _v0, _gravity, travelFraction * _totalTime!);
             break;
         default:
             // none, the remainder
@@ -113,10 +113,10 @@ class InterpolatorProjectile extends Projectile {
 
 class InterpolatorTextProjectile extends InterpolatorProjectile with HasFloater {
 
-    CanvasStyle _styleDef;
+    CanvasStyle? _styleDef;
     CanvasStyle get styleDef {
         _styleDef ??= renderer.floaterOverlay.getCanvasStyle(type.cssClass);
-        return _styleDef;
+        return _styleDef!;
     }
 
     InterpolatorTextProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) : super(parent, target, targetPos, targetHeight);

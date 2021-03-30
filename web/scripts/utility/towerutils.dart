@@ -11,21 +11,21 @@ import "mathutils.dart";
 
 abstract class TowerUtils {
 
-    static B.Vector2 intercept(B.Vector2 firePos, B.Vector2 targetPos, B.Vector2 targetVel, double projSpeed) {
+    static B.Vector2? intercept(B.Vector2 firePos, B.Vector2 targetPos, B.Vector2 targetVel, num projSpeed) {
         if (projSpeed <= 0) { return null; }
 
-        final double tx = targetPos.x - firePos.x;
-        final double ty = targetPos.y - firePos.y;
-        final double tvx = targetVel.x;
-        final double tvy = targetVel.y;
+        final num tx = targetPos.x - firePos.x;
+        final num ty = targetPos.y - firePos.y;
+        final num tvx = targetVel.x;
+        final num tvy = targetVel.y;
 
         // work out quadratic terms
-        final double a = tvx*tvx + tvy*tvy - projSpeed*projSpeed;
-        final double b = 2 * (tvx * tx + tvy * ty);
-        final double c = tx*tx + ty*ty;
+        final num a = tvx*tvx + tvy*tvy - projSpeed*projSpeed;
+        final num b = 2 * (tvx * tx + tvy * ty);
+        final num c = tx*tx + ty*ty;
 
         // solve quadratic equation for those terms
-        final Math.Point<double> ts = MathUtils.quadraticBasic(a, b, c);
+        final Math.Point<double>? ts = MathUtils.quadraticBasic(a, b, c);
 
         // find smallest positive solution
         if (ts != null) {
@@ -43,19 +43,19 @@ abstract class TowerUtils {
         return null;
     }
 
-    static double interceptTime(B.Vector2 firePos, B.Vector2 targetPos, B.Vector2 targetVel, double projSpeed) {
-        final double tx = targetPos.x - firePos.x;
-        final double ty = targetPos.y - firePos.y;
-        final double tvx = targetVel.x;
-        final double tvy = targetVel.y;
+    static double interceptTime(B.Vector2 firePos, B.Vector2 targetPos, B.Vector2 targetVel, num projSpeed) {
+        final num tx = targetPos.x - firePos.x;
+        final num ty = targetPos.y - firePos.y;
+        final num tvx = targetVel.x;
+        final num tvy = targetVel.y;
 
         // work out quadratic terms
-        final double a = tvx*tvx + tvy*tvy - projSpeed*projSpeed;
-        final double b = 2 * (tvx * tx + tvy * ty);
-        final double c = tx*tx + ty*ty;
+        final num a = tvx*tvx + tvy*tvy - projSpeed*projSpeed;
+        final num b = 2 * (tvx * tx + tvy * ty);
+        final num c = tx*tx + ty*ty;
 
         // solve quadratic equation for those terms
-        final Math.Point<double> ts = MathUtils.quadraticBasic(a, b, c);
+        final Math.Point<double>? ts = MathUtils.quadraticBasic(a, b, c);
 
         // find smallest positive solution
         if (ts != null) {
@@ -80,11 +80,11 @@ abstract class TowerUtils {
             return interceptTime(firePos, targetPos, targetVel, projSpeed);
         }
 
-        final double tx = targetPos.x - firePos.x;
-        final double ty = targetPos.y - firePos.y;
+        final num tx = targetPos.x - firePos.x;
+        final num ty = targetPos.y - firePos.y;
         final double tz = targetHeight - fireHeight;
-        final double tvx = targetVel.x;
-        final double tvy = targetVel.y;
+        final num tvx = targetVel.x;
+        final num tvy = targetVel.y;
         const double tvz = 0; // ehhhhhh
 
         final double g = -0.5 * gravity;
@@ -107,13 +107,13 @@ abstract class TowerUtils {
         return solutions.reduce(highArc ? Math.max : Math.min);
     }
 
-    static B.Vector2 interceptEnemy(Tower tower, Enemy enemy) {
+    static B.Vector2? interceptEnemy(Tower tower, Enemy enemy) {
         if (enemy.speed <= 0) { return enemy.position; }
 
         final B.Vector2 tPos = tower.position;
 
         B.Vector2 pos = enemy.position;
-        PathNode nextNode = enemy.targetNode;
+        PathNode nextNode = enemy.targetNode!;
         B.Vector2 targetOffset = nextNode.position - pos;
         num targetDistance = targetOffset.length();
         B.Vector2 dir = targetOffset / targetDistance;
@@ -127,7 +127,7 @@ abstract class TowerUtils {
                     print("test abort iteration $iter");
                     return null;
                 }*/
-                final Game game = tower.engine;
+                final Game game = tower.engine as Game;
                 final B.Vector2 offsetPos = pos - dir * enemy.speed * timeOffset;
                 time = ballisticInterceptTime(
                     tPos,
@@ -136,12 +136,12 @@ abstract class TowerUtils {
                     //tower.level.levelHeightMap.getSmoothVal(offsetPos.x, offsetPos.y),
                     enemy.getZPosition(), // as good as the line above (they're both wrong) but cheaper
                     dir * enemy.speed,
-                    tower.towerType.weapon.projectileSpeed,
-                    tower.level.gravity ?? game.rules.gravity,
-                    tower.towerType.weapon.useBallisticHighArc
+                    tower.towerType.weapon!.projectileSpeed,
+                    tower.level!.gravity ?? game.rules.gravity,
+                    tower.towerType.weapon!.useBallisticHighArc
                 );
             } else {
-                time = interceptTime(tPos, pos - dir * enemy.speed * timeOffset, dir * enemy.speed, tower.towerType.weapon.projectileSpeed);
+                time = interceptTime(tPos, pos - dir * enemy.speed * timeOffset, dir * enemy.speed, tower.towerType.weapon!.projectileSpeed);
             }
             if (time == -1) { return null; }
             time -= timeOffset;
@@ -154,7 +154,7 @@ abstract class TowerUtils {
 
             timeOffset += timeToNode;
             pos = nextNode.position;
-            nextNode = nextNode.targetNode;
+            nextNode = nextNode.targetNode!;
             targetOffset = nextNode.position - pos;
             targetDistance = targetOffset.length();
             dir = targetOffset / targetDistance;
@@ -169,7 +169,7 @@ abstract class TowerUtils {
         return z0 + v0 * t - 0.5 * g * t * t;
     }
 
-    static B.Vector2 ballisticArc(double distance, double height, double muzzleVel, double gravity, bool highArc) {
+    static B.Vector2? ballisticArc(double distance, double height, double muzzleVel, double gravity, bool highArc) {
         final double v = muzzleVel;
         final double y = height;
         final double x = distance;

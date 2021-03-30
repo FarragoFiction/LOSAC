@@ -16,11 +16,11 @@ class ChaserProjectile extends Projectile with NewtonianMover {
 
     static final Random _random = new Random();
 
-    ChaserWeaponType get type => projectileType;
-    double hitArea;
+    ChaserWeaponType get type => projectileType as ChaserWeaponType;
+    late double hitArea;
 
     @override
-    double get speed => this.velocity.length();
+    double get speed => this.velocity.length().toDouble();
 
     // NewtonianMover getter overrides
     @override
@@ -46,7 +46,7 @@ class ChaserProjectile extends Projectile with NewtonianMover {
             this.rot_angle += (_random.nextDouble(type.spread) - type.spread * 0.5) * Math.pi * 2;
         }
         this.previousRot = rot_angle;
-        this.hitArea = this.target.enemyType.size;
+        this.hitArea = this.target!.enemyType.size;
         this.thrust(type.initialThrust);
     }
 
@@ -54,15 +54,17 @@ class ChaserProjectile extends Projectile with NewtonianMover {
     void logicUpdate([num dt = 0]) {
         super.logicUpdate(dt);
 
-        if (type.lockOn && this.target != null && !target.dead) {
-            final B.Vector2 tPos = TowerUtils.intercept(this.position, this.target.position, this.target.velocity, this.velocity.length());
-            this.targetPos = tPos == null ? this.target.position : tPos;
+        final Enemy? target = this.target;
+
+        if (type.lockOn && target != null && !target.dead) {
+            final B.Vector2? tPos = TowerUtils.intercept(this.position, target.position, target.velocity, this.velocity.length());
+            this.targetPos = tPos == null ? this.target!.position : tPos;
         }
 
         final B.Vector2 toTarget = this.targetPos - this.position;
         final B.Vector2 angDir = new B.Vector2(1, 0)..applyMatrixInPlace(matrix);
 
-        final double angDotTarget = angDir.dot(toTarget.normalized());
+        final num angDotTarget = angDir.dot(toTarget.normalized());
         final double angDiff = angleDiff(rot_angle, toTarget.angle);
 
         final double turnFactor = 0.15 + 0.85 * (1 - angDotTarget.clamp(0, 1));
@@ -80,8 +82,8 @@ class ChaserProjectile extends Projectile with NewtonianMover {
 
         this.torque(dt * turn);
 
-        final double dx = targetPos.x - position.x;
-        final double dy = targetPos.y - position.y;
+        final num dx = targetPos.x - position.x;
+        final num dy = targetPos.y - position.y;
         if (dx*dx + dy*dy <= hitArea*hitArea) {
             this.kill();
             this.impact();

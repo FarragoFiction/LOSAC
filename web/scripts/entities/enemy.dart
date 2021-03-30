@@ -7,6 +7,7 @@ import "../engine/game.dart";
 import "../engine/spatialhash.dart";
 import "../entities/targetmoverentity.dart";
 import "../level/endcap.dart";
+import "../level/level.dart";
 import "../level/pathnode.dart";
 import "../level/selectable.dart";
 import "../renderer/3d/floateroverlay.dart";
@@ -17,20 +18,24 @@ import "enemytype.dart";
 import "terraincollider.dart";
 
 class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>, TerrainCollider, Selectable, HasFloater {
+    @override
+    // ignore: overridden_fields
+    covariant late Game engine;
+
     Game get game => engine;
 
-    SpawnerObject originSpawner;
-    ResourceValue bounty;
+    late SpawnerObject originSpawner;
+    ResourceValue? bounty;
 
     double health;
     double get maxHealth => enemyType.health;
 
-    double leakDamage;
+    late double leakDamage;
 
-    PathNode currentNode;
-    PathNode targetNode;
+    PathNode? currentNode;
+    PathNode? targetNode;
 
-    double _progressToExit;
+    late double _progressToExit;
     bool _progressDirty = true;
     double get progressToExit {
         if (_progressDirty) {
@@ -75,7 +80,8 @@ class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>
         if (this.health <= 0) {
             this.kill();
 
-            if (this.bounty != null) {
+            final ResourceValue? bounty = this.bounty;
+            if (bounty != null) {
                 game.resourceStockpile.add(bounty);
                 bounty.popup(engine, this.getWorldPosition(), this.getZPosition());
             }
@@ -114,8 +120,8 @@ class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>
         position.setFrom(pos);
         previousPos.setFrom(pos);
         rot_angle = angle;
-        previousRot = null;
-        targetPos = null;
+        //previousRot = null;
+        //targetPos = null;
         currentNode = null;
         targetNode = null;
         _progressDirty = true;
@@ -126,19 +132,22 @@ class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>
     double get boundsSize => enemyType.size;
 
     void updateTarget(num dt) {
-        final int nodeId = this.engine.level.domainMap.getVal(this.position.x, this.position.y);
+        final Level? level = this.engine.level;
+        if (level == null) { return; }
+
+        final int nodeId = level.domainMap.getVal(this.position.x, this.position.y);
         if (nodeId == 0) {
             this.currentNode = null;
             this.targetNode = null;
             this.targetPos = null;
         } else {
-            final PathNode node = this.engine.level.pathNodes[nodeId-1];
+            final PathNode node = level.pathNodes[nodeId-1];
             this.currentNode = node;
             if (node.targetNode == null) {
                 this.targetPos = node.position;
                 this.targetNode = node;
             } else {
-                this.targetPos = node.targetNode.position;
+                this.targetPos = node.targetNode!.position;
                 this.targetNode = node.targetNode;
             }
             if (engine is Game && node is ExitNode) {
@@ -151,18 +160,20 @@ class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>
     }
     
     void calculateProgressToExit() {
-        if (this.currentNode != null && this.targetNode != null) {
+        final PathNode? currentNode = this.currentNode;
+        final PathNode? targetNode = this.targetNode;
+        if (currentNode != null && targetNode != null) {
             // if we have a node and target, then work out how far we are from the exit
-            if (this.currentNode == this.targetNode) {
+            if (currentNode == targetNode) {
                 // if the current and target node are the same, we're basically at the exit unless something fucky is happening
-                this._progressToExit = 1 - this.currentNode.distanceToExit;
+                this._progressToExit = 1 - currentNode.distanceToExit;
             } else {
                 // if the current and target differ, find the fraction of the path between the two and interpolate!
 
                 final B.Vector2 currentToTarget = targetNode.position - currentNode.position;
                 final B.Vector2 currentToPos = this.position - currentNode.position;
 
-                final double dot = currentToPos.normalized().dot(currentToTarget.normalized());
+                final num dot = currentToPos.normalized().dot(currentToTarget.normalized());
                 final double fraction = (dot * currentToPos.length()) / currentToTarget.length();
 
                 this._progressToExit = 1 - (currentNode.distanceToExitFraction + (targetNode.distanceToExitFraction - currentNode.distanceToExitFraction) * fraction);
@@ -187,8 +198,8 @@ class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>
     bool shouldDrawFloater() => true;//this.health < this.maxHealth;
     @override
     bool drawFloater(B.Vector3 pos, CanvasRenderingContext2D ctx) {
-        final double dist = (MathUtils.tempVector1..setFrom(renderer.camera.position)..subtractInPlace(this.getFloaterPos())).length();
-        final double size = (this.boundsSize * window.innerHeight * 2) / dist;
+        final num dist = (MathUtils.tempVector1..setFrom(renderer.camera.position)..subtractInPlace(this.getFloaterPos())).length();
+        final double size = (this.boundsSize * window.innerHeight! * 2) / dist;
         const double thickness = 4;
         final double healthFraction = (this.health / this.maxHealth);
 

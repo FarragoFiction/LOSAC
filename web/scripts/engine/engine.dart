@@ -36,9 +36,9 @@ abstract class Engine {
     static final YAMLFormat yamlFormat = new YAMLFormat();
     static final Logger logger = new Logger("Engine", false);
 
-    DataPack overrideDataPack;
-    Renderer3D renderer;
-    Level level;
+    DataPack? overrideDataPack;
+    late Renderer3D renderer;
+    Level? level;
     Set<Entity> entities = <Entity>{};
     final Set<Entity> _entityQueue = <Entity>{};
 
@@ -46,8 +46,8 @@ abstract class Engine {
     final Registry<TowerType> towerTypeRegistry = new Registry<TowerType>();
     final Registry<ResourceType> resourceTypeRegistry = new Registry<ResourceType>();
 
-    InputHandler input;
-    UIController uiController;
+    late InputHandler input;
+    late UIController uiController;
     bool clearSelectionOnRemove = true;
 
     EngineRunState runState = EngineRunState.stopped;
@@ -63,13 +63,13 @@ abstract class Engine {
     double fps = 60;
     int framesThisSecond = 0;
     num lastFpsUpdate = 0;
-    Element fpsElement;
+    late Element fpsElement;
 
-    Selectable selected;
-    Selectable hovering;
+    Selectable? selected;
+    Selectable? hovering;
 
-    Pathfinder pathfinder;
-    LocalisationEngine localisation;
+    late Pathfinder pathfinder;
+    late LocalisationEngine localisation;
 
     Element get container => renderer.container;
 
@@ -112,7 +112,7 @@ abstract class Engine {
 
     bool userCanAct() => runState != EngineRunState.stopped;
 
-    void mainLoop(double frameTime) {
+    void mainLoop(num frameTime) {
         if (runState == EngineRunState.running) {
             delta += frameTime;
 
@@ -168,7 +168,7 @@ abstract class Engine {
         this.uiController.update();
     }
 
-    void graphicsUpdate([num interpolation = 0]) {
+    void graphicsUpdate([double interpolation = 0]) {
         for (final Entity o in entities) {
             o.renderUpdate(interpolation);
         }
@@ -198,20 +198,20 @@ abstract class Engine {
     void setLevel(Level level) {
         this.level = level;
         level.engine = this;
-        this.renderer.addRenderables(this.level.objects);
+        this.renderer.addRenderables(this.level!.objects);
     }
 
     //input
 
-    Future<void> click(int button, Point<num> worldPos, Selectable clickedObject);
+    Future<void> click(int button, Point<num>? worldPos, Selectable? clickedObject);
 
-    void selectObject(Selectable selectable) {
+    void selectObject(Selectable? selectable) {
         if (selected == null) {
             if (runState == EngineRunState.stopped) { return; }
             if (selectable != null) {
                 // select object
                 this.selected = selectable;
-                this.selected.onSelect();
+                this.selected!.onSelect();
             }
         } else {
             if (selectable == null) {
@@ -223,13 +223,16 @@ abstract class Engine {
                 // select other object
                 this.selected?.onDeselect();
                 this.selected = selectable;
-                this.selected.onSelect();
+                this.selected!.onSelect();
             }
         }
         renderer.clearTowerPreview();
     }
 
     Future<bool> placementCheck(PathNode node) async {
+        final Level? level = this.level;
+        if (level == null) { return false; }
+
         final Set<PathNode> unreachables = new Set<PathNode>.from(await pathfinder.connectivityCheck(level, flipTests: <PathNode>[node]));
 
         for (final PathNode p in level.spawners) {
@@ -239,7 +242,8 @@ abstract class Engine {
         }
 
         for (final Enemy enemy in this.entities.whereType()) {
-            final Set<PathNode> enemyNodes = enemy.getNodesAtPos();
+            final Set<PathNode>? enemyNodes = enemy.getNodesAtPos();
+            if (enemyNodes == null) { continue; }
             for (final PathNode node in enemyNodes) {
                 if (unreachables.contains(node)) {
                     return false;
@@ -255,18 +259,18 @@ abstract class Engine {
             entity.dispose();
         }
         entities.clear();
-        entities = null;
+        //entities = null;
         renderer.destroy();
-        renderer = null;
+        //renderer = null;
         input.destroy();
-        input = null;
+        //input = null;
         uiController.destroy();
-        uiController = null;
+        //uiController = null;
         pathfinder.destroy();
-        pathfinder = null;
+        //pathfinder = null;
 
         if (overrideDataPack != null) {
-            Loader.unmountDataPack(overrideDataPack);
+            Loader.unmountDataPack(overrideDataPack!);
         }
     }
 
@@ -286,7 +290,7 @@ abstract class Engine {
 
         // first things first, check for and mount any override datapack included in the level
         // if present, this gets unmounted when the engine is destroyed
-        final Archive dataPackArchive = await levelArchive.getFile("${archivePath}datapack.zip");
+        final Archive? dataPackArchive = await levelArchive.getFile("${archivePath}datapack.zip");
         if (dataPackArchive != null) {
             overrideDataPack = Loader.mountDataPack(dataPackArchive.rawArchive);
         }

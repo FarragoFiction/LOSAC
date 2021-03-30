@@ -7,7 +7,7 @@ import "projectile.dart";
 
 class BeamProjectile extends Projectile {
 
-    BeamWeaponType get type => projectileType;
+    BeamWeaponType get type => projectileType as BeamWeaponType;
 
     BeamProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) : super.impl(parent, target, targetPos, targetHeight) {
         //TODO: STUFF

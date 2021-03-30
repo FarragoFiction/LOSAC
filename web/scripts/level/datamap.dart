@@ -12,10 +12,10 @@ abstract class DataMap<Data, Array extends List<Data>> {
     final int width;
     final int height;
 
-    Array _array;
+    late Array _array;
     Array get array => _array;
 
-    CanvasElement debugCanvas;
+    CanvasElement? debugCanvas;
 
     DataMap.fromData(int this.pos_x, int this.pos_y, int this.width, int this.height, Array array) {
         _array = array;
@@ -28,7 +28,7 @@ abstract class DataMap<Data, Array extends List<Data>> {
 
     Data getVal(num x, num y) {
         final B.Vector2 local = getLocalCoords(x, y);
-        return getValLocal(local.x, local.y);
+        return getValLocal(local.x.toInt(), local.y.toInt());
     }
 
     int getID(int x, int y) {
@@ -52,7 +52,7 @@ abstract class DataMap<Data, Array extends List<Data>> {
         array[id] = val;
     }
 
-    B.Vector2 getWorldCoords(int x, int y) {
+    B.Vector2? getWorldCoords(int x, int y) {
         if (getID(x, y) == -1) {
             return null;
         }
@@ -68,7 +68,7 @@ abstract class DataMap<Data, Array extends List<Data>> {
         final B.Vector2 topLeft = getLocalCoords(bounds.left, bounds.top);
         final B.Vector2 bottomRight = getLocalCoords(bounds.left + bounds.width, bounds.top + bounds.height);
 
-        return subRegion(topLeft.x, topLeft.y, bottomRight.x - topLeft.x + 1, bottomRight.y - topLeft.y + 1);
+        return subRegion(topLeft.x.toInt(), topLeft.y.toInt(), (bottomRight.x - topLeft.x).toInt() + 1, (bottomRight.y - topLeft.y).toInt() + 1);
     }
 
     void updateDebugCanvas();
@@ -76,7 +76,7 @@ abstract class DataMap<Data, Array extends List<Data>> {
     void debugHighlight(Iterable<B.Vector2> cells) {
         if (this.debugCanvas == null) { return; }
 
-        final CanvasRenderingContext2D ctx = debugCanvas.context2D;
+        final CanvasRenderingContext2D ctx = debugCanvas!.context2D;
         ctx.save();
 
         ctx.globalAlpha = 0.75;
@@ -99,16 +99,16 @@ abstract class DataMap<Data, Array extends List<Data>> {
         final double distTest = (thickness * 0.5) / (cellSize * Math.sqrt2);
         final int buffer = distTest.floor();
 
-        final double a = p1.y - p2.y;
-        final double b = p2.x - p1.x;
-        final double c = p1.x * p2.y - p2.x * p1.y;
+        final num a = p1.y - p2.y;
+        final num b = p2.x - p1.x;
+        final num c = p1.x * p2.y - p2.x * p1.y;
 
         final double divisor = Math.sqrt(a*a + b*b);
 
-        final int left = Math.min(p1.x, p2.x) - buffer;
-        final int right = Math.max(p1.x, p2.x) + buffer;
-        final int top = Math.min(p1.y, p2.y) - buffer;
-        final int bottom = Math.max(p1.y, p2.y) + buffer;
+        final int left = Math.min(p1.x, p2.x).toInt() - buffer;
+        final int right = Math.max(p1.x, p2.x).toInt() + buffer;
+        final int top = Math.min(p1.y, p2.y).toInt() - buffer;
+        final int bottom = Math.max(p1.y, p2.y).toInt() + buffer;
 
         for (int y = top; y<=bottom; y++) {
             for (int x = left; x<=right; x++) {
@@ -177,7 +177,7 @@ class DataMapRegion<Data, Array extends List<Data>> {
         map.array[id] = val;
     }
 
-    B.Vector2 getWorldCoords(int x, int y) {
+    B.Vector2? getWorldCoords(int x, int y) {
         if (getID(x, y) == -1) {
             return null;
         }

@@ -6,7 +6,7 @@ import "../entities/tower.dart";
 import "../level/endcap.dart";
 import "../level/level.dart";
 import '../level/selectable.dart';
-import "../renderer/renderer.dart";
+import "../renderer/3d/renderer3d.dart";
 import "../resources/resourcetype.dart";
 import '../ui/ui.dart';
 import "../utility/extensions.dart";
@@ -17,22 +17,22 @@ import 'wavemanager.dart';
 
 class Game extends Engine {
 
-    SpatialHash<Tower> towerSelector;
-    SpatialHash<Enemy> enemySelector;
+    late SpatialHash<Tower> towerSelector;
+    late SpatialHash<Enemy> enemySelector;
 
-    UIComponent selectionWindow;
-    UIComponent resourceList;
-    UIComponent lifeDisplay;
+    late UIComponent selectionWindow;
+    late UIComponent resourceList;
+    late UIComponent lifeDisplay;
 
     ResourceStockpile resourceStockpile = new ResourceStockpile();
     RuleSet rules = new RuleSet();
-    WaveManager waveManager;
+    late WaveManager waveManager;
 
-    int maxLife;
-    double currentLife;
+    late double maxLife;
+    late double currentLife;
 
 
-    Game(Renderer renderer, Element uiContainer) : super(renderer, uiContainer) {
+    Game(Renderer3D renderer, Element uiContainer) : super(renderer, uiContainer) {
         this.selectionWindow = uiController.addComponent(new SelectionWindow(uiController));
         uiController.addComponent(new WaveTracker(uiController));
         this.waveManager = new WaveManager(this);
@@ -76,7 +76,7 @@ class Game extends Engine {
     }
 
     void addLife(double amount) {
-        currentLife = (currentLife + amount).clamp(0, maxLife);
+        currentLife = (currentLife + amount).clamp(0.0, maxLife);
         if (currentLife <= 0) {
             this.lose();
         }
@@ -113,7 +113,7 @@ class Game extends Engine {
     }
 
     @override
-    Future<void> click(int button, Point<num> worldPos, Selectable clickedObject) async {
+    Future<void> click(int button, Point<num>? worldPos, Selectable? clickedObject) async {
         if (button == MouseButtons.left) {
             this.selectObject(clickedObject);
         } else if (button == MouseButtons.right) {
@@ -148,7 +148,7 @@ class Game extends Engine {
 
 
     @override
-    void selectObject(Selectable selectable) {
+    void selectObject(Selectable? selectable) {
         super.selectObject(selectable);
         selectionWindow.updateAndPropagate();
     }
@@ -156,8 +156,8 @@ class Game extends Engine {
     @override
     void destroy() {
         super.destroy();
-        selectionWindow = null;
-        resourceList = null;
-        lifeDisplay = null;
+        //selectionWindow = null;
+        //resourceList = null;
+        //lifeDisplay = null;
     }
 }

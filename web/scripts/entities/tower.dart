@@ -40,7 +40,7 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
 
     TowerState state = TowerState.ready;
     double buildTimer = 0;
-    TowerType upgradeTowerType;
+    TowerType? upgradeTowerType;
     ResourceValue sellValue = new ResourceValue();
 
     double weaponCooldown = 0;
@@ -50,7 +50,7 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
     double targetAngle = 0;
     double turretDrawAngle = 0;
 
-    GridCell gridCell;
+    late GridCell gridCell;
     @override
     double get slopeTestRadius => Grid.cellSize * 0.5;
 
@@ -134,7 +134,7 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
                                 _setCooldown();
                             } else {
                                 // if the angle is greater, delay the attack
-                                weaponCooldown = dt;
+                                weaponCooldown = dt.toDouble();
                             }
                         } else {
                             // no turret, just fire
@@ -199,15 +199,15 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
             return;
         }
 
-        this.buildTimer = upgradeTowerType.buildTime;
+        this.buildTimer = upgradeTowerType!.buildTime;
     }
     Future<void> _completeUpgrade() async {
         this.state = TowerState.busy;
 
-        final Selectable selected = engine.selected;
+        final Selectable? selected = engine.selected;
         engine.clearSelectionOnRemove = false;
 
-        final Tower newTower = new Tower(upgradeTowerType);
+        final Tower newTower = new Tower(upgradeTowerType!);
         await this.gridCell.replaceTower(newTower);
         newTower.sellValue.add(this.sellValue);
 
@@ -240,10 +240,10 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
         }
 
         if (engine is Game) {
-            final Game game = engine;
+            final Game game = engine as Game;
             game.resourceStockpile.add(sellValue, multiplier: game.rules.sellReturn);
 
-            (sellValue * game.rules.sellReturn).popup(engine, this.getWorldPosition(), this.getZPosition());
+            (sellValue * game.rules.sellReturn).popup(game, this.getWorldPosition(), this.getZPosition());
         }
     }
 
@@ -253,9 +253,9 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
             this.state = TowerState.ready;
             // refund cost if we were upgrading
             if (engine is Game && this.state == TowerState.upgrading && upgradeTowerType != null) {
-                final Game game = engine;
-                game.resourceStockpile.add(upgradeTowerType.buildCost);
-                upgradeTowerType.buildCost.popup(engine, getWorldPosition(), getZPosition());
+                final Game game = engine as Game;
+                game.resourceStockpile.add(upgradeTowerType!.buildCost);
+                upgradeTowerType!.buildCost.popup(game, getWorldPosition(), getZPosition());
             }
             this.upgradeTowerType = null;
         } else if (this.state == TowerState.building) {
@@ -263,9 +263,9 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
             this.state = TowerState.busy;
             // refund build cost
             if (engine is Game) {
-                final Game game = engine;
+                final Game game = engine as Game;
                 game.resourceStockpile.add(towerType.buildCost);
-                towerType.buildCost.popup(engine, getWorldPosition(), getZPosition());
+                towerType.buildCost.popup(game, getWorldPosition(), getZPosition());
             }
             await this.gridCell.removeTower();
         }
@@ -278,29 +278,32 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
         if (state == TowerState.selling || state == TowerState.building) {
             return 1 - (buildTimer / towerType.buildTime);
         } else if (state == TowerState.upgrading) {
-            return 1 - (buildTimer / upgradeTowerType.buildTime);
+            return 1 - (buildTimer / upgradeTowerType!.buildTime);
         }
 
         return 0;
     }
 
     void _setCooldown() {
-        if (towerType.weapon.burst <= 1) {
-            weaponCooldown = towerType.weapon.cooldown;
+        final WeaponType? weapon = towerType.weapon;
+        if (weapon == null) { return; }
+
+        if (weapon.burst <= 1) {
+            weaponCooldown = weapon.cooldown;
         } else {
             currentBurst++;
-            if (currentBurst >= towerType.weapon.burst) {
-                weaponCooldown = towerType.weapon.cooldown * (1-towerType.weapon.burstTime) * towerType.weapon.burst;
+            if (currentBurst >= weapon.burst) {
+                weaponCooldown = weapon.cooldown * (1-weapon.burstTime) * weapon.burst;
                 currentBurst = 0;
             } else {
-                weaponCooldown = towerType.weapon.cooldown * towerType.weapon.burstTime;
+                weaponCooldown = weapon.cooldown * weapon.burstTime;
             }
         }
     }
 
     void attack(Enemy target) {
         final B.Vector2 targetPos = getTargetLocation(target);
-        final double targetHeight = level.levelHeightMap.getSmoothVal(targetPos.x, targetPos.y);
+        final double targetHeight = level!.levelHeightMap.getSmoothVal(targetPos.x, targetPos.y);
         final Projectile p = new Projectile(this, target, targetPos, targetHeight);
         this.engine.addEntity(p);
     }
@@ -311,7 +314,7 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
         }
 
         //final Vector v = TowerUtils.intercept(this.posVector, enemy.posVector, Vector(0, -enemy.speed).applyMatrix(enemy.matrix), towerType.projectileSpeed);
-        final B.Vector2 v = TowerUtils.interceptEnemy(this, enemy);
+        final B.Vector2? v = TowerUtils.interceptEnemy(this, enemy);
         if (v != null) {
             //print("lead");
             return v;
@@ -322,18 +325,19 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
     }
 
     void evaluateTargets() {
-        final Game game = this.engine;
-        final Set<Enemy> possibleTargets = game.enemySelector.queryRadius(position.x, position.y, towerType.leadTargets ? towerType.weapon.range * towerType.leadingRangeGraceFactor : towerType.weapon.range).where((Enemy e) => !e.dead).toSet();
+        final Game game = this.engine as Game;
+        final WeaponType weapon = this.towerType.weapon!;
+        final Set<Enemy> possibleTargets = game.enemySelector.queryRadius(position.x, position.y, towerType.leadTargets ? weapon.range * towerType.leadingRangeGraceFactor : weapon.range).where((Enemy e) => !e.dead).toSet();
 
         if (towerType.leadTargets) {
-            final double checkRange = towerType.weapon.range * towerType.weapon.range;
+            final double checkRange = weapon.range * weapon.range;
             final double checkRangeLeading = checkRange * towerType.leadingRangeGraceFactor * towerType. leadingRangeGraceFactor;
             possibleTargets.retainWhere((Enemy target) {
                 final B.Vector2 diff = target.position - this.position;
                 final B.Vector2 diffLeading = getTargetLocation(target) - this.position;
 
-                final double diffInLeading = diffLeading.x*diffLeading.x + diffLeading.y*diffLeading.y;
-                final double diffIn = diff.x*diff.x + diff.y*diff.y;
+                final num diffInLeading = diffLeading.x*diffLeading.x + diffLeading.y*diffLeading.y;
+                final num diffIn = diff.x*diff.x + diff.y*diff.y;
                 return (diffIn <= checkRange && diffInLeading <= checkRangeLeading) || (diffIn <= checkRangeLeading && diffInLeading <= checkRange);
             });
         }
@@ -341,18 +345,18 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
         final Map<Enemy, double> evaluations = <Enemy, double>{};
         double getEval(Enemy enemy) {
             if (!evaluations.containsKey(enemy)) {
-                evaluations[enemy] = towerType.weapon.targetingStrategy.evaluate(this, enemy);
+                evaluations[enemy] = weapon.targetingStrategy.evaluate(this, enemy);
             }
-            return evaluations[enemy];
+            return evaluations[enemy]!;
         }
 
-        if (towerType.weapon.maxTargets >= possibleTargets.length) {
+        if (weapon.maxTargets >= possibleTargets.length) {
             // if we can target at least as many targets as possibles, just target them all!
             targets.clear();
             targets.addAll(possibleTargets);
-        } else if (towerType.weapon.maxTargets == 1) {
+        } else if (weapon.maxTargets == 1) {
             // if we only want a single target, then we work out the best
-            Enemy best;
+            Enemy? best;
 
             for (final Enemy enemy in possibleTargets) {
                 if (best == null || getEval(enemy) > getEval(best)) {
@@ -375,7 +379,7 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
                 best.add(enemy);
                 // here we remove the first element if the queue is longer than our max targets
                 // because of the backwards sorting, this prunes the worst candidate
-                if (best.length > towerType.weapon.maxTargets) {
+                if (best.length > weapon.maxTargets) {
                     best.removeFirst();
                 }
             }
@@ -422,7 +426,7 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
         ctx.restore();
     }*/
 
-    @override
+    /*@override
     void drawUI2D(CanvasRenderingContext2D ctx, double scaleFactor) {
         ctx
             ..strokeStyle = "#30FF30"
@@ -471,15 +475,11 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
             ctx.fillStyle = "black";
             ctx.fillRect(-4, -4, 8, 8);
         }
-    }
+    }*/
 
     @override
     double getZPosition() {
-        double z = this.zPosition;
-        if (this.gridCell != null) {
-            z += this.gridCell.getZPosition();
-        }
-        return z;
+        return this.zPosition + this.gridCell.getZPosition();
     }
 
     @override
@@ -487,10 +487,14 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
 
     @override
     void onSelect() {
+        final B.AbstractMesh? mesh = this.mesh;
+        final WeaponType? weapon = this.towerType.weapon;
+        if (mesh == null || weapon == null) { return; }
+
         if (this.towerType.weapon != null) {
             this.renderer.standardAssets.rangeIndicator
-                ..position.setFrom(this.mesh.position)
-                ..scaling.set(this.towerType.weapon.range, 1, this.towerType.weapon.range)
+                ..position.setFrom(mesh.position)
+                ..scaling.set(weapon.range, 1, weapon.range)
                 ..isVisible = true;
         }
     }

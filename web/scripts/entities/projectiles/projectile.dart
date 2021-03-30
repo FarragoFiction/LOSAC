@@ -22,8 +22,8 @@ abstract class Projectile extends MoverEntity {
 
     final WeaponType projectileType;
 
-    Tower parent;
-    Enemy target;
+    late Tower parent;
+    Enemy? target;
 
     double age = 0;
     double maxAge = 10; // might need changing elsewhere for very slow and long range projectiles, but why would you go that slow?
@@ -32,19 +32,19 @@ abstract class Projectile extends MoverEntity {
     double elevation = 0;
     double previousElevation = 0;
 
-    B.Vector2 originPos;
-    double originHeight;
+    late B.Vector2 originPos;
+    late double originHeight;
 
     /// Not used by all types of projectile
-    B.Vector2 targetPos;
-    double targetHeight;
+    late B.Vector2 targetPos;
+    late double targetHeight;
 
-    double drawZ;
-    double drawElevation;
+    late double drawZ;
+    late double drawElevation;
 
-    factory Projectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => parent.towerType.weapon.spawnProjectile(parent, target, targetPos, targetHeight);
+    factory Projectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => parent.towerType.weapon!.spawnProjectile(parent, target, targetPos, targetHeight);
 
-    Projectile.impl(Tower this.parent, Enemy this.target, B.Vector2 this.targetPos, double this.targetHeight) : projectileType = parent.towerType.weapon {
+    Projectile.impl(Tower this.parent, Enemy this.target, B.Vector2 this.targetPos, double this.targetHeight) : projectileType = parent.towerType.weapon! {
         this.originPos = new B.Vector2()..setFrom(parent.position);
         this.originHeight = parent.getZPosition() + parent.towerType.weaponHeight;
         this.zPosition = originHeight;
@@ -57,22 +57,22 @@ abstract class Projectile extends MoverEntity {
     }
 
     void applyDamage() {
-        final bool hasTarget = this.target != null && !this.target.dead;
-        final double damage = parent.towerType.weapon.damage;
+        final bool hasTarget = this.target != null && !this.target!.dead;
+        final double damage = parent.towerType.weapon!.damage;
         if (projectileType.hasAreaOfEffect) {
             // AOE
             final double radius = projectileType.areaOfEffectRadius; // damage radius
             final double hotspot = projectileType.areaOfEffectHotspot; // full damage fraction of radius
             final double splash = projectileType.areaOfEffectNonTargetMultiplier; // non-main-target damage multiplier
-            final Game game = this.engine;
+            final Game game = this.engine as Game;
             final Set<Enemy> targets = game.enemySelector.queryRadius(position.x, position.y, radius);
 
             if (hotspot < 1) {
                 // if there is falloff to consider
                 for (final Enemy enemy in targets) {
-                    final double dx = enemy.position.x - this.position.x;
-                    final double dy = enemy.position.y - this.position.y;
-                    final double dSquared = dx*dx + dy*dy;
+                    final num dx = enemy.position.x - this.position.x;
+                    final num dy = enemy.position.y - this.position.y;
+                    final num dSquared = dx*dx + dy*dy;
 
                     if (dSquared <= radius * radius * hotspot * hotspot) {
                         // if the target is inside the hotspot
@@ -106,7 +106,7 @@ abstract class Projectile extends MoverEntity {
         } else {
             // single target
             if (hasTarget) {
-                target.damage(damage);
+                target!.damage(damage);
             }
         }
     }
@@ -122,14 +122,14 @@ abstract class Projectile extends MoverEntity {
 
     @override
     void renderUpdate([num interpolation = 0]) {
-        previousPos ??= position.clone();
-        previousRot ??= rot_angle;
-        previousZPosition ??= zPosition;
-        drawPos ??= position.clone();
-        previousElevation ??= elevation;
+        previousPos.setFrom(position);
+        previousRot = rot_angle;
+        previousZPosition = zPosition;
+        drawPos.setFrom(position);
+        previousElevation = elevation;
 
-        final double dx = this.position.x - previousPos.x;
-        final double dy = this.position.y - previousPos.y;
+        final num dx = this.position.x - previousPos.x;
+        final num dy = this.position.y - previousPos.y;
         drawPos.set(previousPos.x + dx * interpolation, previousPos.y + dy * interpolation);
         this.drawZ = previousZPosition + (zPosition - previousZPosition) * interpolation;
         this.drawElevation = previousElevation + (elevation - previousElevation) * interpolation;
@@ -141,7 +141,7 @@ abstract class Projectile extends MoverEntity {
     }
 
     @override
-    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {
+    void updateMeshPosition({B.Vector2? position, double? height, double? rotation}) {
         super.updateMeshPosition(position: position, height: height, rotation: rotation);
         this.mesh?.rotation?.z = this.drawElevation;
     }
@@ -150,7 +150,7 @@ abstract class Projectile extends MoverEntity {
     double getZPosition() => drawZ;
 
     void updateElevation() {
-        final double movedHorizontal = (position - previousPos).length().abs();
+        final num movedHorizontal = (position - previousPos).length().abs();
         final double movedVertical = zPosition - previousZPosition;
 
         elevation = Math.atan2(-movedVertical, movedHorizontal);
@@ -203,7 +203,7 @@ abstract class WeaponType {
 
     Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight);
 
-    void load(Map<dynamic,dynamic> json) {}
+    void load(Map<dynamic,dynamic>? json) {}
 
     void populateTooltip(Element tooltip, LocalisationEngine localisationEngine) {
         tooltip.appendFormattedLocalisation("tooltip.weaponstats", localisationEngine, data: this.tooltipData);
@@ -218,7 +218,7 @@ class WeaponInfo extends DataSurrogate<WeaponType> {
     Iterable<String> get keys => _keys;
 
     @override
-    String operator [](Object key) {
+    String? operator [](Object? key) {
         switch(key) {
             case "dps":
                 return (owner.damage / owner.cooldown).toStringAsFixed(2);

@@ -26,7 +26,7 @@ abstract class DataLoading {
         ]);
     }
 
-    static Future<void> loadDefinitionFile<T>(String subPath, String typeDesc, Mapping<YAML.YamlMap,T> generator, Lambda<T> consumer) async {
+    static Future<void> loadDefinitionFile<T>(String subPath, String typeDesc, Mapping<YAML.YamlMap,T?> generator, Lambda<T> consumer) async {
         YAML.YamlDocument files;
         try {
             files = await Loader.getResource("${Engine.dataPath}$subPath/files.yaml", format: Engine.yamlFormat);
@@ -43,7 +43,7 @@ abstract class DataLoading {
         final YAML.YamlList fileList = files.contents.value;
 
         // validate the filenames and fire off each file to be processed asynchronously
-        final List<List<T>> allFiles = await Future.wait(
+        final List<List<T>?> allFiles = await Future.wait(
             fileList.where(
                 (dynamic file) {
                     if((!(file is String)) || (!FileUtils.validateFilename(file))) {
@@ -56,7 +56,8 @@ abstract class DataLoading {
         );
 
         // take the collated results and register them in the originally requested order
-        for (final List<T> file in allFiles) {
+        for (final List<T>? file in allFiles) {
+            if (file == null) { continue; }
             for (final T entry in file) {
                 if (entry != null) {
                     consumer(entry);
@@ -65,7 +66,7 @@ abstract class DataLoading {
         }
     }
 
-    static Future<List<T>> processDefinitionFile<T>(String filename, String subPath, String typeDesc, Mapping<YAML.YamlMap,T> generator) async {
+    static Future<List<T>?> processDefinitionFile<T>(String filename, String subPath, String typeDesc, Mapping<YAML.YamlMap,T?> generator) async {
         final List<T> output = <T>[];
 
         YAML.YamlDocument file;
@@ -89,7 +90,7 @@ abstract class DataLoading {
             }
 
             final YAML.YamlMap definition = entry;
-            final T item = generator(definition);
+            final T? item = generator(definition);
 
             if (item != null) {
                 output.add(item);

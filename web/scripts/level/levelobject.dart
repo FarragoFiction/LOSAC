@@ -12,19 +12,19 @@ import "../utility/extensions.dart";
 import "level.dart";
 
 class SimpleLevelObject with Renderable3D {
-    Level level;
+    Level? level;
 
     B.Vector2 position = B.Vector2.Zero();
     double zPosition = 0;
 
-    MeshProvider<dynamic> meshProvider;
+    MeshProvider<dynamic>? meshProvider;
     
-    B.ActionManager testManager;
+    B.ActionManager? testManager;
 
     @override
     void generateMesh() {
         if (this.meshProvider != null) {
-            this.mesh = this.meshProvider.provide(this);
+            this.mesh = this.meshProvider!.provide(this);
         } else {
             this.mesh = this.renderer.standardAssets.defaultMeshProvider.provide(this);
         }
@@ -37,7 +37,7 @@ class SimpleLevelObject with Renderable3D {
     double getZPosition() => this.zPosition;
 
     @override
-    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {
+    void updateMeshPosition({B.Vector2? position, double? height, double? rotation}) {
         position ??= this.position;
         height ??= this.getZPosition();
         this.mesh?.position?.setFromGameCoords(position, height);
@@ -49,30 +49,31 @@ class SimpleLevelObject with Renderable3D {
 class LevelObject extends SimpleLevelObject { //with HasFloater { // floater test
 
     final Set<LevelObject> _subObjects = <LevelObject>{};
-    Set<LevelObject> subObjects;
+    late Set<LevelObject> subObjects;
 
-    LevelObject parentObject;
+    LevelObject? parentObject;
 
     double rot_angle = 0;
     double scale = 1;
 
-    Rectangle<num> _bounds;
+    Rectangle<num>? _bounds;
     bool dirtyBounds = true;
 
     // ignore this complaint, we need this to be the subtype for bounds dirtying
     @override
+    // ignore: overridden_fields
     B.Vector2 position = new B.Vector2WithCallback(0, 0);
 
     Rectangle<num> get bounds {
         if (dirtyBounds) {
             recalculateBounds();
         }
-        return _bounds;
+        return _bounds!;
     }
 
     LevelObject() : rot_angle = 0 {
         // set the callback on creation... if we don't do this immediately it'll die on first set
-        final B.Vector2WithCallback v = this.position;
+        final B.Vector2WithCallback v = this.position as B.Vector2WithCallback;
         v.extension_setCallback(JS.allowInterop((B.Vector2 v) => this.makeBoundsDirty()));
 
         subObjects = new UnmodifiableSetView<LevelObject>(_subObjects);
@@ -81,12 +82,12 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
 
     @override
     void dispose() {
-        final B.Vector2WithCallback v = this.position;
+        final B.Vector2WithCallback v = this.position as B.Vector2WithCallback;
         v.extension_setCallback(null);
-        this.position = null;
+        //this.position = null;
         if (this.mesh != null) {
-            this.mesh.dispose();
-            this.mesh.metadata = null;
+            this.mesh!.dispose();
+            this.mesh!.metadata = null;
             this.mesh = null;
         }
     }
@@ -126,7 +127,7 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
         sub.parentObject = null;
     }
 
-    B.Vector2 getWorldPosition([B.Vector2 offset]) {
+    B.Vector2 getWorldPosition([B.Vector2? offset]) {
         final B.Vector2 pos = this.position.clone();
 
         if (offset != null) {
@@ -139,7 +140,7 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
         LevelObject o = this;
 
         while( o.parentObject != null ) {
-            o = o.parentObject;
+            o = o.parentObject!;
 
             if (o is HasMatrix) {
                 final HasMatrix h = o;
@@ -166,7 +167,7 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
         LevelObject o = this;
 
         while( o.parentObject != null) {
-            o = o.parentObject;
+            o = o.parentObject!;
             rot += o.rot_angle;
         }
 
@@ -185,7 +186,7 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
     double getZPosition() {
         double z = this.zPosition;
         if (this.parentObject != null) {
-            z += this.parentObject.getZPosition();
+            z += this.parentObject!.getZPosition();
         }
         return z;
     }
@@ -193,7 +194,7 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
     void makeBoundsDirty() {
         this.dirtyBounds = true;
         if (parentObject != null) {
-            parentObject.makeBoundsDirty();
+            parentObject!.makeBoundsDirty();
         }
     }
 
@@ -210,7 +211,7 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
     Rectangle<num> calculateBounds() => rectBounds(this, 10,10);
 
     @override
-    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {
+    void updateMeshPosition({B.Vector2? position, double? height, double? rotation}) {
         super.updateMeshPosition(position: position, height: height, rotation: rotation);
         this.mesh?.rotation?.y = this.rot_angle;
     }

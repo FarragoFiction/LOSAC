@@ -8,7 +8,7 @@ import "moverentity.dart";
 
 class TargetMoverEntity extends MoverEntity {
 
-    B.Vector2 targetPos;
+    B.Vector2? targetPos;
     double stoppingThreshold = 5.0;
     double turnRate = 1.0;
     double turnThreshold = Math.pi *0.51;
@@ -29,7 +29,7 @@ class TargetMoverEntity extends MoverEntity {
             return;
         }
 
-        if (closeToPos(targetPos.x, targetPos.y, stoppingThreshold)) {
+        if (closeToPos(targetPos!.x, targetPos!.y, stoppingThreshold)) {
             this.targetPos = null;
             return;
         }
@@ -71,9 +71,9 @@ class TargetMoverEntity extends MoverEntity {
         this.velocity..set(1,0)..applyMatrixInPlace(this.matrix)..scaleInPlace(this.speed);
     }
 
-    bool closeToPos(double x, double y, double distance) {
-        final double dx = x - this.position.x;
-        final double dy = y - this.position.y;
+    bool closeToPos(num x, num y, double distance) {
+        final num dx = x - this.position.x;
+        final num dy = y - this.position.y;
         return dx*dx + dy*dy <= distance*distance;
     }
 

@@ -12,8 +12,8 @@ class SpatialHash<T extends SpatialHashable> {
 	final int xSize;
 	final int ySize;
 
-	Map<T, Rectangle<num>> objects;
-	Map<SpatialHashKey, Set<T>> buckets;
+	late Map<T, Rectangle<num>> objects;
+	late Map<SpatialHashKey, Set<T>> buckets;
 
 	int get length => objects.length;
 	
@@ -31,7 +31,7 @@ class SpatialHash<T extends SpatialHashable> {
 			final Rectangle<num> bounds = col.bounds;
 
 			if (col.spatialHash == this) {
-				final Rectangle<num> oldBounds = this.objects[col];
+				final Rectangle<num> oldBounds = this.objects[col]!; // if the hash is this, we can assume objects contains it
 				if (bounds == oldBounds) {
 					return; // object is already in and is in the same place it was before
 				} else {
@@ -72,7 +72,7 @@ class SpatialHash<T extends SpatialHashable> {
 	}
 	
 	void remove(T col) {
-		for (final SpatialHashKey key in col.spatialBuckets) {
+		for (final SpatialHashKey key in col.spatialBuckets!) {
 			this.removeFromBucket(key, col);
 		}
 		this.objects.remove(col);
@@ -85,23 +85,24 @@ class SpatialHash<T extends SpatialHashable> {
 		if (!buckets.containsKey(key)) {
 			buckets[key] = <T>{};
 		}
-		buckets[key].add(val);
+		buckets[key]!.add(val);
 	}
 	
 	void removeFromBucket(SpatialHashKey key, T val) {
-		buckets[key].remove(val);
-		if (buckets[key].isEmpty) {
+		final Set<T> bucket = buckets[key]!; // this is only called when the bucket exists
+		bucket.remove(val);
+		if (bucket.isEmpty) {
 			buckets.remove(key);
 		}
 	}
 	
-	Set<T> query(T test) {
-		if (test.spatialHash != this) { return null; }
+	Set<T>? query(T test) {
+		if (test.spatialHash != this || test.spatialBuckets == null) { return null; }
 		final Set<T> collided = <T>{};
 		
-		for (final SpatialHashKey key in test.spatialBuckets) {
+		for (final SpatialHashKey key in test.spatialBuckets!) {
 			if (buckets.containsKey(key)) {
-				collided.addAll(buckets[key]);
+				collided.addAll(buckets[key]!);
 			}
 		}
 		
@@ -115,7 +116,7 @@ class SpatialHash<T extends SpatialHashable> {
 		
 		for (final SpatialHashKey key in keys) {
 			if (buckets.containsKey(key)) {
-				collided.addAll(this.buckets[key]);
+				collided.addAll(this.buckets[key]!);
 			}
 		}
 		
@@ -124,19 +125,19 @@ class SpatialHash<T extends SpatialHashable> {
 
 	Set<T> queryRadius(num x, num y, num radius) {
 		final Rectangle<num> rect = new Rectangle<num>(x - radius, y - radius, radius*2, radius*2);
-		final double rSquared = radius * radius;
+		final num rSquared = radius * radius;
 
 		final Set<T> collided = <T>{};
 		final Set<SpatialHashKey> keys = this.getKeysForRect(rect);
 
 		for (final SpatialHashKey key in keys) {
 			if (buckets.containsKey(key)) {
-				final Set<T> objects = this.buckets[key];
+				final Set<T> objects = this.buckets[key]!;
 				for(final T object in objects) {
 					final B.Vector2 pos = object.getWorldPosition();
-					final double dx = pos.x - x;
-					final double dy = pos.y - y;
-					final double distSquared = dx*dx + dy*dy;
+					final num dx = pos.x - x;
+					final num dy = pos.y - y;
+					final num distSquared = dx*dx + dy*dy;
 
 					if (distSquared <= rSquared) {
 						collided.add(object);
@@ -154,7 +155,7 @@ class SpatialHashKey {
 	final int x;
 	final int y;
 
-	int _hash;
+	late int _hash;
 
 	// ignore: always_specify_types
 	SpatialHashKey(SpatialHash sh, int this.x, int this.y) {
@@ -178,6 +179,6 @@ class SpatialHashKey {
 
 mixin SpatialHashable<T> on LevelObject {
 	// ignore: always_specify_types
-	SpatialHash spatialHash;
-	Set<SpatialHashKey> spatialBuckets;
+	SpatialHash? spatialHash;
+	Set<SpatialHashKey>? spatialBuckets;
 }

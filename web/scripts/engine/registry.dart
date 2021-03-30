@@ -12,7 +12,7 @@ class Registry<T extends Registerable> {
         mapping[key] = item;
     }
 
-    T get(String key) {
+    T? get(String key) {
         if (!mapping.containsKey(key)) { return null; }
 
         return mapping[key];
@@ -25,7 +25,7 @@ class Registry<T extends Registerable> {
 
     Iterable<T> getAllValues(Iterable<String> keys) {
         final Set<String> keySet = keys is Set<String> ? keys : keys.toSet();
-        return mapping.keys.where(keySet.contains).map(get);
+        return mapping.keys.where(keySet.contains).map(get).whereType();
     }
 
     Iterable<MapEntry<String,T>> where(bool Function(MapEntry<String,T> tested) test) {

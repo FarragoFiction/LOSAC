@@ -15,7 +15,7 @@ abstract class MathUtils {
 
     static double cubeRoot(double x) => x.sign * Math.pow(x.abs(), 1/3);
 
-    static Math.Point<double> quadraticBasic(double a, double b, double c) {
+    static Math.Point<double>? quadraticBasic(num a, num b, num c) {
         if (a.abs() < epsilon) {
             if (b.abs() < epsilon) {
                 return c.abs() < epsilon ? const Math.Point<double>(0,0) : null;
@@ -23,7 +23,7 @@ abstract class MathUtils {
                 return new Math.Point<double>(-c/b, -c/b);
             }
         } else {
-            double disc = b*b - 4*a*c;
+            num disc = b*b - 4*a*c;
             if (disc >= 0) {
                 disc = Math.sqrt(disc);
                 a *= 2;

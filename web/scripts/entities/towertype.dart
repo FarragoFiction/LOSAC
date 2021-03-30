@@ -51,9 +51,9 @@ class TowerType with Registerable {
     /// Added to the z position of the tower to get the spawn height of projectiles
     double weaponHeight = 0.0;
 
-    WeaponType weapon;
+    WeaponType? weapon;
 
-    B.Mesh mesh;
+    B.Mesh? mesh;
 
     void draw2D(CanvasRenderingContext2D ctx) {
         ctx.fillStyle="#A0A0A0";
@@ -103,20 +103,20 @@ class TowerType with Registerable {
         tooltip..append(new BRElement())..append(new BRElement());
 
         if (this.weapon != null) {
-            this.weapon.populateTooltip(tooltip, localisationEngine);
+            this.weapon!.populateTooltip(tooltip, localisationEngine);
             tooltip..append(new BRElement())..append(new BRElement());
         }
 
         tooltip.appendFormattedLocalisation("tower.${getRegistrationKey()}.description", localisationEngine);
     }
 
-    bool get useBallisticIntercept => weapon.useBallisticIntercept;
+    bool get useBallisticIntercept => (weapon != null) && (weapon!.useBallisticIntercept);
 
     // Loading stuff ------------------------------------------------------
 
     // This needs to be a method rather than a constructor because it's passed as an argument in the data loader
     // ignore: prefer_constructors_over_static_methods
-    static TowerType load(YamlMap yaml) {
+    static TowerType? load(YamlMap yaml) {
         final TowerType object = new TowerType();
 
         // reject if no name

@@ -220,10 +220,10 @@ extension TooltipAppend on Element {
 
 // ignore: prefer_mixin
 abstract class DataSurrogate<T> with MapMixin<String,String> {
-    T owner;
+    late T owner;
 
     @override
-    String operator [](Object key);
+    String? operator [](Object? key);
     @override
     Iterable<String> get keys;
 
@@ -232,5 +232,5 @@ abstract class DataSurrogate<T> with MapMixin<String,String> {
     @override
     void clear() => throw UnimplementedError();
     @override
-    String remove(Object key) => throw UnimplementedError();
+    String? remove(Object? key) => throw UnimplementedError();
 }

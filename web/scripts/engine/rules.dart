@@ -12,5 +12,5 @@ class RuleSet {
     double gravity = 300;
 
     /// Maximum life value to start a level with
-    int maxLife = 100;
+    double maxLife = 100;
 }

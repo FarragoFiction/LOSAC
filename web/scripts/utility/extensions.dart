@@ -9,15 +9,15 @@ extension Vector2Extras on B.Vector2 {
     void setFrom(B.Vector2 other) => this.set(other.x, other.y);
 
     double get angle => Math.atan2(y, x);
-    double dot(B.Vector2 other) => B.Vector2.Dot(this, other);
+    num dot(B.Vector2 other) => B.Vector2.Dot(this, other);
     B.Vector2 normalized() => this.clone().normalize();
 
-    B.Vector2 rotate(double angle) {
+    B.Vector2 rotate(num angle) {
         final RotationMatrix matrix = new RotationMatrix(angle);
         return this.applyMatrix(matrix);
     }
 
-    void rotateInPlace(double angle) {
+    void rotateInPlace(num angle) {
         final RotationMatrix matrix = new RotationMatrix(angle);
         this.applyMatrixInPlace(matrix);
     }
@@ -50,7 +50,7 @@ extension Vector2Extras on B.Vector2 {
         this.set(x, y);
     }
 
-    double cross(B.Vector2 other) {
+    num cross(B.Vector2 other) {
         return (this.x * other.y) - (this.y * other.x);
     }
 
@@ -73,18 +73,16 @@ extension ElementExtras on Element {
     int get totalWidth {
         final CssStyleDeclaration computed = this.getComputedStyle();
 
-        int handler(String s) => 0;
-
         final String cLeft = computed.marginLeft;
         final String cRight = computed.marginRight;
 
         int left = 0, right = 0;
 
         if (!cLeft.isEmpty) {
-            left = int.parse(cLeft.substring(0, cLeft.length - 2), onError: handler);
+            left = int.tryParse(cLeft.substring(0, cLeft.length - 2)) ?? 0;
         }
         if (!cRight.isEmpty) {
-            right = int.parse(cRight.substring(0, cRight.length - 2), onError: handler);
+            right = int.tryParse(cRight.substring(0, cRight.length - 2)) ?? 0;
         }
 
         return this.offsetWidth + left + right;
@@ -93,18 +91,16 @@ extension ElementExtras on Element {
     int get totalHeight {
         final CssStyleDeclaration computed = this.getComputedStyle();
 
-        int handler(String s) => 0;
-
         final String cTop = computed.marginTop;
         final String cBottom = computed.marginBottom;
 
         int top = 0, bottom = 0;
 
         if (!cTop.isEmpty) {
-            top = int.parse(cTop.substring(0, cTop.length - 2), onError: handler);
+            top = int.tryParse(cTop.substring(0, cTop.length - 2)) ?? 0;
         }
         if (!cBottom.isEmpty) {
-            bottom = int.parse(cBottom.substring(0, cBottom.length - 2), onError: handler);
+            bottom = int.tryParse(cBottom.substring(0, cBottom.length - 2)) ?? 0;
         }
 
         return this.offsetHeight + top + bottom;

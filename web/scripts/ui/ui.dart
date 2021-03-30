@@ -37,7 +37,7 @@ class UIController {
         }
     }
 
-    UIComponent addComponent(UIComponent component) {
+    T addComponent<T extends UIComponent>(T component) {
         this.components.add(component);
         this.container.append(component.element);
         component.resizeAndPropagate();

@@ -26,33 +26,33 @@ class Renderer3D extends Renderer {
     static const double _panRate = 1.1;
     final CanvasElement canvas;
     final CanvasElement _floaterCanvas;
-    FloaterOverlay floaterOverlay;
+    late FloaterOverlay floaterOverlay;
 
-    B.Engine babylon;
-    B.Scene scene;
-    B.ArcRotateCamera camera;
+    late B.Engine babylon;
+    late B.Scene scene;
+    late B.ArcRotateCamera camera;
     B.Vector2 camPos = B.Vector2.Zero();
 
-    B.Vector2 cameraAnchor;
-    double cameraAnchorRange;
+    B.Vector2? cameraAnchor;
+    double cameraAnchorRange = 0;
 
     Set<Renderable3D> renderList = <Renderable3D>{};
-    Iterable<HasFloater> floaterList;
+    late Iterable<HasFloater> floaterList;
 
     /// container for various standard default models and textures
-    Renderer3DStandardAssets standardAssets;
+    late Renderer3DStandardAssets standardAssets;
 
-    B.DepthRenderer depthRenderer;
-    B.Texture depthTexture;
+    late B.DepthRenderer depthRenderer;
+    late B.Texture depthTexture;
 
-    B.AbstractMesh towerPreviewMesh;
-    TowerType towerPreviewType;
-    GridCell towerPreviewCell;
+    B.AbstractMesh? towerPreviewMesh;
+    TowerType? towerPreviewType;
+    GridCell? towerPreviewCell;
 
-    StreamSubscription<Event> resizeHandler;
-    StreamSubscription<MouseEvent> _rightClick;
+    late StreamSubscription<Event> resizeHandler;
+    late StreamSubscription<MouseEvent> _rightClick;
 
-    Element pointerElement;
+    late Element pointerElement;
 
     Renderer3D(CanvasElement this.canvas, CanvasElement this._floaterCanvas);
     @override
@@ -93,7 +93,7 @@ class Renderer3D extends Renderer {
         final dynamic manager = JsUtil.getProperty(this.scene, "_inputManager");
         //window.console.log(manager);
 
-        this.pointerElement = engine.uiController.container.parent;
+        this.pointerElement = engine.uiController.container.parent!; // we know by the page structure that this is not null
 
         manager.detachControl();
         manager.attachControl(false,false,true, pointerElement);
@@ -142,14 +142,14 @@ class Renderer3D extends Renderer {
 
     void updateCanvasSize() {
         babylon.setSize(window.innerWidth, window.innerHeight);
-        depthRenderer?.getDepthMap()?.resize(JsUtil.jsify(<String,int>{"width":window.innerWidth, "height":window.innerHeight}));
-        engine?.uiController?.resize();
+        depthRenderer.getDepthMap()?.resize(JsUtil.jsify(<String,int>{"width":window.innerWidth!, "height":window.innerHeight!}));
+        engine.uiController.resize();
         floaterOverlay.updateCanvasSize();
     }
 
     void updateSelectionIndicator(double interpolation) {
-        final Selectable hover = this.engine.hovering;
-        final Selectable selected = this.engine.selected;
+        final Selectable? hover = this.engine.hovering;
+        final Selectable? selected = this.engine.selected;
 
         if (hover == null || hover == selected) {
             this.standardAssets.hoverIndicator.isVisible = false;
@@ -196,8 +196,8 @@ class Renderer3D extends Renderer {
             final Renderable3D renderable = object;
             if (renderable.mesh != null) {
                 this.scene.removeMesh(renderable.mesh);
-                renderable.mesh.metadata = null;
-                renderable.mesh.dispose();
+                renderable.mesh!.metadata = null;
+                renderable.mesh!.dispose();
                 renderable.mesh = null;
             }
         }
@@ -205,7 +205,7 @@ class Renderer3D extends Renderer {
 
     @override
     void click(int button, MouseEvent e) {
-        final SelectionInfo selection = getSelectableAtScreenPos(e.offset.x, e.offset.y);
+        final SelectionInfo? selection = getSelectableAtScreenPos(e.offset.x.toInt(), e.offset.y.toInt());
         if (button == MouseButtons.left) {
             engine.click(button, selection?.world, selection?.selectable);
         } else {
@@ -214,7 +214,7 @@ class Renderer3D extends Renderer {
     }
 
     @override
-    void drag(int button, Point<num> offset, MouseEvent e) {
+    void drag(int? button, Point<num> offset, MouseEvent e) {
         if (button == MouseButtons.right) {
             camera
                 ..alpha -= offset.x * _rotationRate
@@ -234,10 +234,10 @@ class Renderer3D extends Renderer {
             setCameraLocation(x, y);
         } else {
             final B.Vector2 difference = new B.Vector2(x,y) - cameraAnchor;
-            final double dist = difference.length();
+            final num dist = difference.length();
             if (dist > cameraAnchorRange) {
                 difference..normalize()..scaleInPlace(cameraAnchorRange);
-                setCameraLocation(cameraAnchor.x + difference.x, cameraAnchor.y + difference.y);
+                setCameraLocation(cameraAnchor!.x + difference.x, cameraAnchor!.y + difference.y);
             } else {
                 setCameraLocation(x, y);
             }
@@ -246,8 +246,8 @@ class Renderer3D extends Renderer {
 
     void setCameraLocation(num x, num y) {
         camPos.set(x, y);
-        if (this.engine?.level?.levelHeightMap != null) {
-            final double z = this.engine.level.cameraHeightMap.getSmoothVal(x, y);
+        if (this.engine.level?.levelHeightMap != null) {
+            final double z = this.engine.level!.cameraHeightMap.getSmoothVal(x, y);
             camera.target.set(-x, z, y);
         } else {
             camera.target.set(-x, 0, y);
@@ -282,11 +282,11 @@ class Renderer3D extends Renderer {
     @override
     void destroy() {
         this.babylon.dispose();
-        this.babylon = null;
+        //this.babylon = null;
         this.depthTexture.dispose();
-        this.depthTexture = null;
+        //this.depthTexture = null;
         this.depthRenderer.dispose();
-        this.depthRenderer = null;
+        //this.depthRenderer = null;
         this.floaterOverlay.destroy();
         resizeHandler.cancel();
         _rightClick.cancel();
@@ -303,7 +303,7 @@ class Renderer3D extends Renderer {
 
         final B.Texture texture = new B.DynamicTexture(name, JsUtil.jsify(<String,dynamic>{"width":w, "height":h}), scene, false)
             ..hasAlpha = true
-            ..getContext().drawImage(map.debugCanvas, 0,0)
+            ..getContext().drawImage(map.debugCanvas!, 0,0)
             ..update()
         ;
 
@@ -325,9 +325,9 @@ class Renderer3D extends Renderer {
     }
 
     @override
-    SelectionInfo getSelectableAtScreenPos([int x, int y]) {
-        x ??= this.scene.pointerX;
-        y ??= this.scene.pointerY;
+    SelectionInfo? getSelectableAtScreenPos([int? x, int? y]) {
+        x ??= this.scene.pointerX.toInt();
+        y ??= this.scene.pointerY.toInt();
 
         final B.Ray ray = scene.createPickingRay(x, y, null, camera);
         final B.PickingInfo pick = scene.pickWithRay(ray, standardAssets.pickerPredicateInterop, true);
@@ -356,8 +356,8 @@ class Renderer3D extends Renderer {
             mesh.isVisible &&
             mesh.isReady() &&
             mesh.isEnabled() &&
-            (mesh?.metadata?.owner is Selectable) &&
-            !(mesh?.metadata?.owner is Grid);
+            (mesh.metadata?.owner is Selectable) &&
+            !(mesh.metadata?.owner is Grid);
     }
 
     bool gridPickerPredicate(B.AbstractMesh mesh) {
@@ -365,10 +365,10 @@ class Renderer3D extends Renderer {
             !mesh.isVisible &&
             mesh.isReady() &&
             mesh.isEnabled() &&
-            (mesh?.metadata?.owner is Grid);
+            (mesh.metadata?.owner is Grid);
     }
 
-    void updateTowerPreview(TowerType type, GridCell cell) {
+    void updateTowerPreview(TowerType? type, GridCell? cell) {
         if (type == towerPreviewType && cell == towerPreviewCell) { return; }
 
         if (type == null || cell == null) {
@@ -381,18 +381,18 @@ class Renderer3D extends Renderer {
             if (towerPreviewMesh == null || towerPreviewType != type) {
                 towerPreviewMesh?.dispose();
 
-                B.Mesh mesh = type.mesh;
+                B.AbstractMesh? mesh = type.mesh;
                 mesh ??= standardAssets.defaultMeshProvider.provide(null);
 
                 towerPreviewMesh = mesh..material = standardAssets.towerPreviewMaterial;
             }
 
-            towerPreviewMesh.position.setFromGameCoords(cell.getWorldPosition(), cell.getZPosition());
-            towerPreviewMesh.rotation.y = cell.getWorldRotation();
+            towerPreviewMesh!.position.setFromGameCoords(cell.getWorldPosition(), cell.getZPosition());
+            towerPreviewMesh!.rotation.y = cell.getWorldRotation();
 
             if (type.weapon != null) {
-                standardAssets.rangePreview.position.setFrom(towerPreviewMesh.position);
-                standardAssets.rangePreview.scaling.set(type.weapon.range, 1, type.weapon.range);
+                standardAssets.rangePreview.position.setFrom(towerPreviewMesh!.position);
+                standardAssets.rangePreview.scaling.set(type.weapon!.range, 1, type.weapon!.range);
                 standardAssets.rangePreview.isVisible = true;
             } else {
                 standardAssets.rangePreview.isVisible = false;
@@ -406,7 +406,7 @@ class Renderer3D extends Renderer {
 }
 
 class MeshInfo {
-    SimpleLevelObject owner;
+    SimpleLevelObject? owner;
 }
 
 

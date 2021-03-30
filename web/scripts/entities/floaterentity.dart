@@ -13,10 +13,10 @@ import "../utility/styleconversion.dart";
 abstract class FloaterEntity extends LevelObject with Entity, HasFloater {
     final String cssClass;
 
-    CanvasStyle _styleDef;
+    CanvasStyle? _styleDef;
     CanvasStyle get styleDef {
         _styleDef ??= renderer.floaterOverlay.getCanvasStyle(cssClass);
-        return _styleDef;
+        return _styleDef!;
     }
 
     FloaterEntity(String this.cssClass);
@@ -34,7 +34,7 @@ abstract class FloaterEntity extends LevelObject with Entity, HasFloater {
         // floater entities specifically don't have a model, so this is a no-op on purpose
     }
 
-    void fillText(String caption, num x, num y, {Map<String,String> data}) {
+    void fillText(String caption, num x, num y, {Map<String,String>? data}) {
         // TODO: line splitting and stuff for floating text, tutorial or dialogue use?
     }
 }
@@ -114,15 +114,15 @@ class ResourceFloater extends FloaterEntity {
         final List<String> captions = <String>[];
         final List<double> iconOffsets = <double>[];
         if (positive) {
-            totalWidth += ctx.measureText("+").width + 2;
+            totalWidth += ctx.measureText("+").width! + 2;
         } else {
-            totalWidth += ctx.measureText("-").width + 2;
+            totalWidth += ctx.measureText("-").width! + 2;
         }
 
         for (final double value in resources.values) {
             iconOffsets.add(totalWidth);
             final String caption = value.floor().toString();
-            totalWidth += ctx.measureText(caption).width + iconSize + 6;
+            totalWidth += ctx.measureText(caption).width! + iconSize + 6;
             captions.add(caption);
         }
 
@@ -137,7 +137,7 @@ class ResourceFloater extends FloaterEntity {
             final double offset = iconOffsets[i];
             final double x = pos.x - totalWidth * 0.5 + offset;
 
-            final ImageElement icon = engine.localisation.formatting.getIconMaybe("resource.${type.getRegistrationKey()}");
+            final ImageElement? icon = engine.localisation.formatting.getIconMaybe("resource.${type.getRegistrationKey()}");
             if (icon != null) {
                 ctx.drawImageScaled(icon, x + 2, pos.y - iconSize, iconSize, iconSize);
             }

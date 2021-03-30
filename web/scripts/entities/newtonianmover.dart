@@ -35,13 +35,13 @@ mixin NewtonianMover on MoverEntity {
         _newtLastDt = null;
     }
 
-    num _newtLastDt;
-    double _newtFrictionStep;
-    double _newtFrictionMult;
-    double _newtLateralFrictionStep;
-    double _newtLateralFrictionMult;
-    double _newtAngularFrictionStep;
-    double _newtAngularFrictionMult;
+    num? _newtLastDt;
+    late double _newtFrictionStep;
+    late double _newtFrictionMult;
+    late double _newtLateralFrictionStep;
+    late double _newtLateralFrictionMult;
+    late double _newtAngularFrictionStep;
+    late double _newtAngularFrictionMult;
 
     @override
     void applyVelocity(num dt) {
@@ -55,8 +55,8 @@ mixin NewtonianMover on MoverEntity {
         final B.Vector2 angDir = new B.Vector2(1,0)..applyMatrixInPlace(matrix);
 
         //print("velDir: $velDir, angDir: $angDir");
-        final double angDotVel = angDir.dot(velDir);
-        final double absdot = angDotVel.abs();
+        final num angDotVel = angDir.dot(velDir);
+        final num absdot = angDotVel.abs();
 
         //super.applyVelocity(dt);
         this.previousPos.setFrom(this.position);
@@ -77,7 +77,7 @@ mixin NewtonianMover on MoverEntity {
                 fraction = velocityAngleTransfer * absdot + velocityAngleTransfer * velocityAngleTransferLateral * (1-absdot);
             }
 
-            final double magV = this.velocity.length();
+            final num magV = this.velocity.length();
             this.velocity.scaleInPlace(1-fraction);
             this.velocity.addInPlace(angDir * magV * fraction);
         }
@@ -97,11 +97,11 @@ mixin NewtonianMover on MoverEntity {
         if (_newtLastDt == dt) { return; }
         _newtLastDt = dt;
 
-        _newtFrictionStep = Math.pow(friction, dt);
+        _newtFrictionStep = Math.pow(friction, dt).toDouble();
         _newtFrictionMult = (Math.pow(friction, dt*dt)-1) / (dt * Math.log(friction));
-        _newtLateralFrictionStep = Math.pow(lateralFriction, dt);
+        _newtLateralFrictionStep = Math.pow(lateralFriction, dt).toDouble();
         _newtLateralFrictionMult = (Math.pow(lateralFriction, dt*dt)-1) / (dt * Math.log(lateralFriction));
-        _newtAngularFrictionStep = Math.pow(angularFriction, dt);
+        _newtAngularFrictionStep = Math.pow(angularFriction, dt).toDouble();
         _newtAngularFrictionMult = (Math.pow(angularFriction, dt*dt)-1) / (dt * Math.log(angularFriction));
     }
 }

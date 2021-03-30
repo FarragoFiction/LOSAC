@@ -33,21 +33,21 @@ abstract class InputHandler {
     final Set<KeyPressCallbackHandler> keyCallbacks = <KeyPressCallbackHandler>{};
 
     final Map<int, bool> mouseStates = <int, bool>{};
-    Point<num> mousePos;
-    Point<num> mousePosPrev;
-    int dragButton; // null means no button, only drag one at a time
+    Point<num>? mousePos;
+    Point<num>? mousePosPrev;
+    int? dragButton; // null means no button, only drag one at a time
     bool dragging = false;
 
     InputHandler(Engine this.engine);
 
-    KeyCallbackToken listen(String key, KeyPressCallback callback, {bool allowRepeats = true, ModifierKeyState shift = ModifierKeyState.any, ModifierKeyState control = ModifierKeyState.unpressed, ModifierKeyState alt = ModifierKeyState.unpressed}) {
+    KeyCallbackToken listen(String? key, KeyPressCallback callback, {bool allowRepeats = true, ModifierKeyState shift = ModifierKeyState.any, ModifierKeyState control = ModifierKeyState.unpressed, ModifierKeyState alt = ModifierKeyState.unpressed}) {
         final bool anyKey = key == null;
         final KeyPressCallbackHandler cb = new KeyPressCallbackHandler(callback, key: key, anyKey: anyKey, allowsRepeats: allowRepeats, shift: shift, control: control, alt: alt);
         this.keyCallbacks.add(cb);
         return new KeyCallbackToken(this, cb);
     }
 
-    KeyCallbackToken listenMultiple(Iterable<String> keys, KeyPressCallback callback, {bool allowRepeats = true, ModifierKeyState shift = ModifierKeyState.any, ModifierKeyState control = ModifierKeyState.unpressed, ModifierKeyState alt = ModifierKeyState.unpressed}) {
+    KeyCallbackToken listenMultiple(Iterable<String>? keys, KeyPressCallback callback, {bool allowRepeats = true, ModifierKeyState shift = ModifierKeyState.any, ModifierKeyState control = ModifierKeyState.unpressed, ModifierKeyState alt = ModifierKeyState.unpressed}) {
         final bool anyKey = keys == null;
         final KeyPressCallbackHandler cb = new KeyPressCallbackHandler(callback, keys: keys, anyKey: anyKey, allowsRepeats: allowRepeats, shift: shift, control: control, alt: alt);
         this.keyCallbacks.add(cb);
@@ -56,14 +56,14 @@ abstract class InputHandler {
 
     bool getKeyState(String code) {
         if (keyStates.containsKey(code)) {
-            return keyStates[code];
+            return keyStates[code]!;
         }
         return false;
     }
 
     bool getMouseState(int button) {
         if (mouseStates.containsKey(button)) {
-            return mouseStates[button];
+            return mouseStates[button]!;
         }
         return false;
     }
@@ -89,7 +89,7 @@ abstract class InputHandler {
                 //_nameToCode[code] = code;
             }
         }
-        return codeToName[code];
+        return codeToName[code]!;
     }
 
     // #######################################################################################
@@ -118,11 +118,11 @@ abstract class InputHandler {
     }
     void _onMouseMove(MouseEvent e) {
         mousePosPrev ??= e.page;
-        final Point<num> diff = e.page - mousePosPrev;
+        final Point<num> diff = e.page - mousePosPrev!;
 
         mousePos = e.page;
 
-        if (!dragging && dragButton != null && mouseStates[dragButton]) {
+        if (!dragging && dragButton != null && mouseStates[dragButton]!) {
             final num len = diff.x * diff.x + diff.y * diff.y;
 
             if (len >= InputHandler.dragDistanceSquared) {
@@ -156,9 +156,10 @@ abstract class InputHandler {
 
     void _onKeyDown(KeyboardEvent e) {
         // exclude IME composition
-        if (e.isComposing || e.keyCode == 229) { return; }
+        if (e.isComposing == true || e.keyCode == 229) { return; }
+        if (e.code == null) { return; }
 
-        final String code = _getKeyName(e.code);
+        final String code = _getKeyName(e.code!);
         final bool repeat = getKeyState(code) == true;
 
         keyStates[code] = true;
@@ -167,9 +168,10 @@ abstract class InputHandler {
     }
     void _onKeyUp(KeyboardEvent e) {
         // exclude IME composition
-        if (e.isComposing || e.keyCode == 229) { return; }
+        if (e.isComposing == true || e.keyCode == 229) { return; }
+        if (e.code == null) { return; }
 
-        final String code = _getKeyName(e.code);
+        final String code = _getKeyName(e.code!);
 
         keyStates[code] = false;
 
@@ -186,7 +188,7 @@ abstract class InputHandler {
             throw Exception("Somehow processing an incorrect key event?: ${e.type}");
         }
 
-        final String key = _getKeyName(e.code).toLowerCase();
+        final String key = _getKeyName(e.code!).toLowerCase();
 
         bool preventDefault = false;
 
@@ -212,7 +214,7 @@ abstract class InputHandler {
 class InputHandler3D extends InputHandler {
     Renderer3D get renderer => this.engine.renderer;
 
-    StreamSubscription<MouseEvent> mouseOut;
+    late StreamSubscription<MouseEvent> mouseOut;
 
     InputHandler3D(Engine engine) : super(engine) {
         renderer.scene.onKeyboardObservable.add(JS.allowInterop((B.KeyboardInfo info, B.EventState state) {
@@ -257,9 +259,9 @@ class KeyPressCallbackHandler {
     final Set<String> triggerKeys = <String>{};
     final KeyPressCallback callback;
 
-    KeyCallbackToken token;
+    late KeyCallbackToken token;
 
-    KeyPressCallbackHandler(KeyPressCallback this.callback, {String key, Iterable<String> keys, bool this.anyKey = false, bool this.allowsRepeats = true, ModifierKeyState this.shift = ModifierKeyState.any, ModifierKeyState this.control = ModifierKeyState.unpressed, ModifierKeyState this.alt = ModifierKeyState.unpressed}) {
+    KeyPressCallbackHandler(KeyPressCallback this.callback, {String? key, Iterable<String>? keys, bool this.anyKey = false, bool this.allowsRepeats = true, ModifierKeyState this.shift = ModifierKeyState.any, ModifierKeyState this.control = ModifierKeyState.unpressed, ModifierKeyState this.alt = ModifierKeyState.unpressed}) {
         if (!anyKey) {
             if (key == null && keys == null) {
                 throw ArgumentError("Invalid KeyPressCallback, must specify key or keys or have anyKey set true");
@@ -267,7 +269,7 @@ class KeyPressCallbackHandler {
 
             if (key != null) {
                 triggerKeys.add(key.toLowerCase());
-            } else {
+            } else if (keys != null) {
                 triggerKeys.addAll(keys.map((String s) => s.toLowerCase()));
             }
         }
@@ -278,7 +280,7 @@ class KeyCallbackToken {
     final KeyPressCallbackHandler _callback;
     final InputHandler _handler;
 
-    KeyEvent lastEvent;
+    KeyboardEvent? lastEvent;
 
     KeyCallbackToken(InputHandler this._handler, KeyPressCallbackHandler this._callback) {
         _callback.token = this;

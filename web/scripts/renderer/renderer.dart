@@ -3,16 +3,16 @@ import "dart:html";
 import "../engine/engine.dart";
 import "../level/selectable.dart";
 
-typedef RenderLoopFunction = void Function(double frameTime);
+typedef RenderLoopFunction = void Function(num frameTime);
 
 abstract class Renderer {
-    Engine engine;
+    late Engine engine;
 
-    Element container;
+    late Element container;
 
     Future<void> initialise();
 
-    void draw([double interpolation]) {}
+    void draw([double interpolation = 0]) {}
     void addRenderable(Object object) {}
     void addRenderables(Iterable<Object> objects) {
         for (final Object object in objects) {
@@ -32,7 +32,7 @@ abstract class Renderer {
     void drag(int button, Point<num> offset, MouseEvent e);
     void click(int button, MouseEvent e);
 
-    SelectionInfo getSelectableAtScreenPos([int x, int y]);
+    SelectionInfo? getSelectableAtScreenPos([int x, int y]);
 
     void moveTo(num x, num y);
     void centreOnObject(Object object);

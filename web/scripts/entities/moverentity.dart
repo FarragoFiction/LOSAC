@@ -13,14 +13,14 @@ import "../utility/extensions.dart";
 class MoverEntity extends LevelObject with Entity, HasMatrix {
     double speedMultiplier = 1.0;
     double baseSpeed = 10.0;
-    double speed;
+    late double speed;
     double get derivedSpeed => baseSpeed * speedMultiplier;
 
     B.Vector2 velocity = B.Vector2.Zero();
     B.Vector2 previousPos = B.Vector2.Zero();
-    double previousRot;
-    B.Vector2 drawPos;
-    double drawRot;
+    double previousRot = 0;
+    B.Vector2 drawPos = B.Vector2.Zero();
+    double drawRot = 0;
 
 
 
@@ -44,12 +44,12 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
     @override
     void renderUpdate([num interpolation = 0]) {
-        previousPos ??= position.clone();
-        previousRot ??= rot_angle;
-        drawPos ??= position.clone();
+        previousPos.setFrom(position);
+        previousRot = rot_angle;
+        drawPos.setFrom(position);
 
-        final double dx = this.position.x - previousPos.x;
-        final double dy = this.position.y - previousPos.y;
+        final num dx = this.position.x - previousPos.x;
+        final num dy = this.position.y - previousPos.y;
         drawPos.set(previousPos.x + dx * interpolation, previousPos.y + dy * interpolation);
 
         final double da = angleDiff(rot_angle, previousRot);

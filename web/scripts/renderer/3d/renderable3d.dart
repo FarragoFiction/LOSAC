@@ -7,9 +7,9 @@ mixin Renderable3D {
     bool invisible = false;
     bool drawUI = true;
 
-    Renderer3D renderer;
-    B.AbstractMesh mesh;
+    late Renderer3D renderer;
+    B.AbstractMesh? mesh;
 
     void generateMesh() {}
-    void updateMeshPosition({B.Vector2 position, double height, double rotation}) {}
+    void updateMeshPosition({B.Vector2? position, double? height, double? rotation}) {}
 }

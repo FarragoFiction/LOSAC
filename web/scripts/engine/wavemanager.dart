@@ -16,7 +16,7 @@ class WaveManager {
     double spawnDelay = 1.5;
 
     /// Time remaining until the next wave starts
-    double timeToNextWave;
+    late double timeToNextWave;
     /// Time remaining until the next enemy spawns
     double spawnTimer = 0;
 
@@ -28,10 +28,10 @@ class WaveManager {
     /// Enemies out on the field, when they're all dead we either skip forward the remaining wave timer or declare victory
     final Set<Enemy> activeEnemies = <Enemy>{};
     /// Currently spawning wave
-    Wave currentWave;
+    Wave? currentWave;
 
     int currentWaveNumber = 0;
-    int totalWaveNumber;
+    int? totalWaveNumber;
 
     WaveManager(Game this.engine) {
         timeToNextWave = timeBetweenWaves; // TODO: change this to a longer start time to allow initial inspection and building
@@ -41,6 +41,7 @@ class WaveManager {
         totalWaveNumber ??= waves.length;
 
         if (!doneSpawning) { // there is spawning to do!
+            final Wave? currentWave = this.currentWave;
             if (currentWave == null) { // if there is no currently spawning wave
                 if (!waves.isEmpty) { // and the list of waves to come isn't empty
                     if (timeToNextWave > 0) { // if we still have time left until the next wave
@@ -50,7 +51,7 @@ class WaveManager {
                         }
                         timeToNextWave -= dt;
                     } else { // we should get a new wave now and start spawning
-                        currentWave = waves.removeFirst();
+                        this.currentWave = waves.removeFirst();
                         spawnTimer = 0;
                         currentWaveNumber++;
                     }
@@ -66,7 +67,7 @@ class WaveManager {
 
                         // spawn all the enemies for this step, add them to the active list
                         for (final WaveEntry entry in entries) {
-                            final Enemy enemy = engine.spawnEnemy(entry.type, engine.level.spawners[entry.spawner].pathObject)..bounty = entry.bounty;
+                            final Enemy enemy = engine.spawnEnemy(entry.type, engine.level!.spawners[entry.spawner].pathObject)..bounty = entry.bounty;
                             activeEnemies.add(enemy);
                         }
                         // set spawn timer to the wave's delay, or default if absent
@@ -75,7 +76,7 @@ class WaveManager {
                         }
                     } else if (timeToNextWave <= 0) { // current wave exhausted, set the long countdown
                         timeToNextWave = waveTimeout;
-                        currentWave = null;
+                        this.currentWave = null;
                     }
                 }
             }
@@ -91,6 +92,7 @@ class WaveManager {
 
     Iterable<WaveItemDescriptor> descriptors(double maxTime) sync* {
         double time = 0;
+        final Wave? currentWave = this.currentWave;
         if (currentWave == null) {
             if (!waves.isEmpty) {
                 yield new WaveItemDescriptor(0, timeToNextWave, false);
@@ -135,7 +137,7 @@ class WaveManager {
 class Wave {
     /// Delay between enemy spawns in this wave in seconds.
     /// When null, fall back to default delay.
-    double delay;
+    double? delay;
 
     /// Spawn order for this wave.
     /// When exhausted, the manager will begin the long countdown to the next wave, if applicable.
