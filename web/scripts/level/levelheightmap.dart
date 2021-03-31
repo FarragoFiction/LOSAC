@@ -28,9 +28,12 @@ class LevelHeightMap extends DataMap<double, Float32List> {
     LevelHeightMapRegion subRegion(int x, int y, int w, int h) => new LevelHeightMapRegion(this, x, y, w, h);
 
     @override
+    LevelHeightMapRegion subRegionForBounds(Rectangle<num> bounds) => super.subRegionForBounds(bounds) as LevelHeightMapRegion;
+
+    @override
     void updateDebugCanvas() {
         debugCanvas = new CanvasElement(width: this.width * DataMap.cellSize, height: this.height * DataMap.cellSize);
-        final CanvasRenderingContext2D ctx = debugCanvas.context2D;
+        final CanvasRenderingContext2D ctx = debugCanvas!.context2D;
 
         // rough mode
         int id;
@@ -41,7 +44,7 @@ class LevelHeightMap extends DataMap<double, Float32List> {
                 id = getID(x, y);
                 altitude = array[id];
 
-                if (altitude == null) { continue; }
+                //if (altitude == null) { continue; }
 
                 val = (((altitude * 0.01) % 1.0) * 255).floor();
 
@@ -86,10 +89,10 @@ class LevelHeightMap extends DataMap<double, Float32List> {
         final double bl = this.getValLocal(lx, ly+1);
         final double br = this.getValLocal(lx+1, ly+1);
 
-        final double ix = smooth.x;
-        final double iy = smooth.y;
-        final double rx = 1-ix;
-        final double ry = 1-iy;
+        final num ix = smooth.x;
+        final num iy = smooth.y;
+        final num rx = 1-ix;
+        final num ry = 1-iy;
 
         return (tl * rx + tr * ix) * ry + (bl * rx + br * ix) * iy;
         //return smooth.x * 100;
@@ -178,9 +181,10 @@ class LevelHeightMap extends DataMap<double, Float32List> {
         for (int y=0; y<height; y++) {
             for (int x=0; x<width; x++) {
                 final int id = y * width + x;
-                final B.Vector2 world = this.getWorldCoords(x, y);
+                final B.Vector2? world = this.getWorldCoords(x, y);
+                if (world == null) { continue; }
                 final B.Vector3 render = B.Vector3.Zero()..setFromGameCoords(world, 0);
-                this.array[id] = terrain.groundMesh.getHeightAtCoordinates(render.x, render.z);
+                this.array[id] = terrain.groundMesh!.getHeightAtCoordinates(render.x, render.z).toDouble();
             }
         }
     }

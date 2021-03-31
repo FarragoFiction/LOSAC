@@ -12,21 +12,21 @@ import "meshprovider.dart";
 class Renderer3DStandardAssets {
     final Renderer3D renderer;
 
-    B.Material defaultMaterial;
-    MeshProvider<SimpleLevelObject> defaultMeshProvider;
+    late B.Material defaultMaterial;
+    late MeshProvider<SimpleLevelObject> defaultMeshProvider;
 
-    B.Texture emptyTexture;
+    late B.Texture emptyTexture;
 
-    B.Material towerPreviewMaterial;
+    late B.Material towerPreviewMaterial;
 
-    B.ShaderMaterial rangeMaterial;
-    B.AbstractMesh rangeIndicator;
-    B.AbstractMesh rangePreview;
+    late B.ShaderMaterial rangeMaterial;
+    late B.AbstractMesh rangeIndicator;
+    late B.AbstractMesh rangePreview;
 
-    B.AbstractMesh hoverIndicator;
-    B.AbstractMesh selectionIndicator;
-    PickerPredicate pickerPredicateInterop;
-    PickerPredicate gridPickerPredicateInterop;
+    late B.AbstractMesh hoverIndicator;
+    late B.AbstractMesh selectionIndicator;
+    late PickerPredicate pickerPredicateInterop;
+    late PickerPredicate gridPickerPredicateInterop;
 
     Renderer3DStandardAssets(Renderer3D this.renderer);
 
@@ -68,7 +68,7 @@ class Renderer3DStandardAssets {
             samplers: <String>["depth"],
             //defines: <String>["#define INSTANCES"]
         ),emptyTexture)
-            ..setTexture("depth", renderer.depthTexture)
+            ..setTexture("depth", renderer.depthTexture!)
             ..setVector2("depthValues", B.Vector2(renderer.camera.minZ, renderer.camera.minZ + renderer.camera.maxZ))
             //..setColor4("colour", B.Color4(0.9,0.2,0.2,0.65))
             ..backFaceCulling = false
@@ -89,7 +89,7 @@ class Renderer3DStandardAssets {
             ..isVisible = false
             ..material = rangeMaterial
         ;
-        final B.Mesh rangeCircle2 = rangeCircle.clone("rangeIndicator", null);
+        final B.Mesh rangeCircle2 = rangeCircle.clone("rangeIndicator");
 
         this.rangePreview = rangeCircle..onBeforeDrawObservable.add(JS.allowInterop((B.Mesh mesh, B.EventState eventState) {
             rangeMaterial.setColor4("colour", rangePreviewColour);

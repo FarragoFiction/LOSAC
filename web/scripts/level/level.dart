@@ -11,22 +11,22 @@ import "pathnode.dart";
 import "terrain.dart";
 
 class Level {
-    Engine engine;
+    late Engine engine;
 
     Set<SimpleLevelObject> objects = <SimpleLevelObject>{};
-    Iterable<Connectible> connectibles;
+    late Iterable<Connectible> connectibles;
 
     final List<PathNode> pathNodes = <PathNode>[];
-    Iterable<PathNode> connectedNodes;
+    late Iterable<PathNode> connectedNodes;
     final List<SpawnNode> spawners = <SpawnNode>[];
-    ExitNode exit;
+    ExitNode? exit;
 
-    DomainMap domainMap;
-    LevelHeightMap levelHeightMap;
-    LevelHeightMap cameraHeightMap;
-    Rectangle<num> bounds;
+    late DomainMap domainMap;
+    late LevelHeightMap levelHeightMap;
+    late LevelHeightMap cameraHeightMap;
+    late Rectangle<num> bounds;
 
-    Terrain terrain;
+    Terrain? terrain;
     double? gravity;
 
     Level() {
@@ -96,7 +96,7 @@ class Level {
         cameraHeightMap = new LevelHeightMap(bounds.left + (bounds.width * 0.5) - (diameter * 0.5), bounds.top + (bounds.height * 0.5) - (diameter * 0.5), diameter, diameter);
 
         if (this.terrain != null) {
-            cameraHeightMap.processTerrain(terrain);
+            cameraHeightMap.processTerrain(terrain!);
         }
 
         for (final Connectible object in connectibles) {
@@ -112,7 +112,7 @@ class Level {
         cameraHeightMap.smoothCameraHeights();
     }
 
-    PathNode getNodeFromPos(Point<num> pos) {
+    PathNode? getNodeFromPos(Point<num>? pos) {
         if (pos == null) { return null; }
         final int id = domainMap.getVal(pos.x, pos.y);
         if (id != 0) {

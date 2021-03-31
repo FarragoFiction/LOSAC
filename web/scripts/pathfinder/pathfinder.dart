@@ -8,7 +8,7 @@ import "../level/pathnode.dart";
 import "commands.dart";
 
 class Pathfinder {
-    WorkerHandler worker;
+    late WorkerHandler worker;
 
     Pathfinder() {
         worker = createWebWorker("scripts/pathfinder/pathworker.worker.dart");
@@ -80,7 +80,7 @@ class Pathfinder {
         }
     }
 
-    Future<List<PathNode>> connectivityCheck(Level level, {Iterable<PathNode> flipTests, bool ignoreBlockedStatus = false}) async {
+    Future<List<PathNode>> connectivityCheck(Level level, {Iterable<PathNode>? flipTests, bool ignoreBlockedStatus = false}) async {
 
         final Map<String,dynamic> payload = <String,dynamic> {
             "ignore": ignoreBlockedStatus

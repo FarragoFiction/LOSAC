@@ -15,19 +15,19 @@ class ResourceValue with MapMixin<ResourceType, double> {
 
     void add(ResourceValue other, {double multiplier = 1.0}) {
         for (final ResourceType type in other.keys) {
-            addResource(type, other[type] * multiplier);
+            addResource(type, other[type]! * multiplier);
         }
     }
 
     void subtract(ResourceValue other, {double multiplier = 1.0}) {
         for (final ResourceType type in other.keys) {
-            addResource(type, -other[type] * multiplier);
+            addResource(type, -other[type]! * multiplier);
         }
     }
 
     void addResource(ResourceType type, double value) {
         if (this.containsKey(type)) {
-            this[type] = this[type] + value;
+            this[type] = this[type]! + value;
         } else {
             this[type] = value;
         }
@@ -47,11 +47,11 @@ class ResourceValue with MapMixin<ResourceType, double> {
             final Element resources = new SpanElement()..className="ResourceList";
 
             for (final ResourceType type in _map.keys) {
-                final double value = _map[type];
+                final double value = _map[type]!;
                 final Element span = new SpanElement();
                 String locKey = "tooltip.cost";
                 if (showInsufficient && localisationEngine.engine is Game) {
-                    final Game game = localisationEngine.engine;
+                    final Game game = localisationEngine.engine as Game;
                     if (!game.resourceStockpile.canAffordResource(type, value)) {
                         locKey = "tooltip.cost.insufficient";
                     }
@@ -69,7 +69,7 @@ class ResourceValue with MapMixin<ResourceType, double> {
 
     // map functionality
     @override
-    double operator [](Object key) => _map[key];
+    double? operator [](Object? key) => _map[key];
     @override
     void operator []=(ResourceType key, double value) => _map[key] = value;
     @override
@@ -77,14 +77,14 @@ class ResourceValue with MapMixin<ResourceType, double> {
     @override
     Iterable<ResourceType> get keys => _map.keys;
     @override
-    double remove(Object key) => _map.remove(key);
+    double? remove(Object? key) => _map.remove(key);
 
     ResourceValue operator *(Object other) {
         if (!(other is num)) { throw ArgumentError("Must multiply ResourceValue by a number"); }
 
         final ResourceValue newVal = new ResourceValue();
         for (final ResourceType type in this.keys) {
-            newVal[type] = this[type] * other;
+            newVal[type] = this[type]! * other;
         }
         return newVal;
     }
@@ -109,13 +109,13 @@ class ResourceStockpile extends ResourceValue {
     }
 
     @override
-    double operator [](Object key) => _map[key] ?? 0;
+    double operator [](Object? key) => _map[key] ?? 0;
 
     double capped(ResourceType type, double value) => value.clamp(type.minimum, type.maximum);
 
     bool canAfford(ResourceValue value) {
         for(final ResourceType type in value.keys) {
-            if (!canAffordResource(type, value[type])) { return false; }
+            if (!canAffordResource(type, value[type]!)) { return false; }
         }
         return true;
     }

@@ -40,11 +40,11 @@ abstract class LevelUtils {
         final B.Vector2 g = (a-b)+(c-d);
         final B.Vector2 h = p-a;
 
-        final double k2 = g.cross(f);
-        final double k1 = e.cross(f) + h.cross(g);
-        final double k0 = h.cross(e);
+        final num k2 = g.cross(f);
+        final num k1 = e.cross(f) + h.cross(g);
+        final num k0 = h.cross(e);
 
-        double w = k1 * k1 - 4 * k0 * k2;
+        num w = k1 * k1 - 4 * k0 * k2;
         if (w < 0.0) {
             return new B.Vector2(-1,-1);
         }

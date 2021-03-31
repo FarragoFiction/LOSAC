@@ -21,7 +21,7 @@ class EnemyType with Registerable {
     double turnRate = 1.0;
     double size = 10;
 
-    double leakDamage = 5.0;
+    double leakDamage = 5.0; // 5.0
 
     @override
     String getRegistrationKey() => name;

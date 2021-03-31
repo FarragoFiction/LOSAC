@@ -9,9 +9,9 @@ mixin Selectable on SimpleLevelObject {
 
     String get name;
 
-    Selectable getSelectable(B.Vector2 loc) => this;
+    Selectable? getSelectable(B.Vector2 loc) => this;
 
-    SelectionDisplay<Selectable> createSelectionUI(UIController controller) => new SelectionDisplay<Selectable>(controller);
+    SelectionDisplay<Selectable>? createSelectionUI(UIController controller) => new SelectionDisplay<Selectable>(controller);
 
     void onSelect() {}
     void onDeselect() {}

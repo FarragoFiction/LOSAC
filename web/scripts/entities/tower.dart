@@ -45,10 +45,10 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
 
     double weaponCooldown = 0;
     int currentBurst = 0;
-    double turretAngle = 0;
-    double prevTurretAngle = 0;
-    double targetAngle = 0;
-    double turretDrawAngle = 0;
+    num turretAngle = 0;
+    num prevTurretAngle = 0;
+    num targetAngle = 0;
+    num turretDrawAngle = 0;
 
     late GridCell gridCell;
     @override
@@ -97,7 +97,7 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
                     updateTargetAngle();
 
                     // how far we are off pointing at the enemy
-                    final double diff = angleDiff(this.turretAngle, targetAngle);
+                    final double diff = angleDiff(this.turretAngle.toDouble(), targetAngle.toDouble()); // TODO: CommonLib angleDiff
 
                     this.prevTurretAngle = this.turretAngle;
 
@@ -124,7 +124,7 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
 
                         if (towerType.turreted) {
                             // we have a turret and need to work out if we're pointing the right way to shoot
-                            final double diff = angleDiff(this.turretAngle, targetAngle);
+                            final double diff = angleDiff(this.turretAngle.toDouble(), targetAngle.toDouble()); // TODO: CommonLib angleDiff
 
                             if (diff.abs() <= TowerType.fireAngleFuzz || diff.abs() <= towerType.fireAngle) {
                                 // if the angle is less than the fire angle limit, attack!
@@ -395,7 +395,7 @@ class Tower extends LevelObject with Entity, TerrainEntity, HasMatrix, SpatialHa
 
     @override
     void renderUpdate([num interpolation = 0]) {
-        this.turretDrawAngle = prevTurretAngle + angleDiff(turretAngle, prevTurretAngle) * interpolation;
+        this.turretDrawAngle = prevTurretAngle + angleDiff(turretAngle.toDouble(), prevTurretAngle.toDouble()) * interpolation; // TODO: CommonLib angleDiff
     }
 
     /*@override

@@ -6,9 +6,9 @@ import "ui.dart";
 
 class LifeDisplay extends UIComponent with HasTooltip {
 
-    Game get game => engine;
-    Element bar;
-    Element caption;
+    Game get game => engine as Game;
+    late Element bar;
+    late Element caption;
 
     LifeDisplay(UIController controller) : super(controller);
 
@@ -41,8 +41,8 @@ class LifeDisplay extends UIComponent with HasTooltip {
     @override
     void update() {
         final double fraction = game.currentLife / game.maxLife;
-        this.bar?.style?.setProperty("--progress", fraction.toStringAsFixed(2));
-        this.caption?.text = game.currentLife.floor().toString();
+        this.bar.style.setProperty("--progress", fraction.toStringAsFixed(2));
+        this.caption.text = game.currentLife.floor().toString();
     }
 
     @override

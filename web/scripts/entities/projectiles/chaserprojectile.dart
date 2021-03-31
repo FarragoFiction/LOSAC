@@ -65,7 +65,7 @@ class ChaserProjectile extends Projectile with NewtonianMover {
         final B.Vector2 angDir = new B.Vector2(1, 0)..applyMatrixInPlace(matrix);
 
         final num angDotTarget = angDir.dot(toTarget.normalized());
-        final double angDiff = angleDiff(rot_angle, toTarget.angle);
+        final num angDiff = angleDiff(rot_angle.toDouble(), toTarget.angle); // TODO: CommonLib angleDiff
 
         final double turnFactor = 0.15 + 0.85 * (1 - angDotTarget.clamp(0, 1));
 
@@ -74,7 +74,7 @@ class ChaserProjectile extends Projectile with NewtonianMover {
             turn = -angularVelocity;
         } else if (this.angularVelocity.sign == angDiff.sign) {
             final double av = angularVelocity.abs();
-            final double ad = angDiff.abs();
+            final num ad = angDiff.abs();
             if (av > ad) {
                 this.torque(-angDiff.sign * (av-ad));
             }

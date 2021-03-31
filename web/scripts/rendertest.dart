@@ -16,15 +16,15 @@ Future<void> main() async {
 
 class TestObject {
     B.Vector3 position;
-    B.Vector3 prevPosition;
+    late B.Vector3 prevPosition;
     B.Vector3 velocity;
     double spin;
     double lifetime;
     bool dead = false;
 
-    B.InstancedMesh mesh;
+    late B.InstancedMesh mesh;
     B.BaseParticleSystem particles;
-    B.TrailMesh trail;
+    //B.TrailMesh trail;
 
     TestObject(B.Mesh sourceMesh, B.BaseParticleSystem this.particles, B.Vector3 this.position, B.Vector3 this.velocity, double this.spin, double this.lifetime) {
         this.mesh = sourceMesh.createInstance("TestObject ${this.hashCode}");
@@ -81,7 +81,7 @@ class TestObject {
 }
 
 Future<void> complexityTest() async {
-    final CanvasElement canvas = querySelector("#canvas");
+    final CanvasElement canvas = querySelector("#canvas")! as CanvasElement;
     final B.Engine engine = new B.Engine(canvas, false);
 
     final B.Scene scene = new B.Scene(engine);
@@ -92,7 +92,7 @@ Future<void> complexityTest() async {
 
     final B.Texture depth = scene.enableDepthRenderer(camera, false).getDepthMap();
     //final B.Light light = new B.HemisphericLight("light1", new B.Vector3(0,1,0), scene);
-    final B.Light light = new B.DirectionalLight("light", B.Vector3(-.5,-1,0), scene)
+    final B.DirectionalLight light = new B.DirectionalLight("light", B.Vector3(-.5,-1,0), scene)
         ..position.y = 50
         //..shadowMaxZ = 500
         //..autoUpdateExtends = false
@@ -150,7 +150,7 @@ Future<void> complexityTest() async {
         for (int j=0; j<treeCountPerType; j++) {
             final double x = terrainSize * (rand.nextDouble() - 0.5);
             final double z = terrainSize * (rand.nextDouble() - 0.5);
-            final double y = terrain.getHeightAtCoordinates(x,z);
+            final num y = terrain.getHeightAtCoordinates(x,z);
             final double scale = 0.85 + rand.nextDouble() * 0.3;
             if (j == 0) {
                 trees.add(tree
@@ -220,7 +220,7 @@ Future<void> complexityTest() async {
         ..start()
     ;
 
-    double dt;
+    num dt;
     double worldTime = 0.0;
     double tickCounter = 0.0;
     const int ticksPerSecond = 20;
@@ -285,7 +285,7 @@ Future<void> complexityTest() async {
         scene.render();
     }));
 
-    document.body.append(new DivElement()..append(new ButtonElement()..text="show inspector"..onClick.listen((MouseEvent e) { scene.debugLayer.show(); })));
+    document.body!.append(new DivElement()..append(new ButtonElement()..text="show inspector"..onClick.listen((MouseEvent e) { scene.debugLayer.show(); })));
 }
 
 void Function(double dt, B.EventState state) addTrailToMesh(B.Mesh mesh, int length) {
@@ -354,7 +354,7 @@ void Function(double dt, B.EventState state) addTrailToMesh(B.Mesh mesh, int len
 
         }
 
-        final B.ShaderMaterial material = mesh.material;
+        final B.ShaderMaterial material = mesh.material as B.ShaderMaterial;
         material.setInt("trailStep", step);
         material.setInt("trailLength", length);
 
@@ -377,7 +377,7 @@ void Function(double dt, B.EventState state) addTrailToMesh(B.Mesh mesh, int len
 }
 
 Future<void> portalTest() async {
-    final CanvasElement canvas = querySelector("#canvas");
+    final CanvasElement canvas = querySelector("#canvas")! as CanvasElement;
     final B.Engine engine = new B.Engine(canvas, false);
 
     final B.Scene scene = new B.Scene(engine);

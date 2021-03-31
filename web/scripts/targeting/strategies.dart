@@ -23,10 +23,10 @@ abstract class TargetingStrategies {
 
     };
 
-    static TargetingStrategy<T> parseStrategy<T extends Entity>(String input, Map<String,Generator<TargetingStrategy<T>>> strategyList) {
+    static TargetingStrategy<T>? parseStrategy<T extends Entity>(String input, Map<String,Generator<TargetingStrategy<T>>> strategyList) {
         return null; // TODO: implement targeting strategy parsing
     }
 
-    static TargetingStrategy<Enemy> parseEnemyStrategy(String input) => parseStrategy(input, enemyStrategies);
-    static TargetingStrategy<Tower> parseTowerStrategy(String input) => parseStrategy(input, towerStrategies);
+    static TargetingStrategy<Enemy>? parseEnemyStrategy(String input) => parseStrategy(input, enemyStrategies);
+    static TargetingStrategy<Tower>? parseTowerStrategy(String input) => parseStrategy(input, towerStrategies);
 }

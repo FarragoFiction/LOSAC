@@ -13,11 +13,11 @@ class BuildButton extends UIButton {
     final TowerType towerType;
     final GridCellSelectionDisplay selectionDisplay;
 
-    GridCell get selected => selectionDisplay.selected;
-    Game get game => engine;
+    GridCell? get selected => selectionDisplay.selected;
+    Game get game => engine as Game;
 
-    StreamSubscription<MouseEvent> _mouseOver;
-    StreamSubscription<MouseEvent> _mouseOut;
+    late StreamSubscription<MouseEvent> _mouseOver;
+    late StreamSubscription<MouseEvent> _mouseOut;
 
     BuildButton(UIController controller, GridCellSelectionDisplay this.selectionDisplay, TowerType this.towerType) : super(controller);
 
@@ -43,17 +43,17 @@ class BuildButton extends UIButton {
     @override
     Future<void> onUse() async {
         if (towerType.blocksPath) {
-            final bool canPlace = await engine.placementCheck(selected.node);
+            final bool canPlace = await engine.placementCheck(selected!.node!);
             selectionDisplay.placementAllowed = canPlace;
             if (!canPlace) { return; }
             if (!towerType.isAffordable(engine)) { return; }
         }
 
         game.resourceStockpile.subtract(towerType.buildCost);
-        towerType.buildCost.popup(game, selected.getWorldPosition(), selected.getZPosition(), false);
+        towerType.buildCost.popup(game, selected!.getWorldPosition(), selected!.getZPosition(), false);
 
         final Tower tower = new Tower(towerType);
-        await selected.placeTower(tower);
+        await selected!.placeTower(tower);
         tower.startBuilding();
 
         engine.selectObject(tower);
@@ -75,10 +75,10 @@ class BuildButton extends UIButton {
     bool canBuildHere() {
         // if the cell already has a tower, abort
         // this should be rare as it's either temporarily there or not something you're able to select
-        if (selectionDisplay.selected.tower != null) { return false; }
+        if (selectionDisplay.selected!.tower != null) { return false; }
 
         // we shouldn't be able to do anything to an already blocked node, this is mostly so we can assume it's clear
-        if (selectionDisplay.selected.node.blocked) { return false; }
+        if (selectionDisplay.selected!.node!.blocked) { return false; }
 
         // does the tower that we're placing block the path?
         final bool needsBlockCheck = towerType.blocksPath;

@@ -43,7 +43,7 @@ mixin TerrainEntity on Entity {
     }
 
     @override
-    void updateMeshPosition({B.Vector2? position, double? height, double? rotation}) {
+    void updateMeshPosition({B.Vector2? position, num? height, num? rotation}) {
         super.updateMeshPosition(position: position, height: height);
 
         final B.AbstractMesh? mesh = this.mesh;

@@ -13,7 +13,7 @@ class UIButton extends UIComponent with HasTooltip {
 
     bool clicked = false;
 
-    StreamSubscription<MouseEvent> _click;
+    late StreamSubscription<MouseEvent> _click;
 
     UIButton(UIController controller) : super(controller);
 
@@ -47,9 +47,9 @@ class UIButton extends UIComponent with HasTooltip {
         if (!hasElement) { return; }
 
         if(!usable()) {
-            this.element.classes.add("disabled");
+            this.element!.classes.add("disabled");
         } else {
-            this.element.classes.remove("disabled");
+            this.element!.classes.remove("disabled");
         }
     }
 

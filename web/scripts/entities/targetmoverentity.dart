@@ -34,20 +34,20 @@ class TargetMoverEntity extends MoverEntity {
             return;
         }
 
-        final B.Vector2 targetOffset = targetPos - this.position;
+        final B.Vector2 targetOffset = targetPos! - this.position;
         final double targetAngle = targetOffset.angle;
 
         debugTargetAngle = targetAngle;
 
-        final double angDiff = angleDiff(this.rot_angle, targetAngle);
+        final num angDiff = angleDiff(this.rot_angle.toDouble(), targetAngle); // TODO: CommonLib angleDiff
 
-        double turn = turnRate * dt;
+        num turn = turnRate * dt;
 
         if (this.turningAround) {
             turn *= 2.5;
         }
 
-        final double turnAmount = Math.min(angDiff.abs(), turn);
+        final double turnAmount = Math.min(angDiff.abs().toDouble(), turn.toDouble()); // TODO: CommonLib angleDiff
 
         this.previousRot = this.rot_angle;
         this.rot_angle += -turnAmount * angDiff.sign;

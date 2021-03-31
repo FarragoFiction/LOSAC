@@ -6,16 +6,16 @@ import 'ui.dart';
 
 class ButtonGrid extends UIComponent {
 
-    _ButtonGridInner buttonContainer;
-    Element scrollLeft;
-    Element scrollRight;
+    late _ButtonGridInner buttonContainer;
+    late Element scrollLeft;
+    late Element scrollRight;
 
     int scrollStep = 0;
 
     Set<UIButton> buttons = <UIButton>{};
 
-    StreamSubscription<MouseEvent> _scrollLeftClick;
-    StreamSubscription<MouseEvent> _scrollRightClick;
+    late StreamSubscription<MouseEvent> _scrollLeftClick;
+    late StreamSubscription<MouseEvent> _scrollRightClick;
 
     ButtonGrid(UIController controller) : super(controller) {
         this.buttonContainer = this.addChild(new _ButtonGridInner(controller));
@@ -35,7 +35,7 @@ class ButtonGrid extends UIComponent {
         });
         outer.append(scrollLeft);
 
-        outer.append(buttonContainer.element);
+        outer.append(buttonContainer.element!);
 
         this.scrollRight = new DivElement()..className = "ButtonGridScroll right";
         _scrollRightClick = scrollRight.onClick.listen((Event e) {
@@ -63,21 +63,21 @@ class ButtonGrid extends UIComponent {
 
     @override
     void resize() {
-        final int thisWidth = element.offsetWidth;
-        final int containerWidth = buttonContainer.element.offsetWidth;
+        final int thisWidth = element!.offsetWidth;
+        final int containerWidth = buttonContainer.element!.offsetWidth;
 
         if (containerWidth > thisWidth) {
             // there isn't enough space, show the scroll buttons
             // also make the background solid so there's not a hole at the end
 
-            element.classes.add("background");
+            element!.classes.add("background");
             scrollLeft.classes.remove("hidden");
             scrollRight.classes.remove("hidden");
         } else {
             // there is enough space, hide the scroll buttons
             // clear the background again so it doesn't cover the whole screen
 
-            element.classes.remove("background");
+            element!.classes.remove("background");
             scrollLeft.classes.add("hidden");
             scrollRight.classes.add("hidden");
         }
@@ -88,9 +88,9 @@ class ButtonGrid extends UIComponent {
     void updateScrolling() {
         if (buttonContainer.children.isEmpty) { return; }
 
-        final int outerWidth = element.totalWidth;
-        final int innerWidth = buttonContainer.element.totalWidth;
-        final int buttonWidth = buttonContainer.children.first.element.totalWidth;
+        final int outerWidth = element!.totalWidth;
+        final int innerWidth = buttonContainer.element!.totalWidth;
+        final int buttonWidth = buttonContainer.children.first.element!.totalWidth;
 
         final int scrollButtonWidth = this.scrollLeft.totalWidth;
 
@@ -118,7 +118,7 @@ class ButtonGrid extends UIComponent {
             offset = scrollStep * buttonWidth - scrollButtonWidth;
         }
 
-        this.buttonContainer.element.style.setProperty("--scroll", "${-offset}px");
+        this.buttonContainer.element!.style.setProperty("--scroll", "${-offset}px");
     }
 
     @override
@@ -147,17 +147,17 @@ class _ButtonGridInner extends UIComponent {
     void resize() {
         if (this.children.isEmpty) { return; }
 
-        final int height = this.element.totalHeight;
-        final int buttonHeight = this.children.first.element.totalHeight;
+        final int height = this.element!.totalHeight;
+        final int buttonHeight = this.children.first.element!.totalHeight;
 
         if (buttonHeight == 0) { return; }
 
         final int rows = height ~/ buttonHeight;
         final int columns = (this.children.length / rows).ceil();
 
-        element.style.setProperty("--columns", columns.toString());
+        element!.style.setProperty("--columns", columns.toString());
 
-        this?.parent?.resize();
+        this.parent?.resize();
     }
 
 }

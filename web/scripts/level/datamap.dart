@@ -89,7 +89,7 @@ abstract class DataMap<Data, Array extends List<Data>> {
         ctx.restore();
     }
 
-    Set<Data> valuesAlongLine(double x1, double y1, double x2, double y2, double thickness) => traceLine(x1, y1, x2, y2, thickness, getValLocal);
+    Set<Data> valuesAlongLine(num x1, num y1, num x2, num y2, num thickness) => traceLine(x1, y1, x2, y2, thickness, getValLocal);
     Set<B.Vector2> cellsAlongLine(num x1, num y1, num x2, num y2, num thickness) => traceLine(x1, y1, x2, y2, thickness, (int x, int y) => new B.Vector2(x,y));
 
     Set<T> traceLine<T>(num x1, num y1, num x2, num y2, num thickness, T Function(int x, int y) getter) {
@@ -185,11 +185,11 @@ class DataMapRegion<Data, Array extends List<Data>> {
         return new B.Vector2((x + ox + 0.5) * DataMap.cellSize + map.pos_x, (y + oy + 0.5) * DataMap.cellSize + map.pos_y);
     }
 
-    B.Vector2 getLocalCoords(double x, double y) {
+    B.Vector2 getLocalCoords(num x, num y) {
         final B.Vector2 mapLocal = map.getLocalCoords(x, y);
         return new B.Vector2(mapLocal.x - ox, mapLocal.y - oy);
     }
-    B.Vector2 getRawLocalCoords(double x, double y) {
+    B.Vector2 getRawLocalCoords(num x, num y) {
         final B.Vector2 mapLocal = map.getRawLocalCoords(x, y);
         return new B.Vector2(mapLocal.x - ox, mapLocal.y - oy);
     }

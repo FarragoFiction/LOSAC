@@ -6,7 +6,7 @@ import "../level/selectable.dart";
 typedef RenderLoopFunction = void Function(num frameTime);
 
 abstract class Renderer {
-    late Engine engine;
+    Engine? engine;
 
     late Element container;
 

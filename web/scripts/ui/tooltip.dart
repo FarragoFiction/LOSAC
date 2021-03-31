@@ -11,13 +11,13 @@ class TooltipComponent extends UIComponent {
     static const int mouseSize = 16;
     int updateStep = 0;
 
-    HasTooltip currentObject;
-    Element contentElement;
+    HasTooltip? currentObject;
+    Element? contentElement;
 
     TooltipComponent(UIController controller) : super(controller);
-    StreamSubscription<MouseEvent> _mouseMoveHandler;
-    StreamSubscription<MouseEvent> _mouseClickHandler;
-    StreamSubscription<MouseEvent> _mouseOutHandler;
+    late StreamSubscription<MouseEvent> _mouseMoveHandler;
+    late StreamSubscription<MouseEvent> _mouseClickHandler;
+    late StreamSubscription<MouseEvent> _mouseOutHandler;
 
     @override
     Element createElement() {
@@ -54,19 +54,20 @@ class TooltipComponent extends UIComponent {
     }
 
     bool updateTooltipObject() {
-        if (currentObject != null && currentObject.disposed) {
+        if (currentObject != null && currentObject!.disposed) {
             currentObject = null;
         }
 
-        if (engine?.input?.mousePos == null) { return false; }
+        if (engine.input.mousePos == null) { return false; }
 
-        final Point<num> pos = engine.input.mousePos;
-        if (pos.x < 0 || pos.x >= window.innerWidth || pos.y < 0 || pos.y >= window.innerHeight) {
+        final Point<num> pos = engine.input.mousePos!;
+        if (pos.x < 0 || pos.x >= window.innerWidth! || pos.y < 0 || pos.y >= window.innerHeight!) {
             currentObject = null;
             return true;
         }
 
-        final HasTooltip object = controller.queryComponentAtCoords(engine.input.mousePos, (UIComponent c) => c is HasTooltip);
+        final UIComponent? comp = controller.queryComponentAtCoords(engine.input.mousePos, (UIComponent c) => c is HasTooltip);
+        final HasTooltip? object = comp == null ? null : comp as HasTooltip;
 
         if (currentObject != object) {
             currentObject = object;
@@ -79,11 +80,11 @@ class TooltipComponent extends UIComponent {
 
     void updateTooltipContents() {
         if (currentObject == null) {
-            element.classes.add("hidden");
+            element!.classes.add("hidden");
         } else {
-            this.contentElement.children.clear();
-            currentObject.populateTooltip(this.contentElement);
-            element.classes.remove("hidden");
+            this.contentElement!.children.clear();
+            currentObject!.populateTooltip(this.contentElement!);
+            element!.classes.remove("hidden");
 
             updateTooltipPosition();
         }
@@ -92,25 +93,26 @@ class TooltipComponent extends UIComponent {
     void updateTooltipPosition() {
         if (!this.hasElement || this.currentObject == null) { return; }
 
-        final int width = this.element.offsetWidth;
-        final int height = this.element.offsetHeight;
+        final int width = this.element!.offsetWidth;
+        final int height = this.element!.offsetHeight;
 
-        final Point<num> mousePos = engine.input.mousePos;
-        final int windowWidth = window.innerWidth;
-        final int windowHeight = window.innerHeight;
+        final Point<num>? mousePos = engine.input.mousePos;
+        if (mousePos == null) { return; }
+        final int windowWidth = window.innerWidth!;
+        final int windowHeight = window.innerHeight!;
 
-        final int spaceLeft = mousePos.x - paddingDistance;
-        final int spaceRight = windowWidth - mousePos.x - paddingDistance - mouseSize;
+        final num spaceLeft = mousePos.x - paddingDistance;
+        final num spaceRight = windowWidth - mousePos.x - paddingDistance - mouseSize;
 
-        final int spaceTop = mousePos.y - paddingDistance;
-        final int spaceBottom = windowHeight - mousePos.y - paddingDistance - mouseSize;
+        final num spaceTop = mousePos.y - paddingDistance;
+        final num spaceBottom = windowHeight - mousePos.y - paddingDistance - mouseSize;
 
         final bool enoughRight = spaceRight >= width;
         final bool enoughLeft = spaceLeft >= width;
         final bool enoughTop = spaceTop >= height;
         final bool enoughBottom = spaceBottom >= height;
 
-        int x,y;
+        num x,y;
 
         if (enoughRight) {
             x = mousePos.x + paddingDistance + mouseSize;
@@ -130,9 +132,9 @@ class TooltipComponent extends UIComponent {
             print("temp y fallback");
         }
 
-        element.style
-            ..setProperty("--x", x.toString())
-            ..setProperty("--y", y.toString());
+        element!.style
+            ..setProperty("--x", x.toInt().toString())
+            ..setProperty("--y", y.toInt().toString());
     }
 
     void onMouseEvents(MouseEvent e) {

@@ -14,7 +14,8 @@ import "level.dart";
 class SimpleLevelObject with Renderable3D {
     Level? level;
 
-    B.Vector2 position = B.Vector2.Zero();
+    B.Vector2? _position = B.Vector2.Zero();
+    B.Vector2 get position => _position!;
     double zPosition = 0;
 
     MeshProvider<dynamic>? meshProvider;
@@ -37,10 +38,10 @@ class SimpleLevelObject with Renderable3D {
     double getZPosition() => this.zPosition;
 
     @override
-    void updateMeshPosition({B.Vector2? position, double? height, double? rotation}) {
+    void updateMeshPosition({B.Vector2? position, num? height, num? rotation}) {
         position ??= this.position;
         height ??= this.getZPosition();
-        this.mesh?.position?.setFromGameCoords(position, height);
+        this.mesh?.position.setFromGameCoords(position, height);
     }
 
     void dispose() {}
@@ -53,8 +54,8 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
 
     LevelObject? parentObject;
 
-    double rot_angle = 0;
-    double scale = 1;
+    num rot_angle = 0;
+    num scale = 1;
 
     Rectangle<num>? _bounds;
     bool dirtyBounds = true;
@@ -84,7 +85,7 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
     void dispose() {
         final B.Vector2WithCallback v = this.position as B.Vector2WithCallback;
         v.extension_setCallback(null);
-        //this.position = null;
+        this._position = null;
         if (this.mesh != null) {
             this.mesh!.dispose();
             this.mesh!.metadata = null;
@@ -211,8 +212,8 @@ class LevelObject extends SimpleLevelObject { //with HasFloater { // floater tes
     Rectangle<num> calculateBounds() => rectBounds(this, 10,10);
 
     @override
-    void updateMeshPosition({B.Vector2? position, double? height, double? rotation}) {
+    void updateMeshPosition({B.Vector2? position, num? height, num? rotation}) {
         super.updateMeshPosition(position: position, height: height, rotation: rotation);
-        this.mesh?.rotation?.y = this.rot_angle;
+        this.mesh?.rotation.y = this.rot_angle;
     }
 }

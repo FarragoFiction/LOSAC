@@ -39,8 +39,8 @@ abstract class Projectile extends MoverEntity {
     late B.Vector2 targetPos;
     late double targetHeight;
 
-    late double drawZ;
-    late double drawElevation;
+    double? drawZ;
+    double? drawElevation;
 
     factory Projectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => parent.towerType.weapon!.spawnProjectile(parent, target, targetPos, targetHeight);
 
@@ -122,11 +122,14 @@ abstract class Projectile extends MoverEntity {
 
     @override
     void renderUpdate([num interpolation = 0]) {
-        previousPos.setFrom(position);
-        previousRot = rot_angle;
-        previousZPosition = zPosition;
-        drawPos.setFrom(position);
-        previousElevation = elevation;
+        if (firstDraw) {
+            previousPos.setFrom(position);
+            previousRot = rot_angle;
+            previousZPosition = zPosition;
+            drawPos.setFrom(position);
+            previousElevation = elevation;
+            firstDraw = false;
+        }
 
         final num dx = this.position.x - previousPos.x;
         final num dy = this.position.y - previousPos.y;
@@ -134,20 +137,20 @@ abstract class Projectile extends MoverEntity {
         this.drawZ = previousZPosition + (zPosition - previousZPosition) * interpolation;
         this.drawElevation = previousElevation + (elevation - previousElevation) * interpolation;
 
-        final double da = angleDiff(rot_angle, previousRot);
+        final num da = angleDiff(rot_angle.toDouble(), previousRot.toDouble()); // TODO: CommonLib angleDiff
         drawRot = previousRot + da * interpolation;
 
         this.updateMeshPosition(position: drawPos, height:drawZ, rotation:drawRot);
     }
 
     @override
-    void updateMeshPosition({B.Vector2? position, double? height, double? rotation}) {
+    void updateMeshPosition({B.Vector2? position, num? height, num? rotation}) {
         super.updateMeshPosition(position: position, height: height, rotation: rotation);
-        this.mesh?.rotation?.z = this.drawElevation;
+        this.mesh?.rotation.z = this.drawElevation ?? 0;
     }
 
     @override
-    double getZPosition() => drawZ;
+    double getZPosition() => drawZ ?? zPosition;
 
     void updateElevation() {
         final num movedHorizontal = (position - previousPos).length().abs();

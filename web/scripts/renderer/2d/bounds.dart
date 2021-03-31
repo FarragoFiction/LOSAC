@@ -14,10 +14,10 @@ Rectangle<num> polyBounds(List<B.Vector2> vertices) {
     double bottom = double.negativeInfinity;
 
     for(final B.Vector2 v in vertices) {
-        left   = Math.min(left,   v.x);
-        right  = Math.max(right,  v.x);
-        top    = Math.min(top,    v.y);
-        bottom = Math.max(bottom, v.y);
+        left   = Math.min(left,   v.x.toDouble());
+        right  = Math.max(right,  v.x.toDouble());
+        top    = Math.min(top,    v.y.toDouble());
+        bottom = Math.max(bottom, v.y.toDouble());
     }
 
     left -= buffer;
@@ -29,20 +29,18 @@ Rectangle<num> polyBounds(List<B.Vector2> vertices) {
 }
 
 Rectangle<num> polyBoundsLocal(LevelObject object, List<B.Vector2> vertices) {
-    final List<B.Vector2> worldVertices = new List<B.Vector2>(vertices.length);
-
-    for (int i=0; i<vertices.length; i++) {
+    final List<B.Vector2> worldVertices = new List<B.Vector2>.generate(vertices.length, (int i) {
         final B.Vector2 local = vertices[i];
 
         final B.Vector2 world = object.getWorldPosition(local);
 
-        worldVertices[i] = world;
-    }
+        return world;
+    });
 
     return polyBounds(worldVertices);
 }
 
-Rectangle<num> rectBounds(LevelObject object, double width, double height) {
+Rectangle<num> rectBounds(LevelObject object, num width, num height) {
     final double x = width/2;
     final double y = height/2;
     return polyBoundsLocal(object, <B.Vector2>[ new B.Vector2(-x,-y), new B.Vector2(x,-y), new B.Vector2(-x, y), new B.Vector2(x,y)]);

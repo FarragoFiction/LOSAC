@@ -8,14 +8,14 @@ export "towerselectiondisplay.dart";
 
 class SelectionWindow extends UIComponent {
 
-    Selectable selected;
-    SelectionDisplay<dynamic> display;
+    Selectable? selected;
+    SelectionDisplay<dynamic>? display;
 
     SelectionWindow(UIController controller) : super(controller);
 
     @override
     void update() {
-        final Selectable selected = engine.selected;
+        final Selectable? selected = engine.selected;
 
         // check if selected has changed, otherwise keep going
         if (selected == this.selected) { return; }
@@ -24,30 +24,30 @@ class SelectionWindow extends UIComponent {
         if (this.display != null) {
             if (this.selected == null) {
                 new Future<void>.delayed(const Duration(milliseconds: 160), (){
-                    this.removeChild(display);
+                    this.removeChild(display!);
                 });
             } else {
-                this.removeChild(display);
+                this.removeChild(display!);
             }
         }
 
         // exit early if it's null since we don't need a new display
         if (this.selected == null) {
-            element.style.bottom = "-100vh";
+            element!.style.bottom = "-100vh";
             return;
         }
 
-        final SelectionDisplay<dynamic> disp = this.selected.createSelectionUI(controller);
+        final SelectionDisplay<dynamic>? disp = this.selected!.createSelectionUI(controller);
 
         // if it's not giving anything, abort
         if (disp == null) { return; }
 
         this.display = disp;
-        display.selected = this.selected;
-        display.postSelect();
-        this.addChild(display);
+        disp.selected = this.selected;
+        disp.postSelect();
+        this.addChild(disp);
 
-        element.style.bottom = "";
+        element!.style.bottom = "";
     }
 
     @override
@@ -60,7 +60,7 @@ class SelectionWindow extends UIComponent {
 
 class SelectionDisplay<Type extends Selectable> extends UIComponent {
 
-    Type selected;
+    Type? selected;
 
     SelectionDisplay(UIController controller) : super(controller);
 
@@ -69,7 +69,7 @@ class SelectionDisplay<Type extends Selectable> extends UIComponent {
         return new DivElement()
             ..className = "uibackground bottom SelectionDisplay"
 
-            ..append(new SpanElement()..text = localise("${selected.name}.name"))
+            ..append(new SpanElement()..text = localise("${(selected?.name) ?? "default"}.name"))
         ;
     }
 
@@ -82,7 +82,7 @@ class SelectionDisplay<Type extends Selectable> extends UIComponent {
 
 class SelectionDisplayWithGrid<Type extends Selectable> extends SelectionDisplay<Type> {
 
-    ButtonGrid grid;
+    late ButtonGrid grid;
 
     SelectionDisplayWithGrid(UIController controller) : super(controller) {
         this.grid = new ButtonGrid(controller);
@@ -91,8 +91,8 @@ class SelectionDisplayWithGrid<Type extends Selectable> extends SelectionDisplay
 
     @override
     void resize() {
-        grid.element.classes.add("BuildGrid");
-        grid.element.style.setProperty("--width", "${window.innerWidth - grid.element.offset.left}px");
+        grid.element?.classes.add("BuildGrid");
+        grid.element?.style.setProperty("--width", "${window.innerWidth! - grid.element!.offset.left}px");
     }
 }
 

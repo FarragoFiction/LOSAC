@@ -14,11 +14,11 @@ import "commands.dart";
 class PathWorker extends WorkerBase {
     static final Logger logger = new Logger("Path Worker");//, true); // debug print flag
 
-    DomainMap domainMap;
-    List<PathNode> pathNodes;
-    Iterable<PathNode> connectedNodes;
-    List<SpawnNode> spawners;
-    ExitNode exitNode;
+    late DomainMap domainMap;
+    late List<PathNode> pathNodes;
+    late Iterable<PathNode> connectedNodes;
+    late List<SpawnNode> spawners;
+    late ExitNode exitNode;
 
     PathWorker() {
         logger.info("Worker Loaded");
@@ -51,24 +51,26 @@ class PathWorker extends WorkerBase {
         pathNodes = <PathNode>[];
         connectedNodes = pathNodes.where((PathNode node) => !node.isolated);
         spawners = <SpawnNode>[];
-        exitNode = null;
+        //exitNode = null;
+        bool haveExit = false;
 
         for(int i=0; i<data.length; i++) {
             final Map<dynamic, dynamic> nodeData = data[i];
 
-            PathNode node;
+            late PathNode node;
 
             if (nodeData["type"] == null) {
                 node = new PathNode();
             } else if (nodeData["type"] == "spawn") {
                 node = new SpawnNode();
-                spawners.add(node);
+                spawners.add(node as SpawnNode);
             } else if (nodeData["type"] == "exit") {
-                if (exitNode != null) {
+                if (haveExit) {
                     throw Exception("ONLY ONE EXIT NODE, DUNKASS: Worker Edition");
                 }
                 node = new ExitNode();
-                exitNode = node;
+                exitNode = node as ExitNode;
+                haveExit = true;
             }
 
             node
@@ -114,7 +116,7 @@ class PathWorker extends WorkerBase {
     /// Returns a list of blocked or disconnected nodes
     ///
     /// If IgnoreBlockedStatus is true, blocked cells are treated as clear, and the list is only unconnected nodes
-    Future<List<PathNode>> connectivityTest({bool ignoreBlockedStatus = false, List<int> flipTests}) async {
+    Future<List<PathNode>> connectivityTest({bool ignoreBlockedStatus = false, List<int>? flipTests}) async {
 
         final Queue<PathNode> open = new Queue<PathNode>()..add(exitNode);
         final Set<PathNode> closed = <PathNode>{};
@@ -127,7 +129,7 @@ class PathWorker extends WorkerBase {
             for (final PathNode connected in current.connections.keys) {
                 if (!ignoreBlockedStatus) {
                     bool blocked = connected.blocked;
-                    if (flipTests.contains(connected.id)) {
+                    if (flipTests != null && flipTests.contains(connected.id)) {
                         blocked = !blocked;
                     }
                     if (blocked) { continue; }
@@ -150,7 +152,7 @@ class PathWorker extends WorkerBase {
         final Map<PathNode, double> distance = <PathNode, double>{
             exitNode : 0
         };
-        final Map<PathNode, PathNode> previous = <PathNode, PathNode>{
+        final Map<PathNode, PathNode?> previous = <PathNode, PathNode?>{
             exitNode : exitNode
         };
 
@@ -158,7 +160,7 @@ class PathWorker extends WorkerBase {
             exitNode: 0
         };
         final PriorityQueue<PathNode> open = new PriorityQueue<PathNode>((PathNode a, PathNode b) {
-            final int c = priorities[a].compareTo(priorities[b]);
+            final int c = priorities[a]!.compareTo(priorities[b]!);
             if (c == 0 && a != b) { return 1; }
             return c;
         });
@@ -178,29 +180,35 @@ class PathWorker extends WorkerBase {
 
         //update function
         void update_vertex(PathNode s, PathNode neighbour) {
-            if( neighbour.validShortcut && previous[s].validShortcut && LevelUtils.isLineClear(domainMap, pathNodes, previous[s], neighbour)) {
-                final double dist = (previous[s].position - neighbour.position).length();
+            final PathNode prev = previous[s]!;
+            final double distNeighbour = distance[neighbour]!;
 
-                if (distance[previous[s]] + dist < distance[neighbour]) {
-                    distance[neighbour] = distance[previous[s]] + dist;
-                    previous[neighbour] = previous[s];
+            if( neighbour.validShortcut && prev.validShortcut && LevelUtils.isLineClear(domainMap, pathNodes, prev, neighbour)) {
+                final num dist = (prev.position - neighbour.position).length();
+                final double distPrev = distance[prev]!;
+
+                if (distPrev + dist < distNeighbour) {
+                    distance[neighbour] = distPrev + dist;
+                    previous[neighbour] = prev;
                     if (openSet.contains(neighbour)) {
                         open.remove(neighbour);
                         openSet.remove(neighbour);
                     }
-                    priorities[neighbour] = distance[neighbour];
+                    priorities[neighbour] = distNeighbour;
                     open.add(neighbour);
                     openSet.add(neighbour);
                 }
             } else {
-                if (distance[s] + s.connections[neighbour] < distance[neighbour]) {
-                    distance[neighbour] = distance[s] + s.connections[neighbour];
+                final double distNode = distance[s]!;
+
+                if (distNode + s.connections[neighbour]! < distNeighbour) {
+                    distance[neighbour] = distNode + s.connections[neighbour]!;
                     previous[neighbour] = s;
                     if (openSet.contains(neighbour)) {
                         open.remove(neighbour);
                         openSet.remove(neighbour);
                     }
-                    priorities[neighbour] = distance[neighbour];
+                    priorities[neighbour] = distNeighbour;
                     open.add(neighbour);
                     openSet.add(neighbour);
                 }
@@ -232,8 +240,8 @@ class PathWorker extends WorkerBase {
         }
 
         return <String,List<num>> {
-            "id": pathNodes.map((PathNode node) => node.targetNode == null ? -1 : node.targetNode.id).toList(),
-            "dist": pathNodes.map((PathNode node) => distance[node]).toList()
+            "id": pathNodes.map((PathNode node) => node.targetNode == null ? -1 : node.targetNode!.id).toList(),
+            "dist": pathNodes.map<num>((PathNode node) => distance[node]!).toList()
         };
     }
 
@@ -256,7 +264,7 @@ class PathWorker extends WorkerBase {
         final Map<dynamic,dynamic> data = payload;
 
         final bool ignore = data.containsKey("ignore") ? data["ignore"] : false;
-        final List<int> flips = data.containsKey("flip") ? new List<int>.from(data["flip"]) : null;
+        final List<int>? flips = data.containsKey("flip") ? new List<int>.from(data["flip"]) : null;
 
         final List<PathNode> nodes = await connectivityTest(ignoreBlockedStatus: ignore, flipTests: flips);
 

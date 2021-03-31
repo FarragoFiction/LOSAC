@@ -21,7 +21,7 @@ class UIController {
 
     final Set<UIComponent> components = <UIComponent>{};
 
-    TooltipComponent tooltip;
+    TooltipComponent? tooltip;
 
     UIController(Engine this.engine, Element this.container);
 
@@ -39,18 +39,20 @@ class UIController {
 
     T addComponent<T extends UIComponent>(T component) {
         this.components.add(component);
-        this.container.append(component.element);
+        if (component.element != null) {
+            this.container.append(component.element!);
+        }
         component.resizeAndPropagate();
         return component;
     }
 
-    String localise(String key, {Map<String,String> data}) => engine.localisation.translate(key, data:data);
+    String localise(String key, {Map<String,String>? data}) => engine.localisation.translate(key, data:data);
     LocalisationEngine get localisation => engine.localisation;
 
-    UIComponent queryComponentAtCoords(Point<num> coords, [bool Function(UIComponent c) test]) {
+    UIComponent? queryComponentAtCoords(Point<num>? coords, [bool Function(UIComponent c)? test]) {
         for (final UIComponent component in components) {
             if (component.hasElement) {
-                final UIComponent picked = component.queryComponentAtCoords(coords, test);
+                final UIComponent? picked = component.queryComponentAtCoords(coords, test);
                 if (picked != null) {
                     return picked;
                 }
@@ -63,18 +65,18 @@ class UIController {
         for (final UIComponent component in components) {
             component.dispose();
         }
-        container = null;
-        engine = null;
+        //container = null;
+        //engine = null;
     }
 }
 
 abstract class UIComponent {
     final UIController controller;
-    Element _element;
+    Element? _element;
 
     bool disposed = false;
 
-    Element get element {
+    Element? get element {
         if (_element == null && !disposed) {
             this._element = this.createElementAndPropagate();
 
@@ -84,7 +86,7 @@ abstract class UIComponent {
 
     bool get hasElement => _element != null;
 
-    UIComponent parent;
+    UIComponent? parent;
     final Set<UIComponent> children = <UIComponent>{};
 
     Engine get engine => this.controller.engine;
@@ -109,7 +111,7 @@ abstract class UIComponent {
         }
     }
 
-    Element getChildContainer() => _element;
+    Element getChildContainer() => _element!;
 
     void resize() {}
 
@@ -119,18 +121,18 @@ abstract class UIComponent {
 
         final Element childContainer = getChildContainer();
         for (final UIComponent child in children) {
-            childContainer.append(child.element);
+            childContainer.append(child.element!);
         }
         return element;
     }
 
     Element createElement();
 
-    UIComponent addChild(UIComponent component) {
+    T addChild<T extends UIComponent>(T component) {
         this.children.add(component);
         component.parent = this;
         if (this._element != null) {
-            getChildContainer().append(component.element);
+            getChildContainer().append(component.element!);
             this.resizeAndPropagate();
         }
         return component;
@@ -142,19 +144,19 @@ abstract class UIComponent {
         component.parent = null;
     }
 
-    String localise(String key, {Map<String,String> data}) => controller.localise(key, data:data);
+    String localise(String key, {Map<String,String>? data}) => controller.localise(key, data:data);
 
-    UIComponent queryComponentAtCoords(Point<num> coords, [bool Function(UIComponent c) test]) {
-        if(disposed) { return null; }
+    UIComponent? queryComponentAtCoords(Point<num>? coords, [bool Function(UIComponent c)? test]) {
+        if(disposed || coords == null) { return null; }
         for (final UIComponent child in children) {
             if (child.hasElement) {
-                final UIComponent picked = child.queryComponentAtCoords(coords, test);
+                final UIComponent? picked = child.queryComponentAtCoords(coords, test);
                 if (picked != null) {
                     return picked;
                 }
             }
         }
-        if (this.element.getBoundingClientRect().containsPoint(coords) && ((test == null) || test(this))) {
+        if (this.element!.getBoundingClientRect().containsPoint(coords) && ((test == null) || test(this))) {
             return this;
         }
         return null;

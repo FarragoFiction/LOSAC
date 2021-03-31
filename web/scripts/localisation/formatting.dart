@@ -9,7 +9,7 @@ class FormattingEngine {
     static const String _defaultIconPath = "assets/icons/default.png";
 
     final LocalisationEngine _locEngine;
-    final Map<String,String> _iconPaths = <String,String>{};
+    final Map<String,String?> _iconPaths = <String,String?>{};
     final Map<String,ImageElement> _iconImages = <String,ImageElement>{};
 
     FormattingEngine(LocalisationEngine this._locEngine);
@@ -18,7 +18,7 @@ class FormattingEngine {
         await registerIcon("default", _defaultIconPath);
     }
 
-    void appendFormattedText(Element element, String text, {Map<String,String> data}) {
+    void appendFormattedText(Element element, String text, {Map<String,String>? data}) {
         final List<String> paragraphs = text.split("\n");
 
         for (final String paragraph in paragraphs) {
@@ -29,7 +29,7 @@ class FormattingEngine {
         }
     }
 
-    void _processParagraph(Element element, String paragraph, {Map<String,String> data}) {
+    void _processParagraph(Element element, String paragraph, {Map<String,String>? data}) {
         final int symbolAt = "@".codeUnitAt(0);
         final int symbolOpenBracket = "[".codeUnitAt(0);
         final int symbolCloseBracket = "]".codeUnitAt(0);
@@ -39,7 +39,7 @@ class FormattingEngine {
         int position = 0;
         int depth = 0;
         int stylePos = 0;
-        String style;
+        String? style;
         for (int i = 0; i < paragraph.length; i++) {
             // current symbol is @
             if (paragraph.codeUnits[i] == symbolAt) {
@@ -51,7 +51,7 @@ class FormattingEngine {
                         //print("close at: ${paragraph.substring(i)}");
                         // create a span element with the current style and process the contained section inside into it recursively
                         final Element span = new SpanElement()
-                            ..className = style;
+                            ..className = style ?? "";
                         _processParagraph(span, paragraph.substring(position, i), data:data);
                         element.append(span);
 
@@ -85,7 +85,7 @@ class FormattingEngine {
 
     }
 
-    void _processSection(Element element, String section, {Map<String,String> data}) {
+    void _processSection(Element element, String section, {Map<String,String>? data}) {
         //print("Process section: $section");
 
         int position = 0;
@@ -96,13 +96,13 @@ class FormattingEngine {
                 element.appendText(before);
             }
 
-            final String result = _locEngine.translate(match.group(1), data:data);
+            final String result = _locEngine.translate(match.group(1)!, data:data);
 
             if (match.group(3) == null) {
                 appendFormattedText(element, result, data:data);
             } else {
                 final Element span = new SpanElement()
-                    ..className = match.group(3);
+                    ..className = match.group(3)!;
 
                 appendFormattedText(span, result, data:data);
 
@@ -118,7 +118,7 @@ class FormattingEngine {
         }
     }
 
-    void _processIconsInText(Element element, String input, {Map<String,String> data}) {
+    void _processIconsInText(Element element, String input, {Map<String,String>? data}) {
         int position = 0;
         for (final Match iconMatch in LocalisationEngine.iconPattern.allMatches(input)) {
             final String textBefore = input.substring(position, iconMatch.start);
@@ -127,18 +127,18 @@ class FormattingEngine {
                 _processSection(element, textBefore, data:data);
             }
 
-            final String iconKey = iconMatch.group(1);
+            final String iconKey = iconMatch.group(1)!;
 
             if (LocalisationEngine.replacementPattern.hasMatch(iconKey)) {
                 String text = iconKey.substring(1, iconKey.length-1);
 
                 if (data != null && data.containsKey(text)) {
-                    text = data[text];
+                    text = data[text]!;
                 }
 
                 appendIcon(element, text);
             } else {
-                appendIcon(element, iconMatch.group(1));
+                appendIcon(element, iconMatch.group(1)!);
             }
 
             position = iconMatch.end;
@@ -171,13 +171,13 @@ class FormattingEngine {
         _iconPaths[name] = icon.src;
     }
 
-    String getIconPath(String name) {
+    String getIconPath(String? name) {
         name ??= "default";
         if (!_iconPaths.containsKey(name)) {
             name = "default";
         }
 
-        return _iconPaths[name] ?? _iconPaths["default"];
+        return _iconPaths[name] ?? _iconPaths["default"]!;
     }
 
     void appendIcon(Element element, String name) {
@@ -191,7 +191,7 @@ class FormattingEngine {
     }
 
     /// Gets the image for the icon if it's loaded, otherwise requests it and returns null
-    ImageElement getIconMaybe(String name) {
+    ImageElement? getIconMaybe(String name) {
 
         if (_iconImages.containsKey(name)) {
             return _iconImages[name];
@@ -207,11 +207,11 @@ class FormattingEngine {
 
 extension TooltipAppend on Element {
 
-    void appendFormattedText(String text, LocalisationEngine localisationEngine, {Map<String,String> data}) {
+    void appendFormattedText(String text, LocalisationEngine localisationEngine, {Map<String,String>? data}) {
         localisationEngine.formatting.appendFormattedText(this, text, data:data);
     }
 
-    void appendFormattedLocalisation(String key, LocalisationEngine localisationEngine, {Map<String,String> data}) {
+    void appendFormattedLocalisation(String key, LocalisationEngine localisationEngine, {Map<String,String>? data}) {
         //this.appendFormattedText("Here is some test text.\\n\\nIt has line breaks in it.");
 
         this.appendFormattedText(localisationEngine.translate(key), localisationEngine, data:data);

@@ -13,7 +13,7 @@ class MeshProvider<T extends SimpleLevelObject> {
     String getMeshName(T? owner) => "${_getTypeName(owner)} ${this.hashCode}";
     String _getTypeName(T? owner) => owner == null ? "[No Object]" : owner.runtimeType.toString();
 
-    B.AbstractMesh provide(T? owner) {
+    B.AbstractMesh? provide(T owner) {
         final B.AbstractMesh mesh = B.MeshBuilder.CreateBox(getMeshName(owner), new B.MeshBuilderCreateBoxOptions(size: 10));
         mesh.isPickable = owner is Selectable;
         mesh.metadata = new MeshInfo()..owner = owner;

@@ -60,7 +60,7 @@ extension Vector2Extras on B.Vector2 {
 extension Vector3Extras on B.Vector3 {
     void setFrom(B.Vector3 other) => this.set(other.x, other.y, other.z);
 
-    void setFromGameCoords(B.Vector2 loc, double height) {
+    void setFromGameCoords(B.Vector2 loc, num height) {
         this.set(-loc.x, height, loc.y);
     }
 

@@ -116,7 +116,7 @@ class Enemy extends TargetMoverEntity with TerrainEntity, SpatialHashable<Enemy>
     }
 
     /// used for resetting enemies when they leak, not normal movement
-    void setPositionTo(B.Vector2 pos, double angle) {
+    void setPositionTo(B.Vector2 pos, num angle) {
         position.setFrom(pos);
         previousPos.setFrom(pos);
         rot_angle = angle;

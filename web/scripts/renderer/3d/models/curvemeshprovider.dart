@@ -14,7 +14,7 @@ class DebugCurveMeshProvider extends CurveMeshProvider {
     DebugCurveMeshProvider(Renderer3D renderer) : super(renderer);
 
     @override
-    B.AbstractMesh provide(Curve curve) {
+    B.AbstractMesh? provide(Curve curve) {
         if (!curve.segments.isEmpty) {
             final B.Mesh mesh = new B.Mesh(getMeshName(curve));
 
@@ -32,8 +32,8 @@ class DebugCurveMeshProvider extends CurveMeshProvider {
 
                 mesh.addChild(B.LinesBuilder.CreateLines("segment", new B.LinesBuilderCreateLinesOptions(
                     points: <B.Vector3> [
-                        new B.Vector3(pos.x + offset.x, seg.node.getZPosition(), pos.z + offset.z),
-                        new B.Vector3(pos.x - offset.x, seg.node.getZPosition(), pos.z - offset.z),
+                        new B.Vector3(pos.x + offset.x, seg.node!.getZPosition(), pos.z + offset.z),
+                        new B.Vector3(pos.x - offset.x, seg.node!.getZPosition(), pos.z - offset.z),
                     ])
                 ));
             }

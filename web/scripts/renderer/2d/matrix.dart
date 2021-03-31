@@ -10,7 +10,7 @@ class RotationMatrix {
 }
 
 mixin HasMatrix on LevelObject {
-    RotationMatrix matrix;
+    late RotationMatrix matrix;
 
     @override
     void initMixins() {
@@ -19,7 +19,7 @@ mixin HasMatrix on LevelObject {
     }
 
     @override
-    set rot_angle(double value) {
+    set rot_angle(num value) {
         super.rot_angle = value;
         updateMatrix();
     }

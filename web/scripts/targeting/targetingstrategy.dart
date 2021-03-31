@@ -10,7 +10,7 @@ abstract class TargetingStrategy<T extends Entity> {
 
     TargetingStrategy<T> operator *(Object other) {
         if (other is num) {
-            return new ScaledTargetingStrategy<T>(this, other);
+            return new ScaledTargetingStrategy<T>(this, other.toDouble());
         } else if (other is TargetingStrategy<T>) {
             return new CompositeTargetingStrategy<T>(CompositeMode.multiply, this, other);
         }
@@ -28,7 +28,7 @@ abstract class TargetingStrategy<T extends Entity> {
 
     CompositeTargetingStrategy<T> operator +(Object other) {
         if (other is num) {
-            return new CompositeTargetingStrategy<T>(CompositeMode.add, this, new ScaledTargetingStrategy<T>(null, other));
+            return new CompositeTargetingStrategy<T>(CompositeMode.add, this, new ScaledTargetingStrategy<T>(null, other.toDouble()));
         } else if (other is TargetingStrategy<T>) {
             return new CompositeTargetingStrategy<T>(CompositeMode.add, this, other);
         }
@@ -37,7 +37,7 @@ abstract class TargetingStrategy<T extends Entity> {
 
     CompositeTargetingStrategy<T> operator -(Object other) {
         if (other is num) {
-            return new CompositeTargetingStrategy<T>(CompositeMode.add, this, new ScaledTargetingStrategy<T>(null, -other));
+            return new CompositeTargetingStrategy<T>(CompositeMode.add, this, new ScaledTargetingStrategy<T>(null, -other.toDouble()));
         } else if (other is TargetingStrategy<T>) {
             return new CompositeTargetingStrategy<T>(CompositeMode.add, this, new ScaledTargetingStrategy<T>(other, -1));
         }
@@ -47,10 +47,10 @@ abstract class TargetingStrategy<T extends Entity> {
 
 /// Can also be used with a null source as a constant value
 class ScaledTargetingStrategy<T extends Entity> extends TargetingStrategy<T> {
-    final TargetingStrategy<T> source;
+    final TargetingStrategy<T>? source;
     final double scale;
 
-    factory ScaledTargetingStrategy(TargetingStrategy<T> source, double scale) {
+    factory ScaledTargetingStrategy(TargetingStrategy<T>? source, double scale) {
         if (source is ScaledTargetingStrategy<T>) {
             final ScaledTargetingStrategy<T> s = source;
             return new ScaledTargetingStrategy<T>._(s.source, scale * s.scale);
@@ -59,10 +59,10 @@ class ScaledTargetingStrategy<T extends Entity> extends TargetingStrategy<T> {
         }
     }
 
-    const ScaledTargetingStrategy._(TargetingStrategy<T> this.source, double this.scale);
+    const ScaledTargetingStrategy._(TargetingStrategy<T>? this.source, double this.scale);
 
     @override
-    double evaluate(Tower tower, T target) => source == null ? scale : source.evaluate(tower, target) * scale;
+    double evaluate(Tower tower, T target) => source == null ? scale : source!.evaluate(tower, target) * scale;
 }
 
 class InverseTargetingStrategy<T extends Entity> extends TargetingStrategy<T> {
@@ -75,7 +75,7 @@ class InverseTargetingStrategy<T extends Entity> extends TargetingStrategy<T> {
             return source.source;
         } else if (source is ScaledTargetingStrategy<T>) {
             if (source.source is InverseTargetingStrategy<T>) {
-                final InverseTargetingStrategy<T> inv = source.source;
+                final InverseTargetingStrategy<T> inv = source.source as InverseTargetingStrategy<T>;
                 return new ScaledTargetingStrategy<T>(inv.source, source.scale);
             } else {
                 return new InverseTargetingStrategy<T>(source);
@@ -101,18 +101,18 @@ class CompositeTargetingStrategy<T extends Entity> extends TargetingStrategy<T> 
     factory CompositeTargetingStrategy(CompositeMode mode, TargetingStrategy<T> first, TargetingStrategy<T> second) {
         final bool firstComp = first is CompositeTargetingStrategy<T>;
         final bool secondComp = second is CompositeTargetingStrategy<T>;
-        final CompositeTargetingStrategy<T> firstC = firstComp ? first : null;
-        final CompositeTargetingStrategy<T> secondC = secondComp ? second : null;
+        final CompositeTargetingStrategy<T>? firstC = firstComp ? first : null;
+        final CompositeTargetingStrategy<T>? secondC = secondComp ? second : null;
 
-        if (firstComp && firstC.mode == mode) {
-            if (secondComp && secondC.mode == mode) {
+        if (firstComp && firstC!.mode == mode) {
+            if (secondComp && secondC!.mode == mode) {
                 firstC.strategies.addAll(secondC.strategies);
                 return firstC;
             } else {
                 firstC.strategies.add(second);
                 return firstC;
             }
-        } else if (secondComp && secondC.mode == mode) {
+        } else if (secondComp && secondC!.mode == mode) {
             final CompositeTargetingStrategy<T> secondC = second;
             secondC.strategies.add(first);
             return secondC;
@@ -128,7 +128,7 @@ class CompositeTargetingStrategy<T extends Entity> extends TargetingStrategy<T> 
 
     @override
     double evaluate(Tower tower, T target) {
-        double val;
+        late double val;
 
         if (this.mode == CompositeMode.add) {
             val = 0;

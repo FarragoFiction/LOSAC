@@ -12,7 +12,7 @@ abstract class GridMeshProvider extends MeshProvider<Grid> {
     GridMeshProvider(Renderer3D renderer) : super(renderer);
 
     @override
-    B.AbstractMesh provide(Grid grid) {
+    B.AbstractMesh? provide(Grid grid) {
         final B.Mesh mesh = new B.Mesh(getMeshName(grid))..isPickable = false;
 
         final B.Mesh pickPlane = B.PlaneBuilder.CreatePlane("pickPlane", new B.PlaneBuilderCreatePlaneOptions(
@@ -34,13 +34,15 @@ class DebugGridMeshProvider extends GridMeshProvider {
     DebugGridMeshProvider(Renderer3D renderer) : super(renderer);
 
     @override
-    B.AbstractMesh provide(Grid grid) {
-        final B.Mesh mesh = super.provide(grid);
+    B.AbstractMesh? provide(Grid grid) {
+        final B.AbstractMesh? mesh = super.provide(grid);
 
-        for (final GridCell g in grid.cells) {
-            if (g.state != GridCellState.hole) {
-                mesh.addChild(createCellMesh()
-                    ..position.set(g.position.x, 0, g.position.y));
+        if (mesh != null) {
+            for (final GridCell g in grid.cells) {
+                if (g.state != GridCellState.hole) {
+                    mesh.addChild(createCellMesh()
+                        ..position.set(g.position.x, 0, g.position.y));
+                }
             }
         }
         return mesh;
@@ -69,8 +71,8 @@ class DebugEndCapMeshProvider extends EndCapMeshProvider {
     DebugEndCapMeshProvider(Renderer3D renderer) : super(renderer);
 
     @override
-    B.AbstractMesh provide(EndCap cap) {
-        final B.Mesh outline = DebugGridMeshProvider.createCellMesh();
+    B.AbstractMesh? provide(EndCap cap) {
+        final B.AbstractMesh outline = DebugGridMeshProvider.createCellMesh();
 
         if (cap is SpawnerObject || cap is ExitObject) {
             final double size = Grid.cellSize * 0.35;

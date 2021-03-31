@@ -8,7 +8,7 @@ import "../../utility/styleconversion.dart";
 import "renderer3d.dart";
 
 class FloaterOverlay {
-    static Element styleElement = querySelector("#stylecontainer");
+    static Element styleElement = querySelector("#stylecontainer")!;
 
     final Renderer3D renderer;
     final CanvasElement canvas;
@@ -27,17 +27,17 @@ class FloaterOverlay {
 
     void draw() {
         final CanvasRenderingContext2D ctx = canvas.context2D;
-        final int w = canvas.width;
-        final int h = canvas.height;
+        final int w = canvas.width!;
+        final int h = canvas.height!;
 
         if (_drewSomethingLastFrame) {
             ctx.clearRect(0, 0, w, h);
             _drewSomethingLastFrame = false;
         }
 
-        B.Matrix identity;
-        B.Matrix transform;
-        B.Viewport viewport;
+        B.Matrix? identity;
+        late B.Matrix transform;
+        late B.Viewport viewport;
 
         final List<_FloaterRenderEntry> toRender = <_FloaterRenderEntry>[];
 
@@ -84,7 +84,7 @@ class FloaterOverlay {
             return style;
         }
 
-        return _styleMap[className].style;
+        return _styleMap[className]!.style;
     }
 }
 
@@ -109,7 +109,7 @@ class _FloaterRenderEntry implements Comparable<_FloaterRenderEntry> {
 
 mixin HasFloater on SimpleLevelObject {
     B.Vector3 getFloaterPos() {
-        if (this.mesh != null) { return this.mesh.position; }
+        if (this.mesh != null) { return this.mesh!.position; }
 
         return new B.Vector3()..setFromGameCoords(this.getModelPosition(), this.getZPosition());
     }

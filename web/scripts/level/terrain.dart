@@ -5,7 +5,7 @@ import 'levelobject.dart';
 
 class Terrain extends SimpleLevelObject {
 
-    B.GroundMesh get groundMesh => mesh;
+    B.GroundMesh? get groundMesh => mesh as B.GroundMesh;
 
     Terrain();
 
@@ -19,7 +19,7 @@ class Terrain extends SimpleLevelObject {
             subdivisions: 512
         ))..isPickable = false;
 
-        this.mesh.material = new B.StandardMaterial("terrain", renderer.scene)
+        this.mesh!.material = new B.StandardMaterial("terrain", renderer.scene)
             ..diffuseColor.set(0.25, 0.25, 0.25)
             ..specularColor.set(0.1, 0.1, 0.1)
         ;

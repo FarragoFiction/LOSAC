@@ -38,14 +38,14 @@ mixin TerrainCollider on MoverEntity {
                 final int id = dMap.getValLocal(x, y);
                 if (id == 0) {
                     col++;
-                    vc.addInPlace(dMap.getWorldCoords(x, y) - this.position);
+                    vc.addInPlace(dMap.getWorldCoords(x, y)! - this.position);
                     continue;
                 }
 
                 final PathNode node = this.engine.level!.pathNodes[id-1];
                 if (node.isolated || node.blocked) {
                     col++;
-                    vc.addInPlace(dMap.getWorldCoords(x, y) - this.position);
+                    vc.addInPlace(dMap.getWorldCoords(x, y)! - this.position);
                 }
             }
         }

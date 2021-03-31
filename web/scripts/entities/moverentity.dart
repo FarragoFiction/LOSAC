@@ -18,10 +18,11 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
     B.Vector2 velocity = B.Vector2.Zero();
     B.Vector2 previousPos = B.Vector2.Zero();
-    double previousRot = 0;
+    num previousRot = 0;
     B.Vector2 drawPos = B.Vector2.Zero();
-    double drawRot = 0;
-
+    num drawRot = 0;
+    /// Internal flag for making sure the initial model placement works correctly
+    bool firstDraw = true;
 
 
     /// Used in calculateBounds to override the main [LevelObject] rotated bounds code
@@ -44,15 +45,18 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
     @override
     void renderUpdate([num interpolation = 0]) {
-        previousPos.setFrom(position);
-        previousRot = rot_angle;
-        drawPos.setFrom(position);
+        if (firstDraw) {
+            previousPos.setFrom(position);
+            previousRot = rot_angle;
+            drawPos.setFrom(position);
+            firstDraw = false;
+        }
 
         final num dx = this.position.x - previousPos.x;
         final num dy = this.position.y - previousPos.y;
         drawPos.set(previousPos.x + dx * interpolation, previousPos.y + dy * interpolation);
 
-        final double da = angleDiff(rot_angle, previousRot);
+        final num da = angleDiff(rot_angle.toDouble(), previousRot.toDouble()); // TODO: CommonLib angleDiff
         drawRot = previousRot + da * interpolation;
 
         this.updateMeshPosition(position: drawPos, rotation:drawRot);
@@ -113,7 +117,7 @@ class MoverEntity extends LevelObject with Entity, HasMatrix {
 
 
     @override
-    B.Vector2 getModelPosition() => drawPos ?? position;
+    B.Vector2 getModelPosition() => drawPos;// ?? position;
     @override
     num getModelRotation() => drawRot;
 }

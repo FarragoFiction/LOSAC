@@ -26,9 +26,12 @@ class DomainMap extends DataMap<int, Uint16List> {
     DomainMapRegion subRegion(int x, int y, int w, int h) => new DomainMapRegion(this, x, y, w, h);
 
     @override
+    DomainMapRegion subRegionForBounds(Rectangle<num> bounds) => super.subRegionForBounds(bounds) as DomainMapRegion;
+
+    @override
     void updateDebugCanvas() {
         debugCanvas = new CanvasElement(width: this.width * DataMap.cellSize, height: this.height * DataMap.cellSize);
-        final CanvasRenderingContext2D ctx = debugCanvas.context2D;
+        final CanvasRenderingContext2D ctx = debugCanvas!.context2D;
 
         final Map<int,String> colours = <int,String>{};
         final Random rand = new Random(1);

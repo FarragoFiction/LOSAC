@@ -28,29 +28,33 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
 
     final int xSize;
     final int ySize;
-    final List<GridCell> cells;
+    late final List<GridCell> cells;
 
     final Map<PathNode, GridCell> _cellsFromNodes = <PathNode, GridCell>{};
 
     @override
     String get name => "grid";
 
-    Grid(int this.xSize, int this.ySize) : cells = new List<GridCell>(xSize*ySize) {
+    Grid(int this.xSize, int this.ySize) { // : cells = new List<GridCell>(xSize*ySize) {
+        cells = new List<GridCell>.from(_generateCells());
+        this.updateConnectors();
+    }
+
+    Iterable<GridCell> _generateCells() sync* {
         final double ox = (xSize - 1) * cellSize * 0.5;
         final double oy = (ySize - 1) * cellSize * 0.5;
         for (int y = 0; y<ySize; y++) {
             for (int x = 0; x < xSize; x++) {
-                final int id = y * xSize + x;
+                //final int id = y * xSize + x;
 
                 final GridCell cell = new GridCell(this)
                     ..position.set(x * cellSize - ox, y * cellSize - oy)
                     ..makeBoundsDirty();
 
-                this.cells[id] = cell;
+                //this.cells[id] = cell;
+                yield cell;
             }
         }
-
-        this.updateConnectors();
     }
 
     void updateConnectors() {
@@ -103,14 +107,14 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
         }
     }
 
-    B.Vector2 cellCoords(int x, int y) {
+    B.Vector2? cellCoords(int x, int y) {
         if (x < 0 || y < 0 || x >= xSize || y >= ySize) {
             return null;
         }
         return new B.Vector2((x + 0.5 - (xSize * 0.5)) * cellSize, (y + 0.5 - (ySize * 0.5)) * cellSize)..applyMatrixInPlace(matrix);
     }
 
-    B.Vector2 cellCoordsById(int id) {
+    B.Vector2? cellCoordsById(int id) {
         final Math.Point<int> coord = id2Coords(id);
         return cellCoords(coord.x, coord.y);
     }
@@ -144,7 +148,7 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
 
         for(int y = 0; y<ySize; y++) {
             for(int x = 0; x<xSize; x++) {
-                final GridCell cell = getCell(x, y);
+                final GridCell cell = getCell(x, y)!;
                 if (cell.state == GridCellState.hole) { continue; }
 
                 final PathNode node = new PathNode()
@@ -158,9 +162,9 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
                 cell.setNode(node);
 
                 if (x > 0) {
-                    final GridCell left = getCell(x-1, y);
+                    final GridCell left = getCell(x-1, y)!;
                     if (left.node != null) {
-                        cell.node.connectTo(left.node);
+                        cell.node!.connectTo(left.node!);
                         /*if (y < ySize - 1) {
                             final GridCell down = getCell(x, y+1);
                             final GridCell downLeft = getCell(x-1,y+1);
@@ -178,9 +182,9 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
                     }
                 }
                 if (y > 0) {
-                    final GridCell up = getCell(x, y-1);
+                    final GridCell up = getCell(x, y-1)!;
                     if (up.node != null) {
-                        cell.node.connectTo(up.node);
+                        cell.node!.connectTo(up.node!);
                     }
                 }
 
@@ -202,7 +206,7 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
         super.clearPathNodes();
     }
 
-    GridCell getCell(int x, int y) {
+    GridCell? getCell(int x, int y) {
         if (x < 0 || x >= xSize || y < 0 || y >= ySize) { return null; }
         return cells[y * xSize + x];
     }
@@ -223,14 +227,17 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
 
         for (int x=x1; x <= x2; x++) {
             for (int y=y1; y <= y2; y++) {
-                c.add(getCell(x, y));
+                final GridCell? cell = getCell(x,y);
+                if (cell != null) {
+                    c.add(cell);
+                }
             }
         }
 
         return c;
     }
 
-    GridCell getCellFromCoords(num x, num y) {
+    GridCell? getCellFromCoords(num x, num y) {
         final double ox = this.xSize * 0.5 * cellSize;
         final double oy = this.ySize * 0.5 * cellSize;
 
@@ -240,7 +247,7 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
         return getCell(cx, cy);
     }
 
-    GridCell getCellFromPathNode(PathNode node) {
+    GridCell? getCellFromPathNode(PathNode node) {
         if (_cellsFromNodes.containsKey(node)) {
             return _cellsFromNodes[node];
         }
@@ -254,14 +261,16 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
 
     @override
     void fillDataMaps(DomainMapRegion domainMap, LevelHeightMapRegion heightMap) {
-        B.Vector2 mWorld, local;
+        B.Vector2? mWorld;
+        B.Vector2 local;
         for (int my = 0; my < domainMap.height; my++) {
             for (int mx = 0; mx < domainMap.width; mx++) {
                 mWorld = domainMap.getWorldCoords(mx, my);
+                if (mWorld == null) { continue; }
                 local = this.getLocalPositionFromWorld(mWorld);
-                final GridCell cell = getCellFromCoords(local.x, local.y);
+                final GridCell? cell = getCellFromCoords(local.x, local.y);
                 if (cell != null && cell.node != null) {
-                    domainMap.setVal(mx, my, cell.node.id);
+                    domainMap.setVal(mx, my, cell.node!.id);
                     if (this.generateLevelHeightData) {
                         heightMap.setVal(mx, my, this.zPosition);
                     }
@@ -271,45 +280,45 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
     }
 
     @override
-    Selectable getSelectable(B.Vector2 loc) {
+    Selectable? getSelectable(B.Vector2 loc) {
         if (!(this.renderer.engine is Game)) {
             return this;
         }
         final B.Vector2 local = this.getLocalPositionFromWorld(loc);
-        final GridCell cell = getCellFromCoords(local.x, local.y);
-        if (cell.state == GridCellState.hole) {
+        final GridCell? cell = getCellFromCoords(local.x, local.y);
+        if (cell == null || cell.state == GridCellState.hole) {
             return null;
         }
         return cell.getSelectable(loc);
     }
 
     Future<void> placeTower(int x, int y, Tower tower) async {
-        final GridCell cell = getCell(x, y);
+        final GridCell? cell = getCell(x, y);
         if (cell == null) { throw Exception("invalid cell $x,$y"); }
         return cell.placeTower(tower);
     }
 
     @override
-    SelectionDisplay<Grid> createSelectionUI(UIController controller) => null;
+    SelectionDisplay<Grid>? createSelectionUI(UIController controller) => null;
 }
 
 class GridCell extends LevelObject with Selectable {
     final Grid grid;
     GridCellState state = GridCellState.clear;
 
-    PathNode node;
-    Tower tower;
+    PathNode? node;
+    Tower? tower;
 
-    Connector up;
-    Connector down;
-    Connector left;
-    Connector right;
+    Connector? up;
+    Connector? down;
+    Connector? left;
+    Connector? right;
 
     @override
     String get name => "gridcell";
 
     @override
-    Level get level => grid.level;
+    Level? get level => grid.level;
 
     GridCell(Grid this.grid) {
         this.parentObject = grid;
@@ -317,24 +326,24 @@ class GridCell extends LevelObject with Selectable {
 
     void setNode(PathNode n) {
         this.node = n;
-        if (this.up != null) { up.node = n; }
-        if (this.down != null) { down.node = n; }
-        if (this.left != null) { left.node = n; }
-        if (this.right != null) { right.node = n; }
+        if (this.up != null) { up!.node = n; }
+        if (this.down != null) { down!.node = n; }
+        if (this.left != null) { left!.node = n; }
+        if (this.right != null) { right!.node = n; }
 
     }
 
     void setBlocked() {
         this.state = GridCellState.blocked;
         if (this.node != null) {
-            node.blocked = true;
+            node!.blocked = true;
         }
     }
 
     void setClear() {
         this.state = GridCellState.clear;
         if (this.node != null) {
-            node.blocked = false;
+            node!.blocked = false;
         }
     }
 
@@ -347,8 +356,8 @@ class GridCell extends LevelObject with Selectable {
     }
 
     @override
-    Selectable getSelectable(B.Vector2 loc) {
-        if (this.tower != null) { return tower.getSelectable(loc); }
+    Selectable? getSelectable(B.Vector2 loc) {
+        if (this.tower != null) { return tower!.getSelectable(loc); }
         return this;
     }
 
@@ -358,13 +367,13 @@ class GridCell extends LevelObject with Selectable {
     Future<void> placeTower(Tower tower) async {
 
         if (tower.towerType.blocksPath) {
-            await level.engine.pathfinder.flipNodeState(<PathNode>[node]);
+            await level!.engine.pathfinder.flipNodeState(<PathNode>[node!]);
             toggleBlocked();
-            await level.engine.pathfinder.recalculatePathData(level);
+            await level!.engine.pathfinder.recalculatePathData(level!);
         }
 
         final B.Vector2 worldCoords = this.getWorldPosition();
-        final double rot = this.getWorldRotation();
+        final num rot = this.getWorldRotation();
         tower
             ..gridCell = this
             ..position.setFrom(worldCoords)
@@ -372,45 +381,45 @@ class GridCell extends LevelObject with Selectable {
             ..turretAngle = rot
             ..prevTurretAngle = rot;
         this.tower = tower;
-        this.level.engine.addEntity(tower);
+        this.level!.engine.addEntity(tower);
     }
 
     Future<void> removeTower() async {
         if (this.tower == null) { return; }
 
-        if (tower.towerType.blocksPath) {
-            await level.engine.pathfinder.flipNodeState(<PathNode>[node]);
+        if (tower!.towerType.blocksPath) {
+            await level!.engine.pathfinder.flipNodeState(<PathNode>[node!]);
             toggleBlocked();
-            await level.engine.pathfinder.recalculatePathData(level);
+            await level!.engine.pathfinder.recalculatePathData(level!);
         }
 
-        this.tower.kill();
+        this.tower!.kill();
         this.tower = null;
     }
 
     Future<void> replaceTower(Tower replacement) async {
-        final bool currentBlocks = tower.towerType.blocksPath;
+        final bool currentBlocks = tower!.towerType.blocksPath;
         final bool replacementBlocks = replacement.towerType.blocksPath;
 
         if (currentBlocks ^ replacementBlocks) {
-            await level.engine.pathfinder.flipNodeState(<PathNode>[node]);
+            await level!.engine.pathfinder.flipNodeState(<PathNode>[node!]);
             toggleBlocked();
-            await level.engine.pathfinder.recalculatePathData(level);
+            await level!.engine.pathfinder.recalculatePathData(level!);
         }
 
-        tower.kill();
+        tower!.kill();
 
         tower = replacement;
 
         final B.Vector2 worldCoords = this.getWorldPosition();
-        final double rot = this.getWorldRotation();
-        tower
+        final num rot = this.getWorldRotation();
+        tower!
             ..gridCell = this
             ..position.setFrom(worldCoords)
             ..rot_angle = rot
             ..turretAngle = rot
             ..prevTurretAngle = rot;
         this.tower = tower;
-        this.level.engine.addEntity(tower);
+        this.level!.engine.addEntity(tower!);
     }
 }

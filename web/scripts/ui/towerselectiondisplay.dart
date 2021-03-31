@@ -10,9 +10,9 @@ class TowerSelectionDisplay extends SelectionDisplayWithGrid<Tower> {
 
     int placementUpdateStep = 0;
 
-    SellButton sellButton;
-    CancelButton cancelButton;
-    ProgressBarUI progressBar;
+    late SellButton sellButton;
+    late CancelButton cancelButton;
+    late ProgressBarUI progressBar;
 
     TowerSelectionDisplay(UIController controller) : super(controller) {
         this.sellButton = this.addChild(new SellButton(controller, this));
@@ -28,28 +28,28 @@ class TowerSelectionDisplay extends SelectionDisplayWithGrid<Tower> {
             placementUpdateStep = 0;
 
             // async, but that's fine
-            if (selected.gridCell.node.blocked) {
+            if (selected!.gridCell.node!.blocked) {
                 placementAllowed = false;
             } else {
-                engine.placementCheck(selected.gridCell.node).then((bool result) {
+                engine.placementCheck(selected!.gridCell.node!).then((bool result) {
                     placementAllowed = result;
                 });
             }
         }
 
-        this.progressBar.progressFraction = selected.getProgress();
+        this.progressBar.progressFraction = selected!.getProgress();
     }
 
     @override
     Future<void> postSelect() async {
-        for(final TowerType tower in selected.towerType.upgradeList) {
+        for(final TowerType tower in selected!.towerType.upgradeList) {
             grid.addButton(new UpgradeButton(controller, this, tower));
         }
 
-        if (selected.gridCell.node.blocked) {
+        if (selected!.gridCell.node!.blocked) {
             placementAllowed = false;
         } else {
-            placementAllowed = await engine.placementCheck(selected.gridCell.node);
+            placementAllowed = await engine.placementCheck(selected!.gridCell.node!);
         }
         blockChecked = true;
 

@@ -8,7 +8,7 @@ import "levelobject.dart";
 import "pathnode.dart";
 
 mixin Connectible on LevelObject implements PathNodeObject {
-    Iterable<Connector> connectors;
+    late Iterable<Connector> connectors;
     bool drawConnectors = false;
 
     @override
@@ -23,8 +23,8 @@ mixin Connectible on LevelObject implements PathNodeObject {
     @override
     void connectPathNodes() {
         for (final Connector c in connectors) {
-            if (c.node != null && c.other != null && c.other.node != null) {
-                c.node.connectTo(c.other.node);
+            if (c.node != null && c.other != null && c.other!.node != null) {
+                c.node!.connectTo(c.other!.node!);
             }
         }
     }
@@ -58,10 +58,10 @@ abstract class Connector extends LevelObject {
     static const num displaySize = 8;
     final String fillStyle;
 
-    Connector other;
+    Connector? other;
     bool get connected => this.other != null;
 
-    PathNode node;
+    PathNode? node;
 
     Connector(String this.fillStyle);
 
@@ -76,7 +76,7 @@ abstract class Connector extends LevelObject {
 
     void disconnect() {
         if (connected) {
-            other.other = null;
+            other!.other = null;
             this.other = null;
         }
     }
@@ -96,11 +96,14 @@ abstract class Connector extends LevelObject {
             ..fill();
     }*/
 
-    void connectAndOrient(Connector target) {
+    void connectAndOrient(Connector? target) {
         if (target == null || this.connected || target.connected) {
             print("invalid connection: $target");
             return;
         }
+
+        final LevelObject? parent = this.parentObject;
+        if (parent == null) { return; }
 
         this.connect(target);
 
@@ -108,19 +111,19 @@ abstract class Connector extends LevelObject {
         final num targetAngle = target.getWorldRotation() + Math.pi;
         final num thisAngle = this.getWorldRotation();
 
-        final double angleOffset = angleDiff(targetAngle, thisAngle);
+        final double angleOffset = angleDiff(targetAngle.toDouble(), thisAngle.toDouble()); // TODO: Correct CommonLib MathUtils to deal with the downcast changes
 
         final B.Vector2 rotatedPos = this.position.rotate(angleOffset);
         final B.Vector2 movePos = targetPos - rotatedPos;
 
-        final B.Vector2 finalPos = this.getLocalPositionFromWorld(movePos) + this.parentObject.position + this.position;
-        final double finalAngle = this.parentObject.rot_angle + angleOffset;
+        final B.Vector2 finalPos = this.getLocalPositionFromWorld(movePos) + parent.position + this.position;
+        final double finalAngle = parent.rot_angle + angleOffset;
 
         final double targetHeight = target.getZPosition();
 
-        this.parentObject.rot_angle = finalAngle;
-        this.parentObject.position.setFrom(finalPos);
-        this.parentObject.zPosition = targetHeight;
+        parent.rot_angle = finalAngle;
+        parent.position.setFrom(finalPos);
+        parent.zPosition = targetHeight;
     }
 }
 

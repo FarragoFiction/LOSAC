@@ -22,6 +22,6 @@ class ProgressBarUI extends UIComponent {
 
     @override
     void update() {
-        this.element?.style?.setProperty("--progress", progressFraction.toStringAsFixed(2));
+        this.element?.style.setProperty("--progress", progressFraction.toStringAsFixed(2));
     }
 }

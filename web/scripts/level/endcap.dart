@@ -14,8 +14,8 @@ import "pathnode.dart";
 
 abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix, Connectible {
 
-    TNode node;
-    Connector connector;
+    late TNode node;
+    late Connector connector;
 
     EndCap() {
         final Connector c = new ConnectorNeutral()..position.x = Grid.cellSize * 0.5..makeBoundsDirty();
@@ -34,7 +34,7 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
         const double size = Grid.cellSize * 0.5;
         for (int my = 0; my < domainMap.height; my++) {
             for (int mx = 0; mx < domainMap.width; mx++) {
-                mWorld = domainMap.getWorldCoords(mx, my);
+                mWorld = domainMap.getWorldCoords(mx, my)!;
                 local = this.getLocalPositionFromWorld(mWorld);
 
                 if (local.x >= -size && local.x < size && local.y >= -size && local.y < size) {

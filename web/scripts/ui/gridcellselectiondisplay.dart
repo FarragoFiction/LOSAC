@@ -27,7 +27,7 @@ class GridCellSelectionDisplay extends SelectionDisplayWithGrid<GridCell> {
             placementUpdateStep = 0;
 
             // async, but that's fine
-            engine.placementCheck(selected.node).then((bool result) {
+            engine.placementCheck(selected!.node!).then((bool result) {
                 placementAllowed = result;
             });
         }
@@ -35,7 +35,7 @@ class GridCellSelectionDisplay extends SelectionDisplayWithGrid<GridCell> {
 
     @override
     Future<void> postSelect() async {
-        placementAllowed = await engine.placementCheck(selected.node);
+        placementAllowed = await engine.placementCheck(selected!.node!);
         blockChecked = true;
 
         update();

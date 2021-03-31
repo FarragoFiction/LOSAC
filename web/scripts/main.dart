@@ -47,28 +47,28 @@ Future<void> main() async {
 abstract class MainMenu {
 
     static void connectStartButton() {
-        querySelector("#startgame").onClick.first.then((MouseEvent e) async {
-            querySelector("#loadscreen").classes.remove("hidden");
-            querySelector("#menu").classes.add("hidden");
+        querySelector("#startgame")!.onClick.first.then((MouseEvent e) async {
+            querySelector("#loadscreen")!.classes.remove("hidden");
+            querySelector("#menu")!.classes.add("hidden");
 
             await losac();
 
-            querySelector("#loadscreen").classes.add("hidden");
+            querySelector("#loadscreen")!.classes.add("hidden");
         });
     }
 
     static Future<void> exitToMenu(Future<void> Function() cleanup) async {
-        querySelector("#loadscreen").classes.remove("hidden");
+        querySelector("#loadscreen")!.classes.remove("hidden");
 
         await cleanup();
         
-        final Element container = querySelector("#container");
-        final Element newContainer = container.clone(true);
+        final Element container = querySelector("#container")!;
+        final Element newContainer = container.clone(true) as Element;
         container.replaceWith(newContainer);
 
-        querySelector("#menu").classes.remove("hidden");
+        querySelector("#menu")!.classes.remove("hidden");
         connectStartButton();
-        querySelector("#loadscreen").classes.add("hidden");
+        querySelector("#loadscreen")!.classes.add("hidden");
     }
 
     static Future<void> losac() async {
@@ -77,15 +77,15 @@ abstract class MainMenu {
         final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600);
         final CanvasElement floaterCanvas = new CanvasElement(width: 800, height: 600);
 
-        querySelector("#canvascontainer").append(testCanvas);
-        querySelector("#floatercontainer").append(floaterCanvas);
+        querySelector("#canvascontainer")!.append(testCanvas);
+        querySelector("#floatercontainer")!.append(floaterCanvas);
 
         /*final DivElement fpsElement = new DivElement();
     document.body.append(fpsElement);*/
 
-        final Renderer renderer = new Renderer3D(testCanvas, floaterCanvas);
+        final Renderer3D renderer = new Renderer3D(testCanvas, floaterCanvas);
         await renderer.initialise();
-        final Game game = new Game(renderer, querySelector("#uicontainer"));
+        final Game game = new Game(renderer, querySelector("#uicontainer")!);
 
         // LOADING TEST ####################################
         await game.loadBaseDataFiles();
@@ -165,7 +165,7 @@ abstract class MainMenu {
 
         testPath.updateConnectors();
         testPath.endConnector.connectAndOrient(testGrid
-            .getCell(0, 0)
+            .getCell(0, 0)!
             .left);
 
         testPath.rebuildSegments();
@@ -190,7 +190,7 @@ abstract class MainMenu {
         final SpawnerObject testSpawner1 = new SpawnerObject()
             ..meshProvider = endCapMeshProvider;
         testSpawner1.connector.connectAndOrient(testGrid
-            .getCell(0, 9)
+            .getCell(0, 9)!
             .down);
         testLevel.addObject(testSpawner1);
 
@@ -350,7 +350,7 @@ void testInverseBilinear() {
     }
     ctx.putImageData(idata, 0, 0);
 
-    document.body.append(testCanvas);
+    document.body!.append(testCanvas);
 }
 
 void testProjectileArc() {
@@ -388,7 +388,7 @@ void testProjectileArc() {
         print("blue, red: ${padding + h - y},${padding + h - py}");
     }
 
-    document.body.append(canvas);
+    document.body!.append(canvas);
 }
 
 void testMathSolvers() {

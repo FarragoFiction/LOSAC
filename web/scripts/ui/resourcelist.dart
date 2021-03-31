@@ -8,7 +8,7 @@ import "ui.dart";
 class ResourceList extends UIComponent {
 
     ResourceList(UIController controller) : super(controller) {
-        final Game game = engine;
+        final Game game = engine as Game;
 
         for (final ResourceType type in game.resourceTypeRegistry.mapping.values) {
             this.addChild(new ResourceDisplay(controller, type));
@@ -27,14 +27,14 @@ class ResourceList extends UIComponent {
 
 class ResourceDisplay extends UIComponent with HasTooltip {
     ResourceType resource;
-    
-    Element resourceCounter;
+
+    late Element resourceCounter;
 
     ResourceDisplay(UIController controller, ResourceType this.resource) : super(controller);
 
     @override
     Element createElement() {
-        final Game game = engine;
+        final Game game = engine as Game;
 
         final Element div = new DivElement()
             ..className = "ResourceDisplay uibackground"
@@ -59,8 +59,8 @@ class ResourceDisplay extends UIComponent with HasTooltip {
 
     @override
     void update() {
-        final Game game = engine;
-        this.resourceCounter?.text = game.resourceStockpile[resource].floor().toString();
+        final Game game = engine as Game;
+        this.resourceCounter.text = game.resourceStockpile[resource].floor().toString();
     }
 
     @override

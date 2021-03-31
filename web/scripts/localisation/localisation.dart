@@ -16,24 +16,24 @@ class LocalisationEngine {
     /// Matches sequences between paired &s (group 1)
     static final RegExp iconPattern = new RegExp(r"&([^&]+)&");
 
-    Engine engine;
-    FormattingEngine formatting;
+    late Engine engine;
+    late FormattingEngine formatting;
 
     Map<String,Language> languages = <String,Language>{};
-    Language currentLanguage;
+    Language? currentLanguage;
 
     LocalisationEngine() {
         this.formatting = new FormattingEngine(this);
     }
 
-    String translate(String key, {Map<String,String> data}) {
+    String translate(String key, {Map<String,String>? data}) {
         if (currentLanguage == null) {
             return key;
         }
-        return currentLanguage.translate(key, data:data);
+        return currentLanguage!.translate(key, data:data);
     }
 
-    Language get(String name) => languages[name];
+    Language? get(String name) => languages[name];
 
     Future<void> initialise() async {
         await formatting.initialise();
@@ -46,7 +46,7 @@ class LocalisationEngine {
             final YamlMap languageDef = languageDefs[key];
 
             final String path = languageDef["file"];
-            final String fallback = languageDef["fallback"];
+            final String? fallback = languageDef["fallback"];
             final String icon = languageDef["icon"];
             final YamlMap names = languageDef["names"];
 
@@ -66,13 +66,13 @@ class LocalisationEngine {
         }
 
         // if we have a language preference saved, use it
-        final String savedLanguage = await getLanguagePreference();
+        final String? savedLanguage = await getLanguagePreference();
         Language languageToUse;
 
         if (savedLanguage == null || !languages.containsKey(savedLanguage)) {
-            languageToUse = this.languages[languages.keys.first];
+            languageToUse = this.languages[languages.keys.first]!;
         } else {
-            languageToUse = this.languages[savedLanguage];
+            languageToUse = this.languages[savedLanguage]!;
         }
 
         this.currentLanguage = languageToUse;
@@ -81,22 +81,22 @@ class LocalisationEngine {
         await languageToUse.load();
     }
 
-    Future<String> getLanguagePreference() async => null; //TODO: hook language up to the save data when that's in
+    Future<String?> getLanguagePreference() async => null; //TODO: hook language up to the save data when that's in
 }
 
 class Language {
     final String path;
-    Map<String,String> translationTable;
+    Map<String,String>? translationTable;
     final Map<String,String> languageNames;
     final String iconPath;
-    final String fallbackName;
-    Language fallback;
+    final String? fallbackName;
+    Language? fallback;
 
-    Language(String this.path, Map<String,String> this.languageNames, String this.iconPath, {String this.fallbackName});
+    Language(String this.path, Map<String,String> this.languageNames, String this.iconPath, {String? this.fallbackName});
 
-    String translate(String key, {Map<String,String> data}) {
+    String translate(String key, {Map<String,String>? data}) {
         if (data != null && data.containsKey(key)) {
-            final String datum = data[key];
+            final String datum = data[key]!;
 
             if (datum.startsWith("\$")) {
                 return translate(datum.substring(1), data:data);
@@ -105,12 +105,12 @@ class Language {
             return datum;
         }
 
-        if (translationTable.containsKey(key)) {
-            return translationTable[key];
+        if (translationTable!.containsKey(key)) {
+            return translationTable![key]!;
         }
 
         if (fallback != null) {
-            return fallback.translate(key, data:data);
+            return fallback!.translate(key, data:data);
         }
 
         return key;
@@ -137,44 +137,44 @@ class Language {
             final YamlMap entries = file.contents.value["translations"];
 
             for (final dynamic key in entries.keys) {
-                translationTable[key.toString()] = entries[key].toString();
+                translationTable![key.toString()] = entries[key].toString();
             }
         }
 
         // replace cross-references until there are none left which can be resolved
 
-        void Function(String key, [Set<String> visited]) crossRef;
-        crossRef = (String key, [Set<String> visited]) {
+        void Function(String key, [Set<String> visited])? crossRef;
+        crossRef = (String key, [Set<String>? visited]) {
             visited ??= <String>{};
 
             if (visited.contains(key)) {
                 throw Exception("Circular reference detected in localisation, check keys $visited");
             }
 
-            String value = translationTable[key];
+            String value = translationTable![key]!;
             value = value.replaceAllMapped(LocalisationEngine.replacementPattern, (Match match) {
-                final String matchString = match.group(0);
+                final String matchString = match.group(0)!;
 
                 // if we contain some formatting information, just pass through
                 if (match.group(3) != null) {
                     return matchString;
                 }
 
-                final String subKey = match.group(1);
+                final String subKey = match.group(1)!;
 
-                if (translationTable.containsKey(subKey)) {
-                    crossRef(subKey, new Set<String>.from(visited)..add(key));
+                if (translationTable!.containsKey(subKey)) {
+                    crossRef!(subKey, new Set<String>.from(visited!)..add(key));
 
-                    return translationTable[subKey];
+                    return translationTable![subKey]!;
                 }
 
                 return matchString;
             });
 
-            translationTable[key] = value;
+            translationTable![key] = value;
         };
 
-        for (final String key in translationTable.keys) {
+        for (final String key in translationTable!.keys) {
             crossRef(key);
         }
     }

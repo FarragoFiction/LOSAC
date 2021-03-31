@@ -25,7 +25,7 @@ class Level3D extends Level with Renderable3D {
     void drawBoundingBoxes(CanvasRenderingContext2D ctx, double scaleFactor) {
         const double cross = 10;
         ctx.strokeStyle = "rgba(255,200,20)";
-        for (final LevelObject o in objects) {
+        for (final LevelObject o in objects.whereType()) {
             final Rectangle<num> bounds = o.bounds;
             ctx.strokeRect(bounds.left * scaleFactor, bounds.top * scaleFactor, bounds.width * scaleFactor, bounds.height * scaleFactor);
 
@@ -92,8 +92,8 @@ class Level3D extends Level with Renderable3D {
                 if (routeNodes.contains(node.targetNode)) {
                     break;
                 }
-                routeNodes.add(node.targetNode);
-                node = node.targetNode;
+                routeNodes.add(node.targetNode!);
+                node = node.targetNode!;
             }
         }
 
@@ -108,7 +108,7 @@ class Level3D extends Level with Renderable3D {
             }
 
             final B.Vector2 pos = node.position;
-            final B.Vector2 tpos = node.targetNode.position;
+            final B.Vector2 tpos = node.targetNode!.position;
 
             ctx
                 ..beginPath()

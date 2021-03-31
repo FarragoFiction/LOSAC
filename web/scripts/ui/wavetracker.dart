@@ -8,11 +8,11 @@ import "ui.dart";
 class WaveTracker extends UIComponent {
     static double secondsAhead = 75;
 
-    Element waveCounter;
-    Element totalWaveCounter;
+    late Element waveCounter;
+    late Element totalWaveCounter;
 
-    Element barElement;
-    Game get game => engine;
+    late Element barElement;
+    Game get game => engine as Game;
 
     WaveTracker(UIController controller) : super(controller);
 

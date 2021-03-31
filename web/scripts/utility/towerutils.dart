@@ -113,7 +113,9 @@ abstract class TowerUtils {
         final B.Vector2 tPos = tower.position;
 
         B.Vector2 pos = enemy.position;
-        PathNode nextNode = enemy.targetNode!;
+        PathNode? nextNode = enemy.targetNode;
+        if (nextNode == null) { return enemy.position; }
+
         B.Vector2 targetOffset = nextNode.position - pos;
         num targetDistance = targetOffset.length();
         B.Vector2 dir = targetOffset / targetDistance;
@@ -153,15 +155,16 @@ abstract class TowerUtils {
             }
 
             timeOffset += timeToNode;
-            pos = nextNode.position;
-            nextNode = nextNode.targetNode!;
+            pos = nextNode!.position;
+            nextNode = nextNode.targetNode;
+            if (nextNode == null) { break; }
             targetOffset = nextNode.position - pos;
             targetDistance = targetOffset.length();
             dir = targetOffset / targetDistance;
 
             iter++;
         }
-        print("ran out of iterations");
+        //print("ran out of iterations");
         return pos;
     }
 

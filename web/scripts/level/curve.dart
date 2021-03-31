@@ -16,13 +16,13 @@ import "pathnode.dart";
 
 class Curve extends LevelObject with Connectible {
     final List<CurveVertex> _vertices = <CurveVertex>[];
-    List<CurveVertex> vertices;
+    late List<CurveVertex> vertices;
     bool renderVertices = true;
     bool renderSegments = false;
     double width = 25.0;
 
-    Connector startConnector;
-    Connector endConnector;
+    late Connector startConnector;
+    late Connector endConnector;
 
     final List<CurveSegment> segments = <CurveSegment>[];
 
@@ -117,7 +117,7 @@ class Curve extends LevelObject with Connectible {
                 final B.Vector3 o1 = v1.handle2pos + v1pos;
                 final B.Vector3 o2 = v2.handle1pos + v2pos;
 
-                final double maxlength = v1.handle2pos.length() + v2.handle1pos.length() + (o2-o1).length();
+                final num maxlength = v1.handle2pos.length() + v2.handle1pos.length() + (o2-o1).length();
 
                 final int segmentCount = getSegmentCountForLength(maxlength);
 
@@ -139,7 +139,7 @@ class Curve extends LevelObject with Connectible {
                 if (i != 0 && i != segments.length - 1) {
                     final B.Vector2 v1 = (pos - segments[i - 1].position).normalize();
                     final B.Vector2 v2 = (segments[i + 1].position - pos).normalize();
-                    final double dot = v1.dot(v2);
+                    final num dot = v1.dot(v2);
                     mult = Math.sqrt(2 / (dot + 1));
                 }
 
@@ -149,7 +149,7 @@ class Curve extends LevelObject with Connectible {
     }
 
     static const int minSegments = 8;
-    int getSegmentCountForLength(double length) {
+    int getSegmentCountForLength(num length) {
         final double segs = length/(width*4);
 
         return Math.sqrt(segs * segs * 0.6 + minSegments * minSegments).ceil();
@@ -175,7 +175,7 @@ class Curve extends LevelObject with Connectible {
         B.Vector2 norm = new B.Vector2(total.x,total.z).normalize();
         norm = new B.Vector2(-norm.y, norm.x);
 
-        return new CurveSegment()..position.set(point.x, point.z)..zPosition = point.y..norm = norm..parentObject=this;
+        return new CurveSegment()..position.set(point.x, point.z)..zPosition = point.y.toDouble()..norm = norm..parentObject=this;
     }
 
     @override
@@ -183,7 +183,7 @@ class Curve extends LevelObject with Connectible {
         final List<PathNode> nodes = <PathNode>[];
 
         CurveSegment seg;
-        CurveSegment prev;
+        CurveSegment? prev;
 
         for(int i=0; i<segments.length; i++) {
             seg = segments[i];
@@ -196,7 +196,7 @@ class Curve extends LevelObject with Connectible {
             nodes.add(node);
 
             if (prev != null) {
-                node.connectTo(prev.node);
+                node.connectTo(prev.node!);
             }
 
             prev = seg;
@@ -269,7 +269,7 @@ class Curve extends LevelObject with Connectible {
     @override
     void fillDataMaps(DomainMapRegion domainMap, LevelHeightMapRegion heightMap) {
 
-        final List<List<B.Vector2>> polys = new List<List<B.Vector2>>.generate(segments.length, (int i) => new List<B.Vector2>(4));
+        final List<List<B.Vector2>> polys = new List<List<B.Vector2>>.generate(segments.length, (int i) => <B.Vector2>[B.Vector2.Zero(),B.Vector2.Zero(),B.Vector2.Zero(),B.Vector2.Zero()]);
 
         for(int i=0; i<segments.length; i++) {
             final CurveSegment seg = segments[i];
@@ -326,7 +326,7 @@ class Curve extends LevelObject with Connectible {
 
                 for (int y = top; y <= bottom; y++) {
                     int nodes = 0;
-                    final List<int> nodeX = new List<int>(polyCorners);
+                    final List<int> nodeX = new List<int>.filled(polyCorners, 0);
 
                     int j = polyCorners-1;
                     for (int i=0; i<polyCorners; i++) {
@@ -352,7 +352,7 @@ class Curve extends LevelObject with Connectible {
 
                     for (int l=0; l<nodes; l+=2) {
                         for (int pixelX = nodeX[l]; pixelX<=nodeX[l+1]; pixelX++) {
-                            domainMap.setVal(pixelX, y, seg.node.id);
+                            domainMap.setVal(pixelX, y, seg.node!.id);
 
                             if (this.generateLevelHeightData) {
                                 final B.Vector2 uv = LevelUtils.inverseBilinear(new B.Vector2(pixelX,y), poly[1], poly[0], poly[3], poly[2]);
@@ -388,18 +388,18 @@ class Curve extends LevelObject with Connectible {
 }
 
 class CurveSegment extends LevelObject {
-    B.Vector2 norm;
+    late B.Vector2 norm;
     double cornerMultiplier = 1.0;
 
-    PathNode node;
+    PathNode? node;
 }
 
 class CurveVertex extends LevelObject with HasMatrix {
     double slope = 0.0;
     double _handle1 = 10.0;
     double _handle2 = 10.0;
-    B.Vector3 _handle1pos;
-    B.Vector3 _handle2pos;
+    B.Vector3? _handle1pos;
+    B.Vector3? _handle2pos;
 
     double get handle1 => _handle1;
     set handle1(double val) {
@@ -416,7 +416,7 @@ class CurveVertex extends LevelObject with HasMatrix {
 
     @override
     set rot_angle(num val) {
-        super.rot_angle = val;
+        super.rot_angle = val.toDouble();
         _handle1pos = null;
         _handle2pos = null;
     }
@@ -425,13 +425,13 @@ class CurveVertex extends LevelObject with HasMatrix {
         final double z = Math.tan(this.slope) * handle1;
         final B.Vector2 xy = new B.Vector2(-handle1,0)..applyMatrixInPlace(matrix);
         _handle1pos ??= new B.Vector3(xy.x, -z, xy.y);
-        return _handle1pos;
+        return _handle1pos!;
     }
     B.Vector3 get handle2pos {
         final double z = Math.tan(this.slope) * handle2;
         final B.Vector2 xy = new B.Vector2(handle2,0)..applyMatrixInPlace(matrix);
         _handle2pos ??= new B.Vector3(xy.x, z, xy.y);
-        return _handle2pos;
+        return _handle2pos!;
     }
 
     @override
