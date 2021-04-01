@@ -8,6 +8,10 @@ abstract class TargetingStrategy<T extends Entity> {
 
     double evaluate(Tower tower, T target);
 
+    TargetingStrategy<T> operator -() {
+        return this * -1;
+    }
+
     TargetingStrategy<T> operator *(Object other) {
         if (other is num) {
             return new ScaledTargetingStrategy<T>(this, other.toDouble());
@@ -50,12 +54,12 @@ class ScaledTargetingStrategy<T extends Entity> extends TargetingStrategy<T> {
     final TargetingStrategy<T>? source;
     final double scale;
 
-    factory ScaledTargetingStrategy(TargetingStrategy<T>? source, double scale) {
+    factory ScaledTargetingStrategy(TargetingStrategy<T>? source, num scale) {
         if (source is ScaledTargetingStrategy<T>) {
             final ScaledTargetingStrategy<T> s = source;
             return new ScaledTargetingStrategy<T>._(s.source, scale * s.scale);
         } else {
-            return new ScaledTargetingStrategy<T>._(source, scale);
+            return new ScaledTargetingStrategy<T>._(source, scale.toDouble());
         }
     }
 
@@ -63,6 +67,9 @@ class ScaledTargetingStrategy<T extends Entity> extends TargetingStrategy<T> {
 
     @override
     double evaluate(Tower tower, T target) => source == null ? scale : source!.evaluate(tower, target) * scale;
+
+    @override
+    String toString() => source == null ? scale.toString() : "( $source * $scale )";
 }
 
 class InverseTargetingStrategy<T extends Entity> extends TargetingStrategy<T> {
@@ -87,6 +94,9 @@ class InverseTargetingStrategy<T extends Entity> extends TargetingStrategy<T> {
 
     @override
     double evaluate(Tower tower, T target) => 1.0 / source.evaluate(tower, target);
+
+    @override
+    String toString() => "( 1 / $source )";
 }
 
 enum CompositeMode {
@@ -146,6 +156,9 @@ class CompositeTargetingStrategy<T extends Entity> extends TargetingStrategy<T> 
 
         return val;
     }
+
+    @override
+    String toString() => "( ${strategies.join(" ${mode == CompositeMode.add ? "+" : "*"} ")} )";
 }
 
 abstract class EnemyTargetingStrategy extends TargetingStrategy<Enemy> {}

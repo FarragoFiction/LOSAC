@@ -13,4 +13,7 @@ class RandomTargetingStrategy extends EnemyTargetingStrategy {
 
     @override
     double evaluate(Tower tower, Enemy target) => _rand.nextDouble();
+
+    @override
+    String toString() => "Random";
 }

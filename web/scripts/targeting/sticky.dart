@@ -10,4 +10,7 @@ class StickyTargetingStrategy extends EnemyTargetingStrategy {
 
     @override
     double evaluate(Tower tower, Enemy target) => tower.targets.contains(target) ? 1.0 : 0.0;
+
+    @override
+    String toString() => "Sticky";
 }

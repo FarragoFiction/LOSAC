@@ -10,4 +10,7 @@ class ProgressTargetingStrategy extends EnemyTargetingStrategy {
 
     @override
     double evaluate(Tower tower, Enemy target) => target.progressToExit;
+
+    @override
+    String toString() => "Progress";
 }

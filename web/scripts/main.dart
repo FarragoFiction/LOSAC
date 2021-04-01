@@ -28,6 +28,8 @@ import "resources/resourcetype.dart";
 import "utility/levelutils.dart";
 import "utility/mathutils.dart";
 
+import "targeting/targetingparser.dart";
+
 Future<void> main() async {
     Formats.addMapping(Engine.yamlFormat, "yaml");
     //testProjectileArc();
@@ -40,6 +42,8 @@ Future<void> main() async {
     //print(MathUtils.cubic(1.5, 3, 1.5, 1.5).toList()); // this gives 3 NaNs
     //print(MathUtils.cubic(2, 3, 1.5, 1.5).toList());
     //testMathSolvers();
+
+    TargetingParser.test();
 
     MainMenu.connectStartButton();
 }

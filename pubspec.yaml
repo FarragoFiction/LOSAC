@@ -17,6 +17,7 @@ dependencies:
     git: git://github.com/FarragoFiction/CubeLib.git
   collection: any
   yaml: any
+  petitparser: any
 
 dev_dependencies:
   build_runner: ^1.6.0
