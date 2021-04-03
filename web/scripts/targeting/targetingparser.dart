@@ -2,13 +2,26 @@ import "package:petitparser/petitparser.dart";
 
 import "../engine/entity.dart";
 import "../entities/enemy.dart";
+import "../entities/tower.dart";
 import 'strategies.dart';
 
-abstract class TargetingParser {
-    static Parser<TargetingStrategy<Enemy>>? _parser;
-    static Parser<TargetingStrategy<Enemy>> get parser {
-        _parser ??= _build<Enemy>(TargetingStrategies.enemyStrategies).cast();
-        return _parser!;
+class TargetingParser<T extends Entity> {
+    static final TargetingParser<Enemy> enemy = new TargetingParser<Enemy>(TargetingStrategies.enemyStrategies);
+    static final TargetingParser<Tower> tower = new TargetingParser<Tower>(TargetingStrategies.towerStrategies);
+
+    final Map<String, TargetingStrategy<T> Function()> strategies;
+    late final Parser<TargetingStrategy<T>> _parser;
+
+    TargetingParser(Map<String, TargetingStrategy<T> Function()> this.strategies) {
+        _parser = _build(strategies);
+    }
+
+    TargetingStrategy<T>? parse(String input) {
+        try {
+            return _parser.parse(input).value;
+        } on Exception catch (e) {
+            print(e.toString());
+        }
     }
 
     static TargetingStrategy<T> _strategify<T extends Entity>(dynamic n) {
@@ -17,10 +30,10 @@ abstract class TargetingParser {
         } else if (n is TargetingStrategy<T>) {
             return n;
         }
-        throw Exception("Shouldn't reach here");
+        throw Exception("Somehow returned neither a strategy nor a number from the TargetingStrategy parser");
     }
 
-    static Parser _build<T extends Entity>(Map<String, TargetingStrategy<T> Function()> strategyMap) {
+    static Parser<TargetingStrategy<T>> _build<T extends Entity>(Map<String, TargetingStrategy<T> Function()> strategyMap) {
         final ExpressionBuilder builder = new ExpressionBuilder();
 
         final Iterable<Parser<String>> strategyNames = strategyMap.keys.map(stringIgnoreCase);
@@ -46,7 +59,7 @@ abstract class TargetingParser {
             // strategies
             ..primitive(
                 ( strategyNameCheck )
-                    .flatten("Strategy name expected")
+                    .flatten("Strategy name expected. Valid options: [ ${strategyMap.keys.join(", ")} ]")
                     .trim()
                     .map((String input) {
                         return strategyMap[input]!();
@@ -55,38 +68,32 @@ abstract class TargetingParser {
             )
 
             // parentheses
-            ..wrapper(char("(").trim(), char(")").trim(), (Object? left, Object? value, Object? right) => value)
+            ..wrapper(char("(").trim(), char(")").trim(), (String left, dynamic value, String right) => value)
         ;
         // negation
         builder.group().prefix(char("-").trim(), (String op, dynamic a) => -a);
         // multiplication and division
         builder.group()
-            ..left(char("*").trim(), (dynamic a, dynamic op, dynamic b) => _strategify<T>(a) * b)
-            ..left(char("/").trim(), (dynamic a, dynamic op, dynamic b) => _strategify<T>(a) / b);
+            ..left(char("*").trim(), (dynamic a, String op, dynamic b) => _strategify<T>(a) * b)
+            ..left(char("/").trim(), (dynamic a, String op, dynamic b) => _strategify<T>(a) / b);
         // addition and subtraction
         builder.group()
-            ..left(char("+").trim(), (dynamic a, dynamic op, dynamic b) => _strategify<T>(a) + b)
-            ..left(char("-").trim(), (dynamic a, dynamic op, dynamic b) => _strategify<T>(a) - b);
+            ..left(char("+").trim(), (dynamic a, String op, dynamic b) => _strategify<T>(a) + b)
+            ..left(char("-").trim(), (dynamic a, String op, dynamic b) => _strategify<T>(a) - b);
 
-        return builder.build().map((dynamic n) => (n is num) ? _strategify<T>(n) : n).end();
+        return builder.build().map((dynamic n) => _strategify<T>(n)).end().cast();
     }
 
     static void test() {
-        final Parser p = parser;
+        final TargetingParser<Enemy> p = enemy;
 
-        Result<dynamic> result = p.parse("2.5");
-        print("${result.value} -> ${result.value.runtimeType}");
-
-        /*result = p.parse("bob");
-        print("${result.value} -> ${result.value.runtimeType}");
-
-        result = p.parse("foo");
-        print("${result.value} -> ${result.value.runtimeType}");
-
-        result = p.parse("(bob - (foo+3)) * (6 + 2)");
-        print("${result.value} -> ${result.value.runtimeType}");*/
+        dynamic result = p.parse("2.5");
+        print("$result -> ${result.runtimeType}");
 
         result = p.parse("(random + 69 + progress) / (69 * sticky)");
-        print("${result.value} -> ${result.value.runtimeType}");
+        print("$result -> ${result.runtimeType}");
+
+        result = p.parse("bob");
+        print("$result -> ${result.runtimeType}");
     }
 }
