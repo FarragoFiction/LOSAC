@@ -27,7 +27,7 @@ class ResourceType with Registerable {
 
     // This needs to be a method rather than a constructor because it's passed as an argument in the data loader
     // ignore: prefer_constructors_over_static_methods
-    static ResourceType? load(YamlMap yaml) {
+    static ResourceType? load(YamlMap yaml, dynamic extras) {
         final ResourceType object = new ResourceType();
 
         // reject if no name

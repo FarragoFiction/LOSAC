@@ -13,6 +13,9 @@ abstract class FileUtils {
         if (yaml.containsKey(key)) {
             try {
                 setter(yaml[key]);
+            } on Exception catch (e) {
+                Engine.logger.warn("$typeDesc '$name' error parsing '$key' value '${yaml[key]}': $e");
+                return false;
             // ignore: avoid_catching_errors
             } on TypeError {
                 Engine.logger.warn("$typeDesc '$name' ignoring invalid '$key' value: ${yaml[key]}");
@@ -22,4 +25,23 @@ abstract class FileUtils {
         }
         return false;
     }
+
+    static Lambda<dynamic> check<T>(Lambda<T> setter) {
+        return (dynamic data) {
+            if (data is T) {
+                setter(data);
+            } else {
+                throw TypeError();
+            }
+        };
+    }
+}
+
+class MessageOnlyException implements Exception {
+    final String message;
+
+    MessageOnlyException(String this.message);
+
+    @override
+    String toString() => message;
 }

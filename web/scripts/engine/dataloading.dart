@@ -6,9 +6,12 @@ import "package:LoaderLib/Loader.dart";
 import "package:yaml/yaml.dart" as YAML;
 
 import "../entities/enemytype.dart";
+import "../entities/towertype.dart";
 import "../resources/resourcetype.dart";
 import "../utility/fileutils.dart";
 import "engine.dart";
+
+typedef LoaderFunction<T,U> = T? Function(YAML.YamlMap map, U? extras);
 
 abstract class DataLoading {
     static final Logger logger = Engine.logger;
@@ -22,11 +25,12 @@ abstract class DataLoading {
         // This doesn't really do a whole lot for us because it's still one thread but hey, the http requests can happen concurrently at least
         await Future.wait(<Future<void>>[
             loadDefinitionFile("enemies", "Enemy Type", EnemyType.load, engine.enemyTypeRegistry.register),
-            // TODO: load towers here
+            // Here we pass in the resource registry as an extra so that the towers can parse their construction and upgrade costs
+            loadDefinitionFile("towers", "Tower Type", TowerType.load, engine.towerTypeRegistry.register, extras: engine.resourceTypeRegistry),
         ]);
     }
 
-    static Future<void> loadDefinitionFile<T>(String subPath, String typeDesc, Mapping<YAML.YamlMap,T?> generator, Lambda<T> consumer) async {
+    static Future<void> loadDefinitionFile<T,U>(String subPath, String typeDesc, LoaderFunction<T,U> generator, Lambda<T> consumer, {U? extras}) async {
         YAML.YamlDocument files;
         try {
             files = await Loader.getResource("${Engine.dataPath}$subPath/files.yaml", format: Engine.yamlFormat);
@@ -52,7 +56,7 @@ abstract class DataLoading {
                     }
                     return true;
                 }
-            ).whereType<String>().map((String file) => processDefinitionFile(file, subPath, typeDesc, generator))
+            ).whereType<String>().map((String file) => processDefinitionFile(file, subPath, typeDesc, generator, extras))
         );
 
         // take the collated results and register them in the originally requested order
@@ -66,7 +70,7 @@ abstract class DataLoading {
         }
     }
 
-    static Future<List<T>?> processDefinitionFile<T>(String filename, String subPath, String typeDesc, Mapping<YAML.YamlMap,T?> generator) async {
+    static Future<List<T>?> processDefinitionFile<T,U>(String filename, String subPath, String typeDesc, LoaderFunction<T,U> generator, [U? extras]) async {
         final List<T> output = <T>[];
 
         YAML.YamlDocument file;
@@ -90,7 +94,7 @@ abstract class DataLoading {
             }
 
             final YAML.YamlMap definition = entry;
-            final T? item = generator(definition);
+            final T? item = generator(definition, extras);
 
             if (item != null) {
                 output.add(item);

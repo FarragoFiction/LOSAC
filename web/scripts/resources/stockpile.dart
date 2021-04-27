@@ -2,16 +2,42 @@ import "dart:collection";
 import "dart:html";
 
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:yaml/yaml.dart";
 
 import "../engine/game.dart";
+import "../engine/registry.dart";
 import "../entities/floaterentity.dart";
 import "../localisation/localisation.dart";
 import "../utility/extensions.dart";
+import "../utility/fileutils.dart";
 import "resourcetype.dart";
 
 // ignore: prefer_mixin
 class ResourceValue with MapMixin<ResourceType, double> {
     final Map<ResourceType,double> _map = <ResourceType,double>{};
+
+    ResourceValue();
+
+    factory ResourceValue.fromYaml(YamlMap yaml, Registry<ResourceType> registry) {
+        final ResourceValue val = new ResourceValue();
+
+        for (final String key in yaml.keys) {
+            final ResourceType? res = registry.get(key);
+            if (res == null) {
+                //print("missing resource: $key");
+                throw MessageOnlyException("Missing ResourceType: $key");
+            } else {
+                final dynamic count = yaml[key];
+                if (count is num) {
+                    val.addResource(res, count.toDouble());
+                } else {
+                    throw MessageOnlyException("Invalid resource number for '$key': $count");
+                }
+            }
+        }
+
+        return val;
+    }
 
     void add(ResourceValue other, {double multiplier = 1.0}) {
         for (final ResourceType type in other.keys) {

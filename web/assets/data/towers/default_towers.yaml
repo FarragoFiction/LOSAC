@@ -5,3 +5,8 @@
 # name (text, unique, required): The registration key of the tower, used in references and localisation. Must be unique.
 
 - name: basic
+
+  buildCost:
+    default1: 5.5
+    #fart: 3
+    #default2: boot

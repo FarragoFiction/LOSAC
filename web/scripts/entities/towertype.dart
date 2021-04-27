@@ -116,7 +116,9 @@ class TowerType with Registerable {
 
     // This needs to be a method rather than a constructor because it's passed as an argument in the data loader
     // ignore: prefer_constructors_over_static_methods
-    static TowerType? load(YamlMap yaml) {
+    static TowerType? load(YamlMap yaml, Registry<ResourceType>? resourceRegistry) {
+        if (resourceRegistry == null) { throw Exception("Resource registry is null somehow"); }
+
         final TowerType object = new TowerType();
 
         // reject if no name
@@ -124,6 +126,8 @@ class TowerType with Registerable {
             Engine.logger.warn("$typeDesc missing name, skipping");
             return null;
         }
+
+        FileUtils.setFromData(yaml, "buildCost", typeDesc, "Build cost", FileUtils.check((YamlMap d) => object.buildCost = new ResourceValue.fromYaml(d, resourceRegistry)));
 
         return object;
     }

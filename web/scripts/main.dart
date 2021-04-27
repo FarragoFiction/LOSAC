@@ -43,7 +43,7 @@ Future<void> main() async {
     //print(MathUtils.cubic(2, 3, 1.5, 1.5).toList());
     //testMathSolvers();
 
-    TargetingParser.test();
+    //TargetingParser.test();
 
     MainMenu.connectStartButton();
 }
