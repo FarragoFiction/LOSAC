@@ -28,6 +28,9 @@ abstract class DataLoading {
             // Here we pass in the resource registry as an extra so that the towers can parse their construction and upgrade costs
             loadDefinitionFile("towers", "Tower Type", TowerType.load, engine.towerTypeRegistry.register, extras: engine.resourceTypeRegistry),
         ]);
+
+        // Process tower types so that their upgrade lists are properly cross-referenced, since the full list isn't available during loading
+        TowerType.processAllLoadedData(engine.towerTypeRegistry);
     }
 
     static Future<void> loadDefinitionFile<T,U>(String subPath, String typeDesc, LoaderFunction<T,U> generator, Lambda<T> consumer, {U? extras}) async {

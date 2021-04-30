@@ -6,7 +6,14 @@
 
 - name: basic
 
-  buildCost:
-    default1: 5.5
+  #buildCost:
+    #default1: 5.5
     #fart: 3
     #default2: boot
+
+  upgradeList:
+    - basic2
+
+  cheese: poot
+
+- name: basic2

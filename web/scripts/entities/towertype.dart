@@ -11,6 +11,7 @@ import "../localisation/localisation.dart";
 import "../resources/resourcetype.dart";
 import "../targeting/strategies.dart";
 import "../ui/ui.dart";
+import "../utility/extensions.dart";
 import "../utility/fileutils.dart";
 import "enemy.dart";
 import "projectiles/projectile.dart";
@@ -119,16 +120,64 @@ class TowerType with Registerable {
     static TowerType? load(YamlMap yaml, Registry<ResourceType>? resourceRegistry) {
         if (resourceRegistry == null) { throw Exception("Resource registry is null somehow"); }
 
-        final TowerType object = new TowerType();
+        final _LoadedTowerType object = new _LoadedTowerType();
 
         // reject if no name
-        if (!FileUtils.setFromData(yaml, "name", typeDesc, "unknown", (dynamic d) => object.name = d)) {
+        if (!FileUtils.setFromDataChecked(yaml, "name", typeDesc, "unknown", (String d) => object.name = d)) {
             Engine.logger.warn("$typeDesc missing name, skipping");
             return null;
         }
+        final Set<String> fields = <String>{"name"};
+        final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, object.name, fields);
 
-        FileUtils.setFromData(yaml, "buildCost", typeDesc, "Build cost", FileUtils.check((YamlMap d) => object.buildCost = new ResourceValue.fromYaml(d, resourceRegistry)));
+        set("blocksPath", (bool b) => object.blocksPath = b);
+
+        set("buildTIme", (num n) => object.buildTime = n.toDouble());
+        set("buildable", (bool b) => object.buildable = b);
+        set("buildCost", (YamlMap d) => object.buildCost = new ResourceValue.fromYaml(d, resourceRegistry));
+
+        set("upgradeList", (YamlList list) { object.loadingUpgradeList?.addAll(list.map((dynamic element) => element?.toString()).notNull());});
+
+        set("turreted", (bool b) => object.turreted = b);
+        set("leadTargets", (bool b) => object.leadTargets = b);
+        set("leadingRangeGraceFactor", (num n) => object.leadingRangeGraceFactor = n.toDouble());
+        set("turnRate", (num n) => object.turnRate = n.toDouble());
+        set("fireAngle", (num n) => object.fireAngle = n.toDouble());
+        set("weaponHeight", (num n) => object.weaponHeight = n.toDouble());
+
+        FileUtils.warnInvalidFields(yaml, typeDesc, object.name, fields);
 
         return object;
+    }
+
+    /// Process the tower registry to convert the strings from loading into actual references
+    static void processAllLoadedData(Registry<TowerType> registry) {
+        for (final TowerType type in registry.mapping.values) {
+            if (type is _LoadedTowerType) {
+                type.processLoadedData(registry);
+            }
+        }
+    }
+
+}
+
+/// subclass for keeping the loading stuff out of the way
+class _LoadedTowerType extends TowerType {
+    Set<String>? loadingUpgradeList = <String>{};
+
+    void processLoadedData(Registry<TowerType> registry) {
+        if (loadingUpgradeList == null) { return; }
+
+        for (final String key in loadingUpgradeList!) {
+            final TowerType? type = registry.get(key);
+            if (type != null) {
+                upgradeList.add(type);
+            } else {
+                Engine.logger.warn("Missing ${TowerType.typeDesc} upgrade for '$name': $key");
+            }
+        }
+
+        // discard the list now that we're done with it
+        loadingUpgradeList = null;
     }
 }

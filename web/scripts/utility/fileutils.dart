@@ -4,6 +4,8 @@ import 'package:yaml/yaml.dart';
 
 import "../engine/engine.dart";
 
+typedef DataSetter = bool Function<T>(String, void Function(T), [String?]);
+
 abstract class FileUtils {
     static final RegExp invalidFilePattern = new RegExp(r'^(con|prn|aux|nul|com[0-9]|lpt[0-9])$|([<>:"/\\|?*\s])|(\.|\s)$');
 
@@ -34,6 +36,30 @@ abstract class FileUtils {
                 throw TypeError();
             }
         };
+    }
+
+    static bool setFromDataChecked<T>(YamlMap yaml, String key, String typeDesc, String name, Lambda<T> setter) {
+        return setFromData(yaml, key, typeDesc, name, check(setter));
+    }
+
+    static bool Function<T>(String, Lambda<T>, [String? nameOverride]) dataSetter(YamlMap data, String typeDesc, String name, [Set<String>? fieldList]) {
+
+        bool subFunc<T>(String key, Lambda<T> setter, [String? nameOverride]) {
+            // if a field list is provided, add in the key so it can be considered valid later
+            fieldList?.add(key);
+
+            return setFromDataChecked(data, key, typeDesc, nameOverride ?? name, setter);
+        }
+
+        return subFunc;
+    }
+
+    static void warnInvalidFields(YamlMap yaml, String typeDesc, String name, Set<String> fields) {
+        for(final String key in yaml.keys) {
+            if (!fields.contains(key)) {
+                Engine.logger.warn("$typeDesc '$name' has invalid field: $key");
+            }
+        }
     }
 }
 

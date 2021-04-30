@@ -106,3 +106,7 @@ extension ElementExtras on Element {
         return this.offsetHeight + top + bottom;
     }
 }
+
+extension IterableExtras<T> on Iterable<T?> {
+    Iterable<T> notNull() => this.where((T? element) => element != null).cast();
+}
