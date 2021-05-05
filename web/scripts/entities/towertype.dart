@@ -145,6 +145,10 @@ class TowerType with Registerable {
         set("fireAngle", (num n) => object.fireAngle = n.toDouble());
         set("weaponHeight", (num n) => object.weaponHeight = n.toDouble());
 
+        set("weapon", (YamlMap d) => object.weapon = new WeaponType.fromYaml(d, object));
+        print("weapon: ${object.weapon}");
+        print("weapon type: ${object.weapon?.runtimeType}");
+
         FileUtils.warnInvalidFields(yaml, typeDesc, object.name, fields);
 
         return object;

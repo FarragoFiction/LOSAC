@@ -3,8 +3,10 @@ import "dart:math" as Math;
 import "package:CommonLib/Random.dart";
 import "package:CommonLib/Utility.dart";
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:yaml/yaml.dart";
 
 import "../../utility/extensions.dart";
+import "../../utility/fileutils.dart";
 import "../../utility/towerutils.dart";
 import "../enemy.dart";
 import "../newtonianmover.dart";
@@ -113,8 +115,11 @@ class ChaserWeaponType extends WeaponType {
     /// Multiplier for [velocityAngleTransfer] when (velocity dot facing) is 0, interpolates smoothly.
     double velocityAngleTransferLateral = 1.0;
 
-    ChaserWeaponType(TowerType towerType) : super(towerType);
+    //ChaserWeaponType(TowerType towerType) : super(towerType);
 
     @override
     Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => new ChaserProjectile(parent, target, targetPos, targetHeight);
+
+    @override
+    void loadData(DataSetter set) {}
 }

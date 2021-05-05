@@ -16,7 +16,7 @@ class BeamProjectile extends Projectile {
 
 class BeamWeaponType extends WeaponType {
 
-    BeamWeaponType(TowerType towerType) : super(towerType);
+    //BeamWeaponType(TowerType towerType) : super(towerType);
 
     @override
     Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => new BeamProjectile(parent, target, targetPos, targetHeight);

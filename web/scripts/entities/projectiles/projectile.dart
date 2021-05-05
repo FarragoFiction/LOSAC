@@ -3,16 +3,21 @@ import "dart:math" as Math;
 
 import "package:CommonLib/Utility.dart";
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:yaml/yaml.dart";
 
 import "../../engine/game.dart";
 import '../../localisation/localisation.dart';
 import "../../targeting/targetingstrategy.dart";
 import '../../ui/ui.dart';
 import "../../utility/extensions.dart";
+import '../../utility/fileutils.dart';
 import "../enemy.dart";
 import "../moverentity.dart";
 import "../tower.dart";
 import "../towertype.dart";
+import 'beamprojectile.dart';
+import 'chaserprojectile.dart';
+import 'interpolatorprojectile.dart';
 
 export "beamprojectile.dart";
 export "chaserprojectile.dart";
@@ -161,8 +166,9 @@ abstract class Projectile extends MoverEntity {
 }
 
 abstract class WeaponType {
+    static const String typeDesc = "Tower Weapon Type";
 
-    final TowerType towerType;
+    late final TowerType towerType;
 
     final WeaponInfo tooltipData;
 
@@ -199,17 +205,67 @@ abstract class WeaponType {
     /// Multiplier for damage to secondary targets
     double areaOfEffectNonTargetMultiplier = 1.0;
 
-    WeaponType(TowerType this.towerType) : tooltipData = new WeaponInfo() {
+    //WeaponType(TowerType this.towerType) : tooltipData = new WeaponInfo() {
+    WeaponType() : tooltipData = new WeaponInfo() {
         tooltipData.owner = this;
-        load(null);
     }
 
     Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight);
 
-    void load(Map<dynamic,dynamic>? json) {}
-
     void populateTooltip(Element tooltip, LocalisationEngine localisationEngine) {
         tooltip.appendFormattedLocalisation("tooltip.weaponstats", localisationEngine, data: this.tooltipData);
+    }
+
+    static final Map<String, WeaponType Function()> _loadingTypeMap = <String, WeaponType Function()>{
+        //"beam" : () => new BeamWeaponType(),
+        "chaser" : () => new ChaserWeaponType(),
+        "default" : () => new InterpolatorWeaponType(),
+    };
+
+    factory WeaponType.fromYaml(YamlMap yaml, TowerType towerType) {
+        String type = "default";
+        if (yaml.containsKey("type")) {
+            type = yaml["type"].toString();
+        }
+
+        if (_loadingTypeMap.containsKey(type)) {
+            final WeaponType weapon = _loadingTypeMap[type]!()..towerType = towerType;
+
+            final Set<String> fields = <String>{};
+            final DataSetter setter = FileUtils.dataSetter(yaml, typeDesc, towerType.name, fields);
+
+            weapon.loadData(setter);
+
+            FileUtils.warnInvalidFields(yaml, typeDesc, towerType.name, fields);
+
+            return weapon;
+        } else {
+            throw MessageOnlyException("Invalid weapon type: '$type'. Possible values: [${_loadingTypeMap.keys.join(", ")}]");
+        }
+    }
+
+    void loadData(DataSetter set) {
+
+        set("maxTargets", (int n) => this.maxTargets = n.toInt());
+        set("cooldown", (num n) => this.cooldown = n.toDouble());
+        set("damage", (num n) => this.damage = n.toDouble());
+
+        // targeting strategy
+
+        set("range", (num n) => this.range = n.toDouble());
+        //projectileSpeed num
+        //useBallisticIntercept bool
+        //useBallisticHighArc bool
+        
+        //burst int
+        //burstTime num
+
+        //aoe bool
+        //aoeRadius num
+        //aoeHotspot num
+        //TODO: implement a field which sets what the damage should be at the EDGE of aoe
+        //aoeSecondaryMult num
+
     }
 }
 

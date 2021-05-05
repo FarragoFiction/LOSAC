@@ -2,10 +2,12 @@ import "dart:html";
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:yaml/yaml.dart";
 
 import "../../engine/game.dart";
 import "../../renderer/3d/floateroverlay.dart";
 import "../../utility/extensions.dart";
+import "../../utility/fileutils.dart";
 import "../../utility/styleconversion.dart";
 import "../../utility/towerutils.dart";
 import "../enemy.dart";
@@ -150,8 +152,11 @@ class InterpolatorWeaponType extends WeaponType {
     @override
     bool get useBallisticHighArc => gravityMode == InterpolatorWeaponGravityMode.ballisticHigh;
 
-    InterpolatorWeaponType(TowerType towerType) : super(towerType);
+    //InterpolatorWeaponType(TowerType towerType) : super(towerType);
 
     @override
     Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => useTextProjectiles ? new InterpolatorTextProjectile(parent, target, targetPos, targetHeight) : new InterpolatorProjectile(parent, target, targetPos, targetHeight);
+
+    @override
+    void loadData(DataSetter set) {}
 }

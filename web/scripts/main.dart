@@ -239,7 +239,7 @@ abstract class MainMenu {
             ..leadTargets = true
         ;
         //testTowerType.weapon = new ChaserWeaponType(testTowerType);
-        testTowerType.weapon = new InterpolatorWeaponType(testTowerType)
+        testTowerType.weapon = new InterpolatorWeaponType()..towerType = testTowerType
             ..projectileSpeed = 350
         ;
         game.towerTypeRegistry.register(testTowerType);
@@ -250,7 +250,7 @@ abstract class MainMenu {
             ..buildCost.addResource(testResource, 25)
             ..buildCost.addResource(testResource2, 1)
         ;
-        upgradeTestTowerType.weapon = new ChaserWeaponType(upgradeTestTowerType)
+        upgradeTestTowerType.weapon = new ChaserWeaponType()..towerType = upgradeTestTowerType
             ..damage = 3;
         game.towerTypeRegistry.register(upgradeTestTowerType);
         testTowerType.upgradeList.add(upgradeTestTowerType);
