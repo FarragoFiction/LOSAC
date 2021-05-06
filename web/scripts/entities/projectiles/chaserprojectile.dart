@@ -121,5 +121,22 @@ class ChaserWeaponType extends WeaponType {
     Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => new ChaserProjectile(parent, target, targetPos, targetHeight);
 
     @override
-    void loadData(DataSetter set) {}
+    void loadData(DataSetter set) {
+        super.loadData(set);
+
+        set("lockOn", (bool b) => this.lockOn = b);
+
+        set("turnRate", (num n) => this.turnRate = n.toDouble().max(0));
+        set("thrustPower", (num n) => this.thrustPower = n.toDouble().max(0));
+        set("initialThrust", (num n) => this.initialThrust.toDouble());
+
+        set("friction", (num n) => this.friction = n.toDouble().clamp(0, 1));
+        set("lateralFriction", (num n) => this.lateralFriction = n.toDouble().clamp(0, 1));
+        set("angularFriction", (num n) => this.angularFriction = n.toDouble().clamp(0, 1));
+
+        set("spread", (num n) => this.spread = n.toDouble().clamp(0, 1));
+
+        set("velocityAngleTransfer", (num n) => this.velocityAngleTransfer = n.toDouble().clamp(0, 1));
+        set("velocityAngleTransferLateral", (num n) => this.velocityAngleTransferLateral = n.toDouble());
+    }
 }

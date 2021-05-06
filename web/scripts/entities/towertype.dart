@@ -132,7 +132,7 @@ class TowerType with Registerable {
 
         set("blocksPath", (bool b) => object.blocksPath = b);
 
-        set("buildTIme", (num n) => object.buildTime = n.toDouble());
+        set("buildTIme", (num n) => object.buildTime = n.toDouble().max(0));
         set("buildable", (bool b) => object.buildable = b);
         set("buildCost", (YamlMap d) => object.buildCost = new ResourceValue.fromYaml(d, resourceRegistry));
 
@@ -140,14 +140,12 @@ class TowerType with Registerable {
 
         set("turreted", (bool b) => object.turreted = b);
         set("leadTargets", (bool b) => object.leadTargets = b);
-        set("leadingRangeGraceFactor", (num n) => object.leadingRangeGraceFactor = n.toDouble());
-        set("turnRate", (num n) => object.turnRate = n.toDouble());
-        set("fireAngle", (num n) => object.fireAngle = n.toDouble());
+        set("leadingRangeGraceFactor", (num n) => object.leadingRangeGraceFactor = n.toDouble().max(1));
+        set("turnRate", (num n) => object.turnRate = n.toDouble().max(0));
+        set("fireAngle", (num n) => object.fireAngle = n.toDouble().max(0));
         set("weaponHeight", (num n) => object.weaponHeight = n.toDouble());
 
         set("weapon", (YamlMap d) => object.weapon = new WeaponType.fromYaml(d, object));
-        print("weapon: ${object.weapon}");
-        print("weapon type: ${object.weapon?.runtimeType}");
 
         FileUtils.warnInvalidFields(yaml, typeDesc, object.name, fields);
 

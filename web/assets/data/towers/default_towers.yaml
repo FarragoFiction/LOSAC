@@ -17,6 +17,7 @@
   cheese: poot
 
   weapon:
-    type: chaser
+    #type: chaser
+    gravityMode: poot
 
 - name: basic2

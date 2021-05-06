@@ -110,3 +110,17 @@ extension ElementExtras on Element {
 extension IterableExtras<T> on Iterable<T?> {
     Iterable<T> notNull() => this.where((T? element) => element != null).cast();
 }
+
+// very sick of having to do Math.min/max when .clamp is a method of numbers
+extension NumExtras on num {
+    num min(num limit) => Math.min(this, limit);
+    num max(num limit) => Math.max(this, limit);
+}
+extension DoubleExtras on double {
+    double min(num limit) => Math.min(this, limit.toDouble());
+    double max(num limit) => Math.max(this, limit.toDouble());
+}
+extension IntExtras on int {
+    int min(int limit) => Math.min(this, limit);
+    int max(int limit) => Math.max(this, limit);
+}

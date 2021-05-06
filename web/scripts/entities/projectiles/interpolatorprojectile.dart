@@ -157,6 +157,17 @@ class InterpolatorWeaponType extends WeaponType {
     @override
     Projectile spawnProjectile(Tower parent, Enemy target, B.Vector2 targetPos, double targetHeight) => useTextProjectiles ? new InterpolatorTextProjectile(parent, target, targetPos, targetHeight) : new InterpolatorProjectile(parent, target, targetPos, targetHeight);
 
+    static final Map<String, InterpolatorWeaponGravityMode> _loadingGravityMap = <String, InterpolatorWeaponGravityMode>{
+        "none" : InterpolatorWeaponGravityMode.none,
+        "simpleBallistic" : InterpolatorWeaponGravityMode.simpleBallistic,
+        "ballistic" : InterpolatorWeaponGravityMode.ballistic,
+        "ballisticHigh" : InterpolatorWeaponGravityMode.ballisticHigh,
+    };
+
     @override
-    void loadData(DataSetter set) {}
+    void loadData(DataSetter set) {
+        super.loadData(set);
+
+        set("gravityMode", (String s) => this.gravityMode = FileUtils.option(s, _loadingGravityMap));
+    }
 }

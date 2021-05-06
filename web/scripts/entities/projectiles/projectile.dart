@@ -7,6 +7,7 @@ import "package:yaml/yaml.dart";
 
 import "../../engine/game.dart";
 import '../../localisation/localisation.dart';
+import '../../targeting/targetingparser.dart';
 import "../../targeting/targetingstrategy.dart";
 import '../../ui/ui.dart';
 import "../../utility/extensions.dart";
@@ -68,6 +69,7 @@ abstract class Projectile extends MoverEntity {
             // AOE
             final double radius = projectileType.areaOfEffectRadius; // damage radius
             final double hotspot = projectileType.areaOfEffectHotspot; // full damage fraction of radius
+            final double falloff = projectileType.areaOfEffectFalloff; // damage fraction at edge of radius
             final double splash = projectileType.areaOfEffectNonTargetMultiplier; // non-main-target damage multiplier
             final Game game = this.engine as Game;
             final Set<Enemy> targets = game.enemySelector.queryRadius(position.x, position.y, radius);
@@ -89,12 +91,13 @@ abstract class Projectile extends MoverEntity {
                     } else {
                         // if the target is in falloff range
                         final double dist = Math.sqrt(dSquared);
-                        final double fraction = 1 - (((dist / radius).clamp(0, 1) - hotspot) / (1-hotspot));
+                        final double fraction = hotspot >= 1 ? 1 : (1 - (((dist / radius).clamp(0, 1) - hotspot) / (1-hotspot)));
+                        final double falloffFraction = fraction * (1-falloff) + falloff;
 
                         if( hasTarget && enemy == target) {
-                            enemy.damage(damage * fraction);
+                            enemy.damage(damage * falloffFraction);
                         } else {
-                            enemy.damage(damage * splash * fraction);
+                            enemy.damage(damage * splash * falloffFraction);
                         }
                     }
                 }
@@ -202,6 +205,8 @@ abstract class WeaponType {
     double areaOfEffectRadius = 60;
     /// Fraction of [areaOfEffectRadius] in which targets take full damage
     double areaOfEffectHotspot = 0.2;
+    /// Fraction of damage taken by enemies at the edge of [areaOfEffectRadius]
+    double areaOfEffectFalloff = 0.0;
     /// Multiplier for damage to secondary targets
     double areaOfEffectNonTargetMultiplier = 1.0;
 
@@ -229,13 +234,17 @@ abstract class WeaponType {
         }
 
         if (_loadingTypeMap.containsKey(type)) {
+            // instantiate a weapon of the appropriate type
             final WeaponType weapon = _loadingTypeMap[type]!()..towerType = towerType;
 
+            // set up the data setter
             final Set<String> fields = <String>{};
             final DataSetter setter = FileUtils.dataSetter(yaml, typeDesc, towerType.name, fields);
 
+            // pass it to the weapon to set
             weapon.loadData(setter);
 
+            // follow up on any invalids
             FileUtils.warnInvalidFields(yaml, typeDesc, towerType.name, fields);
 
             return weapon;
@@ -246,25 +255,25 @@ abstract class WeaponType {
 
     void loadData(DataSetter set) {
 
-        set("maxTargets", (int n) => this.maxTargets = n.toInt());
-        set("cooldown", (num n) => this.cooldown = n.toDouble());
-        set("damage", (num n) => this.damage = n.toDouble());
+        set("maxTargets", (int n) => this.maxTargets = n.floor().max(1));
+        set("cooldown", (num n) => this.cooldown = n.toDouble().max(1/1000)); // this shouldn't ever come remotely near the limit, but it's to prevent dividing by zero
+        set("damage", (num n) => this.damage = n.toDouble().max(0));
 
         // targeting strategy
+        set("targetingStrategy", (String s) => this.targetingStrategy = TargetingParser.enemy.parse(s) ?? TowerType.defaultTargetingStrategy);
 
-        set("range", (num n) => this.range = n.toDouble());
-        //projectileSpeed num
-        //useBallisticIntercept bool
-        //useBallisticHighArc bool
-        
-        //burst int
-        //burstTime num
+        set("range", (num n) => this.range = n.toDouble().max(0));
+        set("projectileSpeed", (num n) => this.projectileSpeed = n.toDouble().max(1));
 
-        //aoe bool
-        //aoeRadius num
-        //aoeHotspot num
-        //TODO: implement a field which sets what the damage should be at the EDGE of aoe
-        //aoeSecondaryMult num
+        set("burst", (int n) => this.burst = n.max(1));
+        set("burstTime", (num n) => this.burstTime = n.toDouble().clamp(0, 1));
+
+        //set("hasAoe", (bool b) => this.hasAreaOfEffect = b);
+        // actually, let's do this one by seeing if the radius is > 0, don't need both in the files
+        set("aoeRadius", (num n) { this.areaOfEffectRadius = n.toDouble().max(0); this.hasAreaOfEffect = this.areaOfEffectRadius > 0; });
+        set("aoeHotspot", (num n) => this.areaOfEffectHotspot = n.toDouble().clamp(0, 1));
+        set("aoeFalloff", (num n) => this.areaOfEffectFalloff = n.toDouble().max(0));
+        set("aoeSecondary", (num n) => this.areaOfEffectNonTargetMultiplier = n.toDouble().max(0));
 
     }
 }

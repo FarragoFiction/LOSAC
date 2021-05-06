@@ -61,6 +61,13 @@ abstract class FileUtils {
             }
         }
     }
+
+    static T option<T>(String key, Map<String,T> map) {
+        if (map.containsKey(key)) {
+            return map[key]!;
+        }
+        throw MessageOnlyException("Invalid option, valid options are [${map.keys.join(", ")}]");
+    }
 }
 
 class MessageOnlyException implements Exception {
