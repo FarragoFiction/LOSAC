@@ -299,6 +299,10 @@ abstract class Engine {
         // These will be overridden if the datapack above contains replacements
         await loadBaseDataFiles();
 
+        final YAML.YamlMap? levelFile = await levelArchive.getFile("${archivePath}level.yaml");
+        if (levelFile == null) {
+            throw Exception("Level file missing");
+        }
     }
 
 }

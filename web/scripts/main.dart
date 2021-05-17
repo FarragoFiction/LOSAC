@@ -102,10 +102,6 @@ abstract class MainMenu {
         renderer.addRenderable(terrain);
         testLevel.terrain = terrain;
 
-        /*final FloaterEntity testFloater = new RisingText("ratratratratrat 🐀🐀🐀🐀🐀", "Floater")..zPosition = 20;
-    testLevel.addObject(testFloater);
-    game.addEntity(testFloater);*/
-
         // grid
 
         final GridMeshProvider gridMeshProvider = new DebugGridMeshProvider(renderer);

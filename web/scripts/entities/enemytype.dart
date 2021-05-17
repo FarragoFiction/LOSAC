@@ -38,23 +38,25 @@ class EnemyType with Registerable {
             ..fill();
     }
 
-    // This needs to be a method rather than a constructor because it's passed as an argument in the data loader
-    // ignore: prefer_constructors_over_static_methods
     static EnemyType? load(YamlMap yaml, dynamic? extras) {
         final EnemyType object = new EnemyType();
 
         // reject if no name
-        if (!FileUtils.setFromData(yaml, "name", typeDesc, "unknown", (dynamic d) => object.name = d)) {
+        if (!FileUtils.setFromDataChecked(yaml, "name", typeDesc, "unknown", (String d) => object.name = d)) {
             Engine.logger.warn("$typeDesc missing name, skipping");
             return null;
         }
+        final Set<String> fields = <String>{"name"};
+        final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, object.name, fields);
 
-        FileUtils.setFromData(yaml, "health", typeDesc, object.name, (dynamic d) => object.health = d);
-        FileUtils.setFromData(yaml, "speed", typeDesc, object.name, (dynamic d) => object.speed = d);
-        FileUtils.setFromData(yaml, "turnRate", typeDesc, object.name, (dynamic d) => object.turnRate = d);
-        FileUtils.setFromData(yaml, "size", typeDesc, object.name, (dynamic d) => object.size = d);
+        set("health", (dynamic d) => object.health = d);
+        set("speed", (dynamic d) => object.speed = d);
+        set("turnRate", (dynamic d) => object.turnRate = d);
+        set("size", (dynamic d) => object.size = d);
 
-        FileUtils.setFromData(yaml, "leakDamage", typeDesc, object.name, (dynamic d) => object.leakDamage = d);
+        set("leakDamage", (dynamic d) => object.leakDamage = d);
+
+        FileUtils.warnInvalidFields(yaml, typeDesc, object.name, fields);
 
         return object;
     }

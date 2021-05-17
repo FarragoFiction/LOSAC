@@ -115,8 +115,6 @@ class TowerType with Registerable {
 
     // Loading stuff ------------------------------------------------------
 
-    // This needs to be a method rather than a constructor because it's passed as an argument in the data loader
-    // ignore: prefer_constructors_over_static_methods
     static TowerType? load(YamlMap yaml, Registry<ResourceType>? resourceRegistry) {
         if (resourceRegistry == null) { throw Exception("Resource registry is null somehow"); }
 

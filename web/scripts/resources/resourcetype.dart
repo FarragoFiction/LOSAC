@@ -25,19 +25,21 @@ class ResourceType with Registerable {
 
     ResourceType();
 
-    // This needs to be a method rather than a constructor because it's passed as an argument in the data loader
-    // ignore: prefer_constructors_over_static_methods
     static ResourceType? load(YamlMap yaml, dynamic extras) {
         final ResourceType object = new ResourceType();
 
         // reject if no name
-        if (!FileUtils.setFromData(yaml, "name", typeDesc, "unknown", (dynamic d) => object.name = d)) {
+        if (!FileUtils.setFromDataChecked(yaml, "name", typeDesc, "unknown", (String d) => object.name = d)) {
             Engine.logger.warn("$typeDesc missing name, skipping");
             return null;
         }
+        final Set<String> fields = <String>{"name"};
+        final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, object.name, fields);
 
-        FileUtils.setFromData(yaml, "maximum", typeDesc, object.name, (dynamic d) => object.maximum = d);
-        FileUtils.setFromData(yaml, "minimum", typeDesc, object.name, (dynamic d) => object.minimum = d);
+        set("maximum", (dynamic d) => object.maximum = d);
+        set("minimum", (dynamic d) => object.minimum = d);
+
+        FileUtils.warnInvalidFields(yaml, typeDesc, object.name, fields);
 
         return object;
     }
