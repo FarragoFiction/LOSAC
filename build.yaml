@@ -5,16 +5,17 @@ targets:
         generate_for:
           exclude:
             - "**.worker.dart"
-            - "web/assets/levels/**"
+            - "web/levels/**"
         release_options:
           dart2js_args:
             - -O3
 
-      CommonLib|worker_builder:
-        enabled: true
-
-      LOSAC|levelBuilder:
-        enabled: true
+      CommonLib|file_list_builder:
+        options:
+          enabled: true
+          exclude:
+            - "**.level"
+            - "**level_*/**"
 
 builders:
   levelBuilder:
@@ -31,11 +32,12 @@ builders:
       - "build_web_compilers|ddc"
       - "build_web_compilers|dart2js_modules"
       - "build_modules|module_library"
+      - "CommonLib|file_list_builder"
     applies_builders:
-      - LOSAC|levelCleanupBuilder
+      - "LOSAC|levelCleanupBuilder"
     defaults:
       generate_for:
-        - "web/assets/levels/**.level"
+        - "web/levels/**.level"
 
 post_process_builders:
   levelCleanupBuilder:
@@ -45,5 +47,5 @@ post_process_builders:
       release_options:
         enabled: true
       generate_for:
-        - "web/assets/levels/**level_*/**"
-        - "web/assets/levels/**.level"
+        - "web/levels/**level_*/**"
+        - "web/levels/**.level"
