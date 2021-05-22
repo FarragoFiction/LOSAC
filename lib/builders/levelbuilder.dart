@@ -1,12 +1,25 @@
+
+import 'dart:typed_data';
+
+import "package:archive/archive.dart";
 import "package:build/build.dart";
 import "package:glob/glob.dart";
 import "package:path/path.dart" as p;
 
+// ignore: implementation_imports
+import "package:ImageLib/src/encoding/pngcontainer.dart";
+
+
+
 class LevelBuilder extends Builder {
+    static final ZipEncoder _encoder = new ZipEncoder();
+    static const String thumbnailFile = "preview.png";
+    static const String blockName = "ffDb";
+
     @override
     Map<String, List<String>> get buildExtensions {
         return const <String,List<String>>{
-            ".level": <String>[".txt"]
+            ".level": <String>[".png"]
         };
     }
 
@@ -35,11 +48,39 @@ class LevelBuilder extends Builder {
             files[rel] = input;
         }
 
-        // TODO: make checks here, do stuff with the files, warn and skip if there's stuff missing and the process aborts
+        if (!files.containsKey(thumbnailFile)) {
+            log.warning("Level '$name' is missing $thumbnailFile, skipping");
+            return;
+        }
+
+        // preview image
+        final AssetId preview = files[thumbnailFile]!;
+        final Uint8List previewBytes = (await buildStep.readAsBytes(preview)) as Uint8List;
+
+        // get the image
+        final List<PngBlock> blocks = await PngContainer.fromBytes(previewBytes.buffer);
+
+        // put all the files into an archive
+        final Archive archive = new Archive();
+
+        for (final String path in files.keys) {
+            final AssetId asset = files[path]!;
+
+            // don't include our thumbnail in the final thing, we don't need that twice...
+            if (asset == preview) { continue; }
+
+            final Uint8List file = (await buildStep.readAsBytes(asset)) as Uint8List;
+
+            archive.addFile(new ArchiveFile(path, file.lengthInBytes, file));
+        }
+
+        // add the archive as a zip in our block
+        blocks.insert(blocks.length-1, new PngBlock(blockName, (_encoder.encode(archive) as Uint8List)));
 
         // output file
-        final AssetId output = input.changeExtension(".txt");
+        final AssetId output = input.changeExtension(".png");
 
-        await buildStep.writeAsString(output, files.keys.join("\n"));
+        // output the png with archive embedded
+        await buildStep.writeAsBytes(output, (await PngContainer.toBytes(blocks)).asUint8List());
     }
 }

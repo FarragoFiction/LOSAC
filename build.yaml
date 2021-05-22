@@ -24,7 +24,7 @@ builders:
       - "levelBuilder"
     build_extensions:
       ".level":
-        - ".txt"
+        - ".png"
     build_to: cache
     auto_apply: root_package
     runs_before:
