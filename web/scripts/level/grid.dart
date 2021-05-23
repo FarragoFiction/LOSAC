@@ -2,6 +2,7 @@ import "dart:html";
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:yaml/yaml.dart";
 
 import "../engine/game.dart";
 import "../entities/tower.dart";
@@ -9,6 +10,7 @@ import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import "../ui/ui.dart";
 import "../utility/extensions.dart";
+import "../utility/fileutils.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import "level.dart";
@@ -24,6 +26,7 @@ enum GridCellState {
 }
 
 class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
+    static const String typeDesc = "Grid";
     static const num cellSize = 50;
 
     final int xSize;
@@ -38,6 +41,30 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
     Grid(int this.xSize, int this.ySize) { // : cells = new List<GridCell>(xSize*ySize) {
         cells = new List<GridCell>.from(_generateCells());
         this.updateConnectors();
+    }
+
+    factory Grid.fromYaml(YamlMap yaml) {
+        int width = 1;
+        int height = 1;
+        final String name = yaml["name"];
+        final Set<String> fields = <String>{"name"};
+
+        final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, name, fields);
+
+        set("width", (int n) => width = n);
+        set("height", (int n) => height = n);
+
+        final Grid grid = new Grid(width, height);
+
+        set("x", (double n) => grid.position.x = n);
+        set("y", (double n) => grid.position.y = n);
+        set("z", (double n) => grid.zPosition = n);
+
+        set("rotation", (double n) => grid.rot_angle = n);
+
+        FileUtils.warnInvalidFields(yaml, typeDesc, name, fields);
+
+        return grid;
     }
 
     Iterable<GridCell> _generateCells() sync* {

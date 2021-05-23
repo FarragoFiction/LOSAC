@@ -1,0 +1,17 @@
+
+name: Test Level
+
+grids:
+  - name: grid1
+    width: 5
+    height: 4
+    x: 100
+    y: 500
+    rotation: 0.2
+
+  - name: grid2
+    width: 2
+    height: 2
+    x: -200
+    y: 520
+    z: 20

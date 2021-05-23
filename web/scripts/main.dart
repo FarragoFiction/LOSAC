@@ -3,6 +3,7 @@ import 'dart:html';
 import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:ImageLib/Encoding.dart";
 import "package:LoaderLib/Loader.dart";
 
 import "engine/engine.dart";
@@ -91,12 +92,13 @@ abstract class MainMenu {
         await renderer.initialise();
         final Game game = new Game(renderer, querySelector("#uicontainer")!);
 
-        // LOADING TEST ####################################
-        await game.loadBaseDataFiles();
-        // LOADING TEST ####################################
-
         final Pathfinder pathfinder = new Pathfinder();
         final Level testLevel = new Level3D();
+
+        // LOADING TEST ####################################
+        final ArchivePng levelImage = await Loader.getResource("levels/testlevel.png", format: ArchivePng.format);
+        await game.loadLevelArchive(levelImage.archive!, testLevel);
+        // LOADING TEST ####################################
 
         final Terrain terrain = new Terrain();
         renderer.addRenderable(terrain);

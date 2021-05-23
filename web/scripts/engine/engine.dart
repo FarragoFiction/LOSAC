@@ -282,7 +282,7 @@ abstract class Engine {
 
     Future<void> loadBaseDataFiles() => DataLoading.loadBaseDataFiles(this);
 
-    Future<void> loadLevelArchive(Archive levelArchive) async {
+    Future<void> loadLevelArchive(Archive levelArchive, Level level) async {
         // Ok, loading a level is a pretty complex process which goes through several stages.
         // Because levels can hold overridden data, we need to check first for a data pack embedded in the level
         // and then load the resources, enemies, towers and level *after* that, since they could be replaced in the data pack.
@@ -299,10 +299,15 @@ abstract class Engine {
         // These will be overridden if the datapack above contains replacements
         await loadBaseDataFiles();
 
-        final YAML.YamlMap? levelFile = await levelArchive.getFile("${archivePath}level.yaml");
+        final YAML.YamlDocument? levelFile = await levelArchive.getFile("${archivePath}level.yaml", format: yamlFormat);
         if (levelFile == null) {
             throw Exception("Level file missing");
+        } else if (!(levelFile.contents.value is YAML.YamlMap)) {
+            throw Exception("Level file malformed, should be a yaml map");
         }
+
+        // Next we pass the level yaml over to the level class so it can populate
+        await level.load(levelFile.contents.value);
     }
 
 }

@@ -68,6 +68,30 @@ abstract class FileUtils {
         }
         throw MessageOnlyException("Invalid option, valid options are [${map.keys.join(", ")}]");
     }
+
+    static void typedList<T extends U,U>(String name, List<U> list, void Function(T item, int index) setter) {
+        for (int i=0; i<list.length; i++) {
+            final U item = list[i];
+
+            if (item is T) {
+                setter(item, i);
+            } else {
+                Engine.logger.warn("$name list entry $i is an invalid type, skipping");
+            }
+        }
+    }
+
+}
+
+extension YamlMapExtensions on YamlMap {
+    bool containsTypedEntry<T>(String key) {
+        if (this.containsKey(key)) {
+            if (this[key] is T) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 class MessageOnlyException implements Exception {

@@ -15,6 +15,7 @@ class LevelBuilder extends Builder {
     static final ZipEncoder _encoder = new ZipEncoder();
     static const String thumbnailFile = "preview.png";
     static const String blockName = "ffDb";
+    static const String subFolderName = "losac";
 
     @override
     Map<String, List<String>> get buildExtensions {
@@ -71,7 +72,7 @@ class LevelBuilder extends Builder {
 
             final Uint8List file = (await buildStep.readAsBytes(asset)) as Uint8List;
 
-            archive.addFile(new ArchiveFile(path, file.lengthInBytes, file));
+            archive.addFile(new ArchiveFile("$subFolderName/$path", file.lengthInBytes, file));
         }
 
         // add the archive as a zip in our block
