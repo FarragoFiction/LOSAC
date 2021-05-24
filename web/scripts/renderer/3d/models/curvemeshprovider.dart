@@ -6,7 +6,7 @@ import "../../../utility/extensions.dart";
 import '../renderer3d.dart';
 import "meshprovider.dart";
 
-class CurveMeshProvider extends MeshProvider<Curve> {
+abstract class CurveMeshProvider extends MeshProvider<Curve> {
     CurveMeshProvider(Renderer3D renderer) : super(renderer);
 }
 

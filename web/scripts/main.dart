@@ -95,6 +95,10 @@ abstract class MainMenu {
         final Pathfinder pathfinder = new Pathfinder();
         final Level testLevel = new Level3D();
 
+        game
+            ..pathfinder = pathfinder
+            ..setLevel(testLevel);
+
         // LOADING TEST ####################################
         final ArchivePng levelImage = await Loader.getResource("levels/testlevel.png", format: ArchivePng.format);
         await game.loadLevelArchive(levelImage.archive!, testLevel);
@@ -265,11 +269,7 @@ abstract class MainMenu {
 
         // init
         await game.initialise();
-        game
-            ..pathfinder = pathfinder
-            ..setLevel(testLevel)
-        //..fpsElement = fpsElement
-            ..start();
+        game.start();
 
         {
             final Tower tower = new Tower(testTowerType);

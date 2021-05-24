@@ -1,16 +1,12 @@
 import "dart:html";
 import "dart:math" as Math;
 
-import "package:CommonLib/Logging.dart";
-import "package:CommonLib/Utility.dart";
 import "package:yaml/yaml.dart";
 
 import "../engine/engine.dart";
 import "../renderer/2d/bounds.dart";
-import "../utility/fileutils.dart";
 import "connectible.dart";
 import "domainmap.dart";
-import "grid.dart";
 import "levelheightmap.dart";
 import "levelobject.dart";
 import "pathnode.dart";
@@ -128,42 +124,5 @@ class Level {
         return null;
     }
 
-    Future<void> load(YamlMap yaml) async {
-        final Logger logger = Engine.logger;
-        final Map<String,Tuple<YamlMap,SimpleLevelObject>> loadingObjects = <String,Tuple<YamlMap,SimpleLevelObject>>{};
-
-        if (!yaml.containsKey("name")) {
-            throw Exception("$typeDesc missing name");
-        }
-        final String levelName = yaml["name"];
-
-        final Set<String> fields = <String>{"name"};
-        final DataSetter levelData = FileUtils.dataSetter(yaml, typeDesc, levelName, fields);
-
-        // set up grids
-        levelData("grids", (YamlList grids) {
-            FileUtils.typedList("$typeDesc '$levelName' grids", grids, (YamlMap entry, int index) {
-                if (!entry.containsTypedEntry<String>("name")) {
-                    logger.warn("$typeDesc '$levelName' grid definition $index is missing a 'name' field, skipping");
-                    return;
-                }
-
-                final Grid grid = new Grid.fromYaml(entry);
-
-                loadingObjects[entry["name"]] = new Tuple<YamlMap,SimpleLevelObject>(entry, grid);
-
-                //this.addObject(grid); //TEST
-            });
-        });
-
-        // set up paths
-
-        // set up exit
-
-        // set up entrances
-
-        FileUtils.warnInvalidFields(yaml, "Level", levelName, fields);
-
-        print(loadingObjects);
-    }
+    Future<void> load(YamlMap yaml) async {}
 }

@@ -7,6 +7,8 @@ import "package:LoaderLib/Loader.dart";
 
 import "../../../level/levelobject.dart";
 import '../renderer3d.dart';
+import 'curvemeshprovider.dart';
+import 'gridmeshprovider.dart';
 import "meshprovider.dart";
 
 class Renderer3DStandardAssets {
@@ -14,6 +16,10 @@ class Renderer3DStandardAssets {
 
     late B.Material defaultMaterial;
     late MeshProvider<SimpleLevelObject> defaultMeshProvider;
+
+    late GridMeshProvider debugGridMeshProvider;
+    late CurveMeshProvider debugCurveMeshProvider;
+    late EndCapMeshProvider debugEndcapMeshProvider;
 
     late B.Texture emptyTexture;
 
@@ -77,6 +83,10 @@ class Renderer3DStandardAssets {
         // ########## Meshes ##########
 
         this.defaultMeshProvider = new MeshProvider<SimpleLevelObject>(renderer);
+
+        this.debugGridMeshProvider = new DebugGridMeshProvider(renderer);
+        this.debugCurveMeshProvider = new DebugCurveMeshProvider(renderer);
+        this.debugEndcapMeshProvider = new DebugEndCapMeshProvider(renderer);
 
         final B.Color4 rangePreviewColour = new B.Color4(0.4,1.0,0.4,0.65);
         final B.Color4 rangeIndicatorColour = new B.Color4(0.9,0.2,0.2,0.65);

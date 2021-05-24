@@ -63,7 +63,8 @@ class DebugGridMeshProvider extends GridMeshProvider {
 }
 
 // ignore this lint
-class EndCapMeshProvider extends MeshProvider<EndCap> {
+// ignore: always_specify_types
+abstract class EndCapMeshProvider extends MeshProvider<EndCap> {
     EndCapMeshProvider(Renderer3D renderer) : super(renderer);
 }
 
@@ -71,6 +72,7 @@ class DebugEndCapMeshProvider extends EndCapMeshProvider {
     DebugEndCapMeshProvider(Renderer3D renderer) : super(renderer);
 
     @override
+    // ignore: always_specify_types
     B.AbstractMesh? provide(EndCap cap) {
         final B.AbstractMesh outline = DebugGridMeshProvider.createCellMesh();
 
