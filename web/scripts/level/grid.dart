@@ -47,7 +47,7 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
         int width = 1;
         int height = 1;
         final String name = yaml["name"];
-        final Set<String> fields = <String>{"name"};
+        final Set<String> fields = <String>{"name","model"};
 
         final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, name, fields);
 

@@ -5,9 +5,11 @@ import "package:yaml/yaml.dart";
 import "../engine/engine.dart";
 import "../engine/entity.dart";
 import "../engine/registry.dart";
+import '../renderer/3d/models/meshprovider.dart';
 import "../utility/fileutils.dart";
+import "enemy.dart";
 
-class EnemyType with Registerable {
+class EnemyType with Registerable, MeshProviderProxy<Enemy> {
     static const String typeDesc = "Enemy Type";
 
     /// Localisation string identifier

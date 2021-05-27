@@ -5,6 +5,7 @@ import "dart:math" as Math;
 import "package:CubeLib/CubeLib.dart" as B;
 import "package:js/js.dart" as JS;
 import "package:js/js_util.dart" as JsUtil;
+import "package:yaml/yaml.dart";
 
 import '../../engine/engine.dart';
 import "../../entities/towertype.dart";
@@ -16,6 +17,7 @@ import '../../level/selectable.dart';
 import "../../utility/extensions.dart";
 import "../renderer.dart";
 import "floateroverlay.dart";
+import "models/meshprovider.dart";
 import 'models/standardassets.dart';
 import 'renderable3d.dart';
 
@@ -409,6 +411,61 @@ class Renderer3D extends Renderer {
         }
     }
     void clearTowerPreview() => updateTowerPreview(null, null);
+
+    // MeshProvider loading
+
+    MeshProvider<dynamic> getMeshProviderFor(dynamic object, YamlMap yaml) {
+        final Map<String,String> keyObjects = <String,String>{};
+        for (final String key in yaml.keys) {
+            if (key != "seed") {
+                keyObjects[key] = yaml[key].toString();
+            }
+        }
+        // a representation of all the values except seed in this definition... not ideal but whatever, it's just for loading
+        final String keyString = keyObjects.toString();
+
+        // if the entry has a seed value, and the object is specific, assign the seed to the object
+        if (object is SimpleLevelObject && yaml.containsKey("seed")) {
+            final dynamic seed = yaml["seed"];
+            if (seed is num) {
+                object.meshProviderSeed = seed.toInt();
+            }
+        }
+
+        // if we already have one for this particular parameter setup,
+        if (meshProviderLoadingMap.containsKey(keyString)) {
+            return meshProviderLoadingMap[keyString]!;
+        } else {
+            final String type = yaml["type"] ?? MeshProviderType.defaultProvider;
+            final MeshProvider<dynamic> provider = createMeshProvider(type);
+
+            if (provider.isValidForObject(object)) {
+                provider.load(yaml);
+
+                meshProviderLoadingMap[keyString] = provider;
+
+                return provider;
+            }
+        }
+
+        return standardAssets.defaultMeshProvider;
+    }
+
+    Map<String,MeshProvider<dynamic>> meshProviderLoadingMap = <String,MeshProvider<dynamic>>{};
+
+    /// Create a new MeshProvider for the type (or get one of the standard defaults)
+    MeshProvider<dynamic> createMeshProvider(String type) {
+        switch(type) {
+            case MeshProviderType.debugGrid:
+                return standardAssets.debugGridMeshProvider;
+            case MeshProviderType.debugCurve:
+                return standardAssets.debugCurveMeshProvider;
+            case MeshProviderType.debugEndcap:
+                return standardAssets.debugEndcapMeshProvider;
+            default:
+                return standardAssets.defaultMeshProvider;
+        }
+    }
 }
 
 class MeshInfo {

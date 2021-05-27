@@ -19,6 +19,7 @@ class SimpleLevelObject with Renderable3D {
     double zPosition = 0;
 
     MeshProvider<dynamic>? meshProvider;
+    int meshProviderSeed = 0;
     
     B.ActionManager? testManager;
 

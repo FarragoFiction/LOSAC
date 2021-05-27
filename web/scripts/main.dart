@@ -95,9 +95,8 @@ abstract class MainMenu {
         final Pathfinder pathfinder = new Pathfinder();
         final Level testLevel = new Level3D();
 
-        game
-            ..pathfinder = pathfinder
-            ..setLevel(testLevel);
+        game.pathfinder = pathfinder;
+        testLevel.engine = game;
 
         // LOADING TEST ####################################
         final ArchivePng levelImage = await Loader.getResource("levels/testlevel.png", format: ArchivePng.format);
@@ -268,6 +267,7 @@ abstract class MainMenu {
         }
 
         // init
+        game.setLevel(testLevel);
         await game.initialise();
         game.start();
 

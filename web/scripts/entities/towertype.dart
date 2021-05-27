@@ -8,6 +8,7 @@ import "../engine/engine.dart";
 import "../engine/game.dart";
 import "../engine/registry.dart";
 import "../localisation/localisation.dart";
+import '../renderer/3d/models/meshprovider.dart';
 import "../resources/resourcetype.dart";
 import "../targeting/strategies.dart";
 import "../ui/ui.dart";
@@ -15,8 +16,9 @@ import "../utility/extensions.dart";
 import "../utility/fileutils.dart";
 import "enemy.dart";
 import "projectiles/projectile.dart";
+import "tower.dart";
 
-class TowerType with Registerable {
+class TowerType with Registerable, MeshProviderProxy<Tower> {
     static const String typeDesc = "Tower Type";
 
     /// "close enough" angle delta for turrets - within this, we are considered to be pointing at the target

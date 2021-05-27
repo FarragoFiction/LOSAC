@@ -141,6 +141,17 @@ class Level3D extends Level with Renderable3D {
         final Set<String> fields = <String>{"name"};
         final DataSetter levelData = FileUtils.dataSetter(yaml, Level.typeDesc, levelName, fields);
 
+        void setMeshProvider(SimpleLevelObject object, YamlMap yaml) {
+            if (!yaml.containsKey("model")) { return; }
+
+            final dynamic value = yaml["model"];
+            if (value is String) {
+                object.meshProvider = engine.renderer.getMeshProviderFor(object, new YamlMap.wrap(<String,dynamic>{"type": value}));
+            } else if (value is YamlMap) {
+                object.meshProvider = engine.renderer.getMeshProviderFor(object, value);
+            }
+        }
+
         // set up grids
         levelData("grids", (YamlList grids) {
             FileUtils.typedList("${Level.typeDesc} '$levelName' grids", grids, (YamlMap entry, int index) {
@@ -150,10 +161,11 @@ class Level3D extends Level with Renderable3D {
                 }
 
                 final Grid grid = new Grid.fromYaml(entry);
+                setMeshProvider(grid, entry);
 
                 loadingObjects[entry["name"]] = new Tuple<YamlMap,SimpleLevelObject>(entry, grid);
 
-                //this.addObject(grid); //TEST
+                this.addObject(grid); //TEST
             });
         });
 
