@@ -13,7 +13,9 @@ abstract class GridMeshProvider extends MeshProvider<Grid> {
 
     @override
     B.AbstractMesh? provide(Grid grid) {
-        final B.Mesh mesh = new B.Mesh(getMeshName(grid))..isPickable = false;
+        final B.Mesh mesh = new B.Mesh(getMeshName(grid))
+            //..rotation.x = Math.pi * 0.5
+            ..isPickable = false;
 
         final B.Mesh pickPlane = B.PlaneBuilder.CreatePlane("pickPlane", new B.PlaneBuilderCreatePlaneOptions(
             width: grid.xSize * Grid.cellSize,
@@ -41,7 +43,7 @@ class DebugGridMeshProvider extends GridMeshProvider {
             for (final GridCell g in grid.cells) {
                 if (g.state != GridCellState.hole) {
                     mesh.addChild(createCellMesh()
-                        ..position.set(g.position.x, 0, g.position.y));
+                        ..position.set(-g.position.x, 0, g.position.y));
                 }
             }
         }

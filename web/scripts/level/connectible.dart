@@ -52,6 +52,8 @@ mixin Connectible on LevelObject implements PathNodeObject {
             this.removeSubObject(connector);
         }
     }
+
+    Connector? getConnector(String descriptor);
 }
 
 abstract class Connector extends LevelObject {
@@ -112,18 +114,17 @@ abstract class Connector extends LevelObject {
         final num thisAngle = this.getWorldRotation();
 
         final double angleOffset = angleDiff(targetAngle.toDouble(), thisAngle.toDouble()); // TODO: Correct CommonLib MathUtils to deal with the downcast changes
-
-        final B.Vector2 rotatedPos = this.position.rotate(angleOffset);
-        final B.Vector2 movePos = targetPos - rotatedPos;
-
-        final B.Vector2 finalPos = this.getLocalPositionFromWorld(movePos) + parent.position + this.position;
         final double finalAngle = parent.rot_angle + angleOffset;
 
         final double targetHeight = target.getZPosition();
 
         parent.rot_angle = finalAngle;
-        parent.position.setFrom(finalPos);
         parent.zPosition = targetHeight;
+
+        final B.Vector2 thisPos = this.getWorldPosition();
+        final B.Vector2 finalPos = targetPos - thisPos + parent.position;
+
+        parent.position.setFrom(finalPos);
     }
 }
 

@@ -1,10 +1,12 @@
 import "dart:html";
 
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:yaml/yaml.dart";
 
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import "../utility/extensions.dart";
+import "../utility/fileutils.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import "grid.dart";
@@ -24,6 +26,9 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
     }
 
     void drawSymbol(CanvasRenderingContext2D ctx, double size);
+
+    @override
+    Connector? getConnector(String descriptor) => connector;
 
     @override
     Rectangle<num> calculateBounds() => rectBounds(this, Grid.cellSize, Grid.cellSize);
@@ -46,9 +51,33 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
             }
         }
     }
+
+    static void _load(EndCap<dynamic> cap, YamlMap yaml, String type, [String? name]) {
+        name ??= yaml["name"];
+        if (name == null) {
+            throw MessageOnlyException("EndCap definition missing name");
+        }
+        final Set<String> fields = <String>{"name","model"};
+        final DataSetter set = FileUtils.dataSetter(yaml, type, name, fields);
+
+        set("x", (num n) => cap.position.x = n.toDouble());
+        set("y", (num n) => cap.position.y = n.toDouble());
+        set("z", (num n) => cap.zPosition = n.toDouble());
+        set("rotation", (num n) => cap.rot_angle = n.toDouble());
+
+        FileUtils.warnInvalidFields(yaml, type, name, fields);
+    }
 }
 
 class SpawnerObject extends EndCap<SpawnNode> {
+
+    SpawnerObject();
+
+    factory SpawnerObject.fromYaml(YamlMap yaml) {
+        final SpawnerObject obj = new SpawnerObject();
+        EndCap._load(obj, yaml, "Spawner");
+        return obj;
+    }
 
     @override
     Iterable<PathNode> generatePathNodes() {
@@ -78,6 +107,14 @@ class SpawnerObject extends EndCap<SpawnNode> {
 }
 
 class ExitObject extends EndCap<ExitNode> {
+
+    ExitObject();
+
+    factory ExitObject.fromYaml(YamlMap yaml) {
+        final ExitObject obj = new ExitObject();
+        EndCap._load(obj, yaml, "Spawner");
+        return obj;
+    }
 
     @override
     Iterable<PathNode> generatePathNodes() {

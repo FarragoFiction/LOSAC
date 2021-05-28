@@ -3,10 +3,12 @@ import "dart:math" as Math;
 
 import "package:collection/collection.dart";
 import "package:CubeLib/CubeLib.dart" as B;
+import "package:yaml/yaml.dart";
 
 import "../renderer/2d/bounds.dart";
 import "../renderer/2d/matrix.dart";
 import "../utility/extensions.dart";
+import "../utility/fileutils.dart";
 import "../utility/levelutils.dart";
 import "connectible.dart";
 import "domainmap.dart";
@@ -15,6 +17,8 @@ import "levelobject.dart";
 import "pathnode.dart";
 
 class Curve extends LevelObject with Connectible {
+    static const String typeDesc = "Curve";
+
     final List<CurveVertex> _vertices = <CurveVertex>[];
     late List<CurveVertex> vertices;
     bool renderVertices = true;
@@ -31,70 +35,50 @@ class Curve extends LevelObject with Connectible {
         this.drawUI = false;
     }
 
-    /*@override
-    void draw2D(CanvasRenderingContext2D ctx) {
+    factory Curve.fromYaml(YamlMap yaml) {
+        final String name = yaml["name"];
+        final Set<String> fields = <String>{"name","model"};
 
-        if (vertices.length > 1) {
-            CurveVertex v1 = vertices.first;
-            CurveVertex v2;
+        final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, name, fields);
 
-            ctx
-                ..strokeStyle = "#BBBBBB"
-                ..beginPath()
-                ..moveTo(v1.pos_x, v1.pos_y);
+        final Set<CurveVertex> verts = <CurveVertex>{};
 
-            for (int i=1; i<vertices.length; i++) {
-                v2 = vertices[i];
+        set("points", (YamlList pointsList) => FileUtils.typedList("points", pointsList, (YamlMap item, int index) {
+            final Set<String> vertFields = <String>{};
+            final DataSetter setVert = FileUtils.dataSetter(item, "$typeDesc vertex", "$name $index", vertFields);
 
-                final Vector o1 = v1.handle2pos + new Vector(v1.pos_x, v1.pos_y);
-                final Vector o2 = v2.handle1pos + new Vector(v2.pos_x, v2.pos_y);
+            final CurveVertex vert = new CurveVertex();
 
-                ctx.bezierCurveTo(o1.x, o1.y, o2.x, o2.y, v2.pos_x, v2.pos_y);
+            setVert("x", (num n) => vert.position.x = n.toDouble());
+            setVert("y", (num n) => vert.position.y = n.toDouble());
+            setVert("z", (num n) => vert.zPosition = n.toDouble());
+            setVert("rotation", (num n) => vert.rot_angle = n.toDouble());
 
-                v1 = v2;
-            }
+            setVert("handle1", (num n) => vert.handle1 = n.toDouble());
+            setVert("handle2", (num n) => vert.handle2 = n.toDouble());
 
-            ctx.stroke();
+            verts.add(vert);
+
+            FileUtils.warnInvalidFields(item, "$typeDesc vertex", "$name $index", vertFields);
+        }));
+
+        if (verts.length < 2) {
+            throw MessageOnlyException("$typeDesc $name must have at least 2 points");
         }
 
-        if (!segments.isEmpty) {
-            ctx.strokeStyle="#000000";
-
-            final List<Vector> left = <Vector>[];
-            final List<Vector> right = <Vector>[];
-
-            for(int i=0; i<segments.length; i++) {
-                final CurveSegment seg = segments[i];
-                final Vector pos = seg.posVector;
-
-                final Vector offset = seg.norm * width * seg.cornerMultiplier;
-
-                left.add(pos + offset);
-                right.add(pos - offset);
-
-                ctx
-                    ..beginPath()
-                    ..moveTo(pos.x + offset.x, pos.y + offset.y)
-                    ..lineTo(pos.x - offset.x, pos.y - offset.y)
-                    ..stroke();
-            }
-
-            ctx
-                ..beginPath()
-                ..moveTo(left.first.x, left.first.y);
-            for (final Vector v in left) {
-                ctx.lineTo(v.x, v.y);
-            }
-            ctx.stroke();
-            ctx
-                ..beginPath()
-                ..moveTo(right.first.x, right.first.y);
-            for (final Vector v in right) {
-                ctx.lineTo(v.x, v.y);
-            }
-            ctx.stroke();
+        final Curve curve = new Curve();
+        for(final CurveVertex vert in verts) {
+            curve.addVertex(vert);
         }
-    }*/
+
+        set("width", (num n) => curve.width = n.toDouble());
+
+        FileUtils.warnInvalidFields(yaml, typeDesc, name, fields);
+
+        curve.updateConnectors();
+
+        return curve;
+    }
 
     void addVertex(CurveVertex vert) {
         this._vertices.add(vert);
@@ -383,6 +367,16 @@ class Curve extends LevelObject with Connectible {
                     }
                 }
             }
+        }
+    }
+
+    @override
+    Connector? getConnector(String descriptor) {
+        switch(descriptor) {
+            case "start":
+                return startConnector;
+            case "end":
+                return endConnector;
         }
     }
 }

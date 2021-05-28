@@ -8,6 +8,9 @@ import "package:yaml/yaml.dart";
 import "../engine/engine.dart";
 import "../renderer/3d/renderable3d.dart";
 import "../utility/fileutils.dart";
+import "connectible.dart";
+import "curve.dart";
+import "endcap.dart";
 import "grid.dart";
 import "level.dart";
 import "levelobject.dart";
@@ -132,6 +135,10 @@ class Level3D extends Level with Renderable3D {
     Future<void> load(YamlMap yaml) async {
         final Logger logger = Engine.logger;
         final Map<String,Tuple<YamlMap,SimpleLevelObject>> loadingObjects = <String,Tuple<YamlMap,SimpleLevelObject>>{};
+        final Map<String,Grid> levelGrids = <String,Grid>{};
+        final Map<String,Curve> levelCurves = <String,Curve>{};
+        final Map<String,SpawnerObject> levelSpawners = <String,SpawnerObject>{};
+        ExitObject? levelExit;
 
         if (!yaml.containsKey("name")) {
             throw Exception("${Level.typeDesc} missing name");
@@ -140,6 +147,8 @@ class Level3D extends Level with Renderable3D {
 
         final Set<String> fields = <String>{"name"};
         final DataSetter levelData = FileUtils.dataSetter(yaml, Level.typeDesc, levelName, fields);
+
+        // UTILITY FUNCTIONS ####################################################################
 
         void setMeshProvider(SimpleLevelObject object, YamlMap yaml) {
             if (!yaml.containsKey("model")) { return; }
@@ -152,6 +161,99 @@ class Level3D extends Level with Renderable3D {
             }
         }
 
+        bool isNameLegal(String name) {
+            // forbidden names!
+            if (name == "exit") {
+                Engine.logger.warn("Illegal level object name: '$name'");
+                return false;
+            }
+            // duplicate of existing object
+            if (loadingObjects.keys.contains(name)){
+                Engine.logger.warn("Duplicate level object name: '$name', skipping");
+                return false;
+            }
+            return true;
+        }
+
+        /// Parse and fetch a connector from a named object, otherwise null
+        Connector? readConnector(YamlMap map, String key, int index) {
+            // the starting connector
+            if(map.containsKey(key)) {
+                final dynamic item = map[key];
+                if (item is String) {
+                    // if it's a string then we check if it's an EndCap, otherwise it's not allowed
+                    final SimpleLevelObject? object = loadingObjects[item]?.second;
+                    if (object != null) {
+                        if (object is! EndCap<dynamic>) {
+                            Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' value is not an EndCap, and requires a 'connector' field");
+                            return null;
+                        }
+                        // EndCaps only have one connector
+                        return object.connector;
+                    } else {
+                        // if there's no item by this name
+                        Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' value '$item' does not exist");
+                        return null;
+                    }
+                } else if (item is YamlMap) {
+                    // if it's a map we need to get the name and connector properties, and deal with parsing those
+                    final dynamic? name = item["name"];
+                    if (name != null) {
+                        if (name is String) {
+                            // if the name is a string, move on to getting the object
+                            final SimpleLevelObject? object = loadingObjects[name]?.second;
+                            if (object != null) {
+                                // we have the object, now get the connector string
+                                final dynamic? connector = item["connector"];
+                                if (connector != null) {
+                                    if (connector is String) {
+                                        // now we have the connector string, ask the object for the corresponding connector
+                                        final Connector? con = (object as Connectible).getConnector(connector);
+                                        if (con != null) {
+                                            // if the connector isn't null, hooray we have it!
+                                            return con;
+                                        } else {
+                                            // connector is null, bail
+                                            Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' object '$name' does not have a connector named '$connector'");
+                                            return null;
+                                        }
+                                    } else {
+                                        // if the connector isn't a string
+                                        Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' object '$name' 'connector' value '$item' is not a String");
+                                        return null;
+                                    }
+                                } else {
+                                    // if there's no connector string, bail
+                                    Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' object '$name' is missing a 'connector' field");
+                                    return null;
+                                }
+                            } else {
+                                // if there's no item by this name
+                                Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' value '$name' does not exist");
+                                return null;
+                            }
+                        } else {
+                            // if the name isn't a string
+                            Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' 'name' value '$name' is not a String");
+                            return null;
+                        }
+                    } else {
+                        // if there's no name, bail
+                        Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' is missing a 'name' field");
+                        return null;
+                    }
+                } else {
+                    Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' 'connect' value is an invalid type: $item");
+                    return null;
+                }
+            } else {
+                Engine.logger.warn("${Level.typeDesc} '$levelName' connection entry $index '$key' requires a 'connect' value");
+                return null;
+            }
+        }
+
+        // READING THE LEVEL STUFF ####################################################################
+
         // set up grids
         levelData("grids", (YamlList grids) {
             FileUtils.typedList("${Level.typeDesc} '$levelName' grids", grids, (YamlMap entry, int index) {
@@ -159,24 +261,116 @@ class Level3D extends Level with Renderable3D {
                     logger.warn("${Level.typeDesc} '$levelName' grid definition $index is missing a 'name' field, skipping");
                     return;
                 }
+                if (!isNameLegal(entry["name"])){ return; }
 
                 final Grid grid = new Grid.fromYaml(entry);
                 setMeshProvider(grid, entry);
 
-                loadingObjects[entry["name"]] = new Tuple<YamlMap,SimpleLevelObject>(entry, grid);
-
-                this.addObject(grid); //TEST
+                final String name = entry["name"];
+                loadingObjects[name] = new Tuple<YamlMap,SimpleLevelObject>(entry, grid);
+                levelGrids[name] = grid;
             });
         });
 
-        // set up paths
+        // set up curves
+        levelData("curves", (YamlList curves) {
+            FileUtils.typedList("${Level.typeDesc} '$levelName' curves", curves, (YamlMap entry, int index) {
+                if (!entry.containsTypedEntry<String>("name")) {
+                    logger.warn("${Level.typeDesc} '$levelName' curve definition $index is missing a 'name' field, skipping");
+                    return;
+                }
+                if (!isNameLegal(entry["name"])){ return; }
+
+                final Curve curve = new Curve.fromYaml(entry);
+                setMeshProvider(curve, entry);
+
+                final String name = entry["name"];
+                loadingObjects[name] = new Tuple<YamlMap,SimpleLevelObject>(entry, curve);
+                levelCurves[name] = curve;
+            });
+        });
 
         // set up exit
+        levelData("exit", (YamlMap entry) {
+            final ExitObject exit = new ExitObject.fromYaml(entry);
+            setMeshProvider(exit, entry);
+
+            loadingObjects["exit"] = new Tuple<YamlMap,SimpleLevelObject>(entry, exit);
+            levelExit = exit;
+        });
 
         // set up entrances
+        levelData("spawners", (YamlList curves) {
+            FileUtils.typedList("${Level.typeDesc} '$levelName' spawners", curves, (YamlMap entry, int index) {
+                if (!entry.containsTypedEntry<String>("name")) {
+                    logger.warn("${Level.typeDesc} '$levelName' spawner definition $index is missing a 'name' field, skipping");
+                    return;
+                }
+                if (!isNameLegal(entry["name"])){ return; }
 
+                final SpawnerObject spawner = new SpawnerObject.fromYaml(entry);
+                setMeshProvider(spawner, entry);
+
+                final String name = entry["name"];
+                loadingObjects[name] = new Tuple<YamlMap,SimpleLevelObject>(entry, spawner);
+                levelSpawners[name] = spawner;
+            });
+        });
+
+        // connect all the things
+        levelData("connections", (YamlList connections) {
+            FileUtils.typedList("${Level.typeDesc} '$levelName' connections", connections, (YamlMap entry, int index) {
+                final Connector? fromConnector = readConnector(entry, "connect", index);
+                final Connector? toConnector = readConnector(entry, "to", index);
+
+                if (fromConnector == null || toConnector == null) {
+                    return;
+                }
+
+                if (fromConnector.canConnectToType(toConnector)) {
+                    fromConnector.connectAndOrient(toConnector);
+                } else {
+                    Engine.logger.warn("${Level.typeDesc} '$levelName' connections entry $index does not describe compatible connector types. Grids cannot connect to other grids, curves cannot connect to other curves.");
+                }
+
+                FileUtils.warnInvalidFields(entry, "${Level.typeDesc} '$levelName' connections", index.toString(), <String>{"connect","to"});
+            });
+        });
+
+        // cleanup
         FileUtils.warnInvalidFields(yaml, "Level", levelName, fields);
 
-        print(loadingObjects);
+        for (final Curve curve in levelCurves.values) {
+            curve
+                ..rebuildSegments()
+                ..recentreOrigin();
+        }
+
+        // level validity checks
+        //TODO: hook this up when hardcoded is gone
+        bool levelIsValid = true;
+        /*if (exit == null) {
+            Engine.logger.warn("${Level.typeDesc} '$levelName' is missing an exit");
+            levelIsValid = false;
+        }
+        if (spawners.isEmpty) {
+            Engine.logger.warn("${Level.typeDesc} '$levelName' requires at least one spawner");
+            levelIsValid = false;
+        }*/
+
+        // set things up
+        for(final String key in loadingObjects.keys) {
+            this.addObject(loadingObjects[key]!.second);
+        }
+
+        // make sure all the spawners can reach the exit
+        //TODO: when we have all the bits and can comment out the hardcoded, hook this up
+        //final Set<PathNode> unreachables = new Set<PathNode>.from(await engine.pathfinder.connectivityCheck(this));
+
+
+        // throw if things are wrong
+        if (!levelIsValid) {
+            throw Exception("${Level.typeDesc} '$levelName' definition is invalid, see above");
+        }
     }
 }

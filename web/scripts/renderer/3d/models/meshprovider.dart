@@ -36,5 +36,5 @@ abstract class MeshProviderType {
     static const String defaultProvider = "defaultProvider";
     static const String debugGrid = "debugGrid";
     static const String debugCurve = "debugCurve";
-    static const String debugEndcap = "debugEndcap";
+    static const String debugEndCap = "debugEndCap";
 }

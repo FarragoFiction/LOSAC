@@ -4,6 +4,7 @@ import "dart:math" as Math;
 import "package:CubeLib/CubeLib.dart" as B;
 import "package:yaml/yaml.dart";
 
+import "../engine/engine.dart";
 import "../engine/game.dart";
 import "../entities/tower.dart";
 import "../renderer/2d/bounds.dart";
@@ -26,6 +27,8 @@ enum GridCellState {
 }
 
 class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
+    static final RegExp _coordPattern = new RegExp(r"(\d+)\s*,\s*(\d+)(?:\s+(\d+)\s*,\s*(\d+))?");
+    static final RegExp _connectPattern = new RegExp(r"(\d+)\s*,\s*(\d+)\s*(up|down|left|right)");
     static const String typeDesc = "Grid";
     static const num cellSize = 50;
 
@@ -51,18 +54,52 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
 
         final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, name, fields);
 
-        set("width", (int n) => width = n);
-        set("height", (int n) => height = n);
+        set("width", (num n) => width = n.toInt());
+        set("height", (num n) => height = n.toInt());
 
         final Grid grid = new Grid(width, height);
 
-        set("x", (double n) => grid.position.x = n);
-        set("y", (double n) => grid.position.y = n);
-        set("z", (double n) => grid.zPosition = n);
+        set("x", (num n) => grid.position.x = n.toDouble());
+        set("y", (num n) => grid.position.y = n.toDouble());
+        set("z", (num n) => grid.zPosition = n.toDouble());
 
-        set("rotation", (double n) => grid.rot_angle = n);
+        set("rotation", (num n) => grid.rot_angle = n.toDouble());
+
+        bool inverted = false;
+        set("invertHoles", (bool b) => inverted = b);
+        if (inverted) {
+            for (final GridCell cell in grid.cells) {
+                cell.state = GridCellState.hole;
+            }
+        }
+
+        set("holes", (YamlList list) => FileUtils.typedList("holes", list, (String item, int index) {
+            final Match? match = _coordPattern.matchAsPrefix(item);
+            if (match == null) {
+                Engine.logger.warn("Grid '$name' has an invalid hole entry: '$item', skipping");
+                return;
+            }
+
+            if (match.group(3) == null) {
+                // single coordinate
+                grid.getCell(int.parse(match.group(1)!), int.parse(match.group(2)!))?.state = inverted ? GridCellState.clear : GridCellState.hole;
+            } else {
+                // coordinate range
+                final int x1 = int.parse(match.group(1)!);
+                final int y1 = int.parse(match.group(2)!);
+                final int x2 = int.parse(match.group(3)!);
+                final int y2 = int.parse(match.group(4)!);
+                print("hole at $x1,$y1 -> $x2,$y2");
+                final List<GridCell> cells = grid.getCells(x1, y1, x2, y2);
+                for (final GridCell cell in cells) {
+                    cell.state = inverted ? GridCellState.clear : GridCellState.hole;
+                }
+            }
+        }));
 
         FileUtils.warnInvalidFields(yaml, typeDesc, name, fields);
+
+        grid.updateConnectors();
 
         return grid;
     }
@@ -147,27 +184,6 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
     }
 
     Math.Point<int> id2Coords(int id) => Math.Point<int>(id % xSize, id ~/ xSize);
-
-    /*@override
-    void draw2D(CanvasRenderingContext2D ctx) {
-        final double ox = xSize * cellSize * 0.5;
-        final double oy = ySize * cellSize * 0.5;
-
-        ctx
-            ..lineCap = "round"
-            ..strokeStyle = "#EEEEEE";
-
-        for (int x = 0; x<=xSize; x++) {
-            ctx..beginPath()..moveTo(x * cellSize - ox, - oy)..lineTo(x * cellSize - ox, oy)..stroke();
-        }
-        for (int y = 0; y<=ySize; y++) {
-            ctx..beginPath()..moveTo(- ox, y * cellSize - oy)..lineTo(ox, y * cellSize - oy)..stroke();
-        }
-
-        for (final GridCell cell in cells) {
-            cell.drawToCanvas(ctx);
-        }
-    }*/
 
     @override
     Iterable<PathNode> generatePathNodes() {
@@ -327,6 +343,32 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
 
     @override
     SelectionDisplay<Grid>? createSelectionUI(UIController controller) => null;
+
+    @override
+    Connector? getConnector(String descriptor) {
+        final Match? match = _connectPattern.matchAsPrefix(descriptor);
+
+        if (match != null) {
+            final int x = int.parse(match.group(1)!);
+            final int y = int.parse(match.group(2)!);
+            final String side = match.group(3)!;
+
+            final GridCell? cell = this.getCell(x, y);
+            if (cell == null) { return null; }
+
+            switch(side) {
+                case "up":
+                    return cell.up;
+                case "down":
+                    return cell.down;
+                case "left":
+                    return cell.left;
+                case "right":
+                    return cell.right;
+            }
+        }
+        return null;
+    }
 }
 
 class GridCell extends LevelObject with Selectable {

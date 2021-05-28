@@ -436,7 +436,11 @@ class Renderer3D extends Renderer {
         if (meshProviderLoadingMap.containsKey(keyString)) {
             return meshProviderLoadingMap[keyString]!;
         } else {
-            final String type = yaml["type"] ?? MeshProviderType.defaultProvider;
+            String? type = yaml["type"];
+            if (type == null) {
+                Engine.logger.warn("Model type missing, using default");
+                type = MeshProviderType.defaultProvider;
+            }
             final MeshProvider<dynamic> provider = createMeshProvider(type);
 
             if (provider.isValidForObject(object)) {
@@ -447,6 +451,7 @@ class Renderer3D extends Renderer {
                 return provider;
             }
         }
+
 
         return standardAssets.defaultMeshProvider;
     }
@@ -460,9 +465,13 @@ class Renderer3D extends Renderer {
                 return standardAssets.debugGridMeshProvider;
             case MeshProviderType.debugCurve:
                 return standardAssets.debugCurveMeshProvider;
-            case MeshProviderType.debugEndcap:
+            case MeshProviderType.debugEndCap:
                 return standardAssets.debugEndcapMeshProvider;
+            case MeshProviderType.defaultProvider:
+                // this is when default is stated, rather than fallback
+                return standardAssets.defaultMeshProvider;
             default:
+                Engine.logger.warn("Invalid mesh type '$type', using default instead");
                 return standardAssets.defaultMeshProvider;
         }
     }

@@ -7,6 +7,7 @@ grids:
     height: 5
     x: 100
     y: 500
+    z: 60
     rotation: 0.2
 
     model:
@@ -25,7 +26,7 @@ grids:
     height: 3
     x: -200
     y: 520
-    z: 20
+    z: 50
 
     model: debugGrid
 
@@ -34,3 +35,54 @@ grids:
       - 2,0
       - 0,2
       - 2,2
+
+  - name: L
+    width: 2
+    height: 3
+    z: 100
+    model: debugGrid
+    holes:
+      - 1,0 1,1
+
+curves:
+  - name: curve1
+    model: debugCurve
+
+    points:
+      - handle2: 100
+
+      - x: -100
+        y: 200
+        z: 70
+        handle1: 100
+        handle2: 100
+        rotation: 2.2
+
+      - handle1: 100
+
+spawners:
+  - name: spawner1
+    x: -400
+    y: -100
+    z: 80
+    model: debugEndCap
+
+connections:
+  - connect:
+      name: curve1
+      connector: start
+    to:
+      name: grid1
+      connector: 1,0 up
+
+  - connect:
+      name: curve1
+      connector: end
+    to:
+      name: grid2
+      connector: 1,0 up
+
+  - connect:
+      name: L
+      connector: 0,2 down
+    to: spawner1
