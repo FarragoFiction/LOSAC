@@ -1,5 +1,6 @@
 
 import "package:CommonLib/Utility.dart";
+import 'package:LoaderLib/Archive.dart';
 import 'package:yaml/yaml.dart';
 
 import "../engine/engine.dart";
@@ -91,6 +92,20 @@ extension YamlMapExtensions on YamlMap {
             }
         }
         return false;
+    }
+}
+
+extension ArchiveExtensions on Archive {
+    Future<YamlMap> getYamlFile(String name) async {
+        final YamlDocument? doc = await this.getFile(name, format: Engine.yamlFormat);
+
+        if (doc == null) {
+            throw Exception("Archive file '$name' is missing");
+        } else if (doc.contents.value is! YamlMap) {
+            throw Exception("Archive file '$name' is malformed, contents should be a YAML map");
+        }
+
+        return doc.contents.value;
     }
 }
 

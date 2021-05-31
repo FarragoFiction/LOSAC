@@ -33,6 +33,11 @@ abstract class Engine {
     static const String archivePath = "losac/";
     static const String dataPath = "assets/data/";
 
+    static const String dataPackFilePath = "${archivePath}datapack.zip";
+    static const String levelInfoFilePath = "${archivePath}info.yaml";
+    static const String levelDataFilePath = "${archivePath}level.yaml";
+    static const String wavesFilePath = "${archivePath}waves.yaml";
+
     static final YAMLFormat yamlFormat = new YAMLFormat();
     static final Logger logger = new Logger("Engine", false);
 
@@ -235,7 +240,7 @@ abstract class Engine {
 
         final Set<PathNode> unreachables = new Set<PathNode>.from(await pathfinder.connectivityCheck(level, flipTests: <PathNode>[node]));
 
-        for (final PathNode p in level.spawners) {
+        for (final PathNode p in level.spawners.values) {
             if (unreachables.contains(p)) {
                 return false;
             }
@@ -290,7 +295,7 @@ abstract class Engine {
 
         // first things first, check for and mount any override datapack included in the level
         // if present, this gets unmounted when the engine is destroyed
-        final Archive? dataPackArchive = await levelArchive.getFile("${archivePath}datapack.zip");
+        final Archive? dataPackArchive = await levelArchive.getFile(dataPackFilePath);
         if (dataPackArchive != null) {
             overrideDataPack = Loader.mountDataPack(dataPackArchive.rawArchive);
         }
@@ -299,15 +304,15 @@ abstract class Engine {
         // These will be overridden if the datapack above contains replacements
         await loadBaseDataFiles();
 
-        final YAML.YamlDocument? levelFile = await levelArchive.getFile("${archivePath}level.yaml", format: yamlFormat);
-        if (levelFile == null) {
-            throw Exception("Level file missing");
-        } else if (!(levelFile.contents.value is YAML.YamlMap)) {
-            throw Exception("Level file malformed, should be a yaml map");
-        }
+        // Load the level info file and set its modded content flag
+        final YAML.YamlMap levelInfoFile = await levelArchive.getYamlFile(levelInfoFilePath);
+        level.levelInfo..load(levelInfoFile)..hasModdedContent = overrideDataPack != null;
 
-        // Next we pass the level yaml over to the level class so it can populate
-        await level.load(levelFile.contents.value);
+        // Load the level data file and populate the level with its contents
+        final YAML.YamlMap levelFile = await levelArchive.getYamlFile(levelDataFilePath);
+        await level.load(levelFile, level.name);
+
+        // From this point on it's up to the engine subtypes to do the things specific to them
     }
 
 }

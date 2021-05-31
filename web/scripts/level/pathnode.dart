@@ -53,6 +53,8 @@ class ExitNode extends PathNode {
 }
 
 class SpawnNode extends PathNode {
+    late final String name;
+
     @override
     // ignore: overridden_fields
     covariant late SpawnerObject pathObject;

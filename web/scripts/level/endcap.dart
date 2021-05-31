@@ -70,6 +70,7 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
 }
 
 class SpawnerObject extends EndCap<SpawnNode> {
+    late final String name;
 
     SpawnerObject();
 
@@ -81,7 +82,7 @@ class SpawnerObject extends EndCap<SpawnNode> {
 
     @override
     Iterable<PathNode> generatePathNodes() {
-        final SpawnNode n = new SpawnNode();
+        final SpawnNode n = new SpawnNode()..name = this.name;
 
         n.position.setFrom(this.getWorldPosition());
 

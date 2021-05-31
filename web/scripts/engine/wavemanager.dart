@@ -1,11 +1,16 @@
 import "dart:collection";
 
+import "package:yaml/yaml.dart";
+
 import "../entities/enemy.dart";
 import "../entities/enemytype.dart";
+import "../level/pathnode.dart";
 import "../resources/resourcetype.dart";
+import "../utility/fileutils.dart";
 import "game.dart";
 
 class WaveManager {
+    static const String typeDesc = "Wave Manager";
     final Game engine;
 
     /// Once a wave is cleared or times out, wait this long before starting a new wave
@@ -67,7 +72,7 @@ class WaveManager {
 
                         // spawn all the enemies for this step, add them to the active list
                         for (final WaveEntry entry in entries) {
-                            final Enemy enemy = engine.spawnEnemy(entry.type, engine.level!.spawners[entry.spawner].pathObject)..bounty = entry.bounty;
+                            final Enemy enemy = engine.spawnEnemy(entry.type, entry.spawner.pathObject)..bounty = entry.bounty;
                             activeEnemies.add(enemy);
                         }
                         // set spawn timer to the wave's delay, or default if absent
@@ -132,6 +137,15 @@ class WaveManager {
             }
         }
     }
+
+    void load(YamlMap yaml) {
+        final Set<String> fields = <String>{};
+        final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, engine.level!.name);
+
+
+
+        FileUtils.warnInvalidFields(yaml, typeDesc, engine.level!.name, fields);
+    }
 }
 
 class Wave {
@@ -147,10 +161,10 @@ class Wave {
 
 class WaveEntry {
     final EnemyType type;
-    final int spawner;
+    final SpawnNode spawner;
     final ResourceValue bounty;
 
-    WaveEntry(EnemyType this.type, int this.spawner, ResourceValue this.bounty);
+    WaveEntry(EnemyType this.type, SpawnNode this.spawner, ResourceValue this.bounty);
 }
 
 class WaveItemDescriptor {

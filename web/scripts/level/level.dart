@@ -1,10 +1,12 @@
 import "dart:html";
 import "dart:math" as Math;
 
+import "package:LoaderLib/Archive.dart";
 import "package:yaml/yaml.dart";
 
 import "../engine/engine.dart";
 import "../renderer/2d/bounds.dart";
+import "../utility/fileutils.dart";
 import "connectible.dart";
 import "domainmap.dart";
 import "levelheightmap.dart";
@@ -15,13 +17,14 @@ import "terrain.dart";
 class Level {
     static const String typeDesc = "Level";
     late Engine engine;
+    final LevelInfo levelInfo = new LevelInfo();
 
     Set<SimpleLevelObject> objects = <SimpleLevelObject>{};
     late Iterable<Connectible> connectibles;
 
     final List<PathNode> pathNodes = <PathNode>[];
     late Iterable<PathNode> connectedNodes;
-    final List<SpawnNode> spawners = <SpawnNode>[];
+    final Map<String, SpawnNode> spawners = <String, SpawnNode>{};
     ExitNode? exit;
 
     late DomainMap domainMap;
@@ -30,7 +33,8 @@ class Level {
     late Rectangle<num> bounds;
 
     Terrain? terrain;
-    double? gravity;
+    double? get gravity => levelInfo.gravityOverride;
+    String get name => levelInfo.name;
 
     Level() {
         connectibles = objects.whereType();
@@ -67,7 +71,10 @@ class Level {
                 pathNodes.add(node);
 
                 if (node is SpawnNode) {
-                    this.spawners.add(node);
+                    if (this.spawners.containsKey(node.name)) {
+                        throw Exception("Spawner with duplicate name '${node.name}'!");
+                    }
+                    this.spawners[node.name] = node;
                 } else if (node is ExitNode) {
                     if (this.exit != null) {
                         throw Exception("ONLY ONE EXIT, DUNKASS");
@@ -124,5 +131,32 @@ class Level {
         return null;
     }
 
-    Future<void> load(YamlMap yaml) async {}
+    Future<void> load(YamlMap yaml, String levelName) async {}
+}
+
+class LevelInfo {
+    static const String typeDesc = "Level Info";
+    String name = "Unnamed Level";
+    String? author;
+    bool hasModdedContent = false;
+
+    int? waveCount;
+    double? gravityOverride;
+
+    void load(YamlMap yaml) {
+        if (!yaml.containsTypedEntry<String>("name")) {
+            throw Exception("Level info is missing a 'name' field");
+        }
+        this.name = yaml["name"];
+
+        final Set<String> fields = <String>{"name"};
+        final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, this.name, fields);
+
+        set("author", (String s) => this.author = s);
+        set("waveCount", (num n) => this.waveCount = n.toInt());
+
+        set("gravity", (num n) => this.gravityOverride = n.toDouble());
+
+        FileUtils.warnInvalidFields(yaml, typeDesc, this.name, fields);
+    }
 }

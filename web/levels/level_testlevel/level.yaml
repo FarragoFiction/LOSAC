@@ -1,6 +1,4 @@
 
-name: Test Level
-
 grids:
   - name: grid1
     width: 5

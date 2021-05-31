@@ -193,6 +193,7 @@ abstract class MainMenu {
         testLevel.addObject(testExit);
 
         final SpawnerObject testSpawner1 = new SpawnerObject()
+            ..name = "spawn"
             ..meshProvider = endCapMeshProvider;
         testSpawner1.connector.connectAndOrient(testGrid
             .getCell(0, 9)!
@@ -261,7 +262,7 @@ abstract class MainMenu {
         for (int i = 0; i < 5; i++) {
             final Wave testWave = new Wave();
             for (int j = 0; j < 5; j++) {
-                testWave.entries.add(<WaveEntry>{new WaveEntry(testEnemyType, 0, new ResourceValue()..addResource(testResource, 1))});
+                testWave.entries.add(<WaveEntry>{new WaveEntry(testEnemyType, testSpawner1.node, new ResourceValue()..addResource(testResource, 1))});
             }
             game.waveManager.waves.add(testWave);
         }
@@ -283,26 +284,10 @@ abstract class MainMenu {
 
         renderer.centreOnObject(testLevel);
         r3d.initCameraBounds(testLevel);
-
-        /*int n = 0;
-    new Timer.periodic(const Duration(milliseconds: 1500), (Timer t) {
-        game.spawnEnemy(testEnemyType, testSpawner1);
-        n++;
-        if (n >= 10) {
-            t.cancel();
-        }
-    });*/
-
-        //game.input.listen("A", testCallback, allowRepeats: false);
     }
 
 
 }
-
-/*bool testCallback(String key, KeyEventType type, bool shift, bool control, bool alt) {
-    print("key: $key, shift: $shift, type: $type");
-    return false;
-}*/
 
 void testInverseBilinear() {
     const int w = 80;

@@ -1,5 +1,8 @@
 import "dart:html";
 
+import "package:LoaderLib/Archive.dart";
+import "package:yaml/yaml.dart";
+
 import "../entities/enemy.dart";
 import "../entities/enemytype.dart";
 import "../entities/tower.dart";
@@ -10,6 +13,7 @@ import "../renderer/3d/renderer3d.dart";
 import "../resources/resourcetype.dart";
 import '../ui/ui.dart';
 import "../utility/extensions.dart";
+import "../utility/fileutils.dart";
 import "engine.dart";
 import "rules.dart";
 import "spatialhash.dart";
@@ -159,5 +163,15 @@ class Game extends Engine {
         //selectionWindow = null;
         //resourceList = null;
         //lifeDisplay = null;
+    }
+
+    @override
+    Future<void> loadLevelArchive(Archive levelArchive, Level level) async {
+        // make sure all the common level loading steps are completed first
+        await super.loadLevelArchive(levelArchive, level);
+
+        // load the wave file and pass it to the WaveManager to parse
+        final YamlMap wavesFile = await levelArchive.getYamlFile(Engine.wavesFilePath);
+        waveManager.load(wavesFile);
     }
 }

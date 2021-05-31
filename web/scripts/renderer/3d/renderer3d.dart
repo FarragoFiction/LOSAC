@@ -480,5 +480,3 @@ class Renderer3D extends Renderer {
 class MeshInfo {
     SimpleLevelObject? owner;
 }
-
-

@@ -93,9 +93,9 @@ class Level3D extends Level with Renderable3D {
     void drawRoutes(CanvasRenderingContext2D ctx, double scaleFactor) {
         ctx.save();
         final Set<PathNode> routeNodes = <PathNode>{};
-        routeNodes.addAll(spawners);
+        routeNodes.addAll(spawners.values);
 
-        for (final SpawnNode spawn in spawners) {
+        for (final SpawnNode spawn in spawners.values) {
             PathNode node = spawn;
             while (node.targetNode != null) {
                 if (routeNodes.contains(node.targetNode)) {
@@ -132,7 +132,7 @@ class Level3D extends Level with Renderable3D {
     }
 
     @override
-    Future<void> load(YamlMap yaml) async {
+    Future<void> load(YamlMap yaml, String levelName) async {
         final Logger logger = Engine.logger;
         final Map<String,Tuple<YamlMap,SimpleLevelObject>> loadingObjects = <String,Tuple<YamlMap,SimpleLevelObject>>{};
         final Map<String,Grid> levelGrids = <String,Grid>{};
@@ -140,12 +140,7 @@ class Level3D extends Level with Renderable3D {
         final Map<String,SpawnerObject> levelSpawners = <String,SpawnerObject>{};
         ExitObject? levelExit;
 
-        if (!yaml.containsKey("name")) {
-            throw Exception("${Level.typeDesc} missing name");
-        }
-        final String levelName = yaml["name"];
-
-        final Set<String> fields = <String>{"name"};
+        final Set<String> fields = <String>{};
         final DataSetter levelData = FileUtils.dataSetter(yaml, Level.typeDesc, levelName, fields);
 
         // UTILITY FUNCTIONS ####################################################################
@@ -308,10 +303,11 @@ class Level3D extends Level with Renderable3D {
                 }
                 if (!isNameLegal(entry["name"])){ return; }
 
-                final SpawnerObject spawner = new SpawnerObject.fromYaml(entry);
+                final String name = entry["name"];
+
+                final SpawnerObject spawner = new SpawnerObject.fromYaml(entry)..name = name;
                 setMeshProvider(spawner, entry);
 
-                final String name = entry["name"];
                 loadingObjects[name] = new Tuple<YamlMap,SimpleLevelObject>(entry, spawner);
                 levelSpawners[name] = spawner;
             });
