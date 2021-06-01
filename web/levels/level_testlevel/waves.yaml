@@ -1,0 +1,11 @@
+waves:
+  - spawn:
+      - &grunt@spawner1
+        spawner1:
+          type: grunt
+          bounty:
+            default1: 1
+      - *grunt@spawner1
+      - *grunt@spawner1
+      - *grunt@spawner1
+      - *grunt@spawner1

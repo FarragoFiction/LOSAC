@@ -39,7 +39,7 @@ abstract class Engine {
     static const String wavesFilePath = "${archivePath}waves.yaml";
 
     static final YAMLFormat yamlFormat = new YAMLFormat();
-    static final Logger logger = new Logger("Engine", false);
+    static final Logger logger = new Logger("Engine", true);
 
     DataPack? overrideDataPack;
     late Renderer3D renderer;

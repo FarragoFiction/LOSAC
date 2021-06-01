@@ -344,14 +344,11 @@ class Level3D extends Level with Renderable3D {
 
         // level validity checks
         //TODO: hook this up when hardcoded is gone
-        bool levelIsValid = true;
         /*if (exit == null) {
-            Engine.logger.warn("${Level.typeDesc} '$levelName' is missing an exit");
-            levelIsValid = false;
+            throw Exception("${Level.typeDesc} '$levelName' is missing an exit");
         }
         if (spawners.isEmpty) {
-            Engine.logger.warn("${Level.typeDesc} '$levelName' requires at least one spawner");
-            levelIsValid = false;
+            throw Exception("${Level.typeDesc} '$levelName' requires at least one spawner");
         }*/
 
         // set things up
@@ -364,9 +361,5 @@ class Level3D extends Level with Renderable3D {
         //final Set<PathNode> unreachables = new Set<PathNode>.from(await engine.pathfinder.connectivityCheck(this));
 
 
-        // throw if things are wrong
-        if (!levelIsValid) {
-            throw Exception("${Level.typeDesc} '$levelName' definition is invalid, see above");
-        }
     }
 }

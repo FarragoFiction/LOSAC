@@ -4,6 +4,7 @@ import "package:yaml/yaml.dart";
 
 import "../entities/enemy.dart";
 import "../entities/enemytype.dart";
+import "../level/level.dart";
 import "../level/pathnode.dart";
 import "../resources/resourcetype.dart";
 import "../utility/fileutils.dart";
@@ -138,13 +139,41 @@ class WaveManager {
         }
     }
 
-    void load(YamlMap yaml) {
+    void load(YamlMap yaml, Level level) {
         final Set<String> fields = <String>{};
-        final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, engine.level!.name);
+        final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, level.name, fields);
 
+        // global settings
+        set("timeBetweenWaves", (num n) => timeBetweenWaves = n.toDouble());
+        set("waveTimeout", (num n) => waveTimeout = n.toDouble());
+        set("spawnDelay", (num n) => spawnDelay = n.toDouble());
 
+        // list of all waves
+        set("waves", (YamlList list) => FileUtils.typedList("waves", list, (YamlMap item, int index) {
+            final Set<String> waveFields = <String>{};
+            final DataSetter waveSet = FileUtils.dataSetter(item, "$typeDesc Wave", index.toString(), waveFields);
 
-        FileUtils.warnInvalidFields(yaml, typeDesc, engine.level!.name, fields);
+            final Wave wave = new Wave();
+
+            // spawn delay override for this wave
+            waveSet("spawnDelay", (num n) => wave.delay = n.toDouble());
+
+            // list of spawn events in the wave
+            waveSet("spawn", (YamlList waveList) => FileUtils.typedList("Wave $index spawn", waveList, (YamlMap waveItem, int waveIndex) {
+
+                // go through each spawner to find what gets spawned during this spawn event
+                for (final dynamic spawnerName in waveItem.keys) {
+                    print("wave $index spawn $waveIndex key: $spawnerName, ${spawnerName.runtimeType}");
+                }
+
+            }), required: true);
+
+            FileUtils.warnInvalidFields(item, "$typeDesc Wave", index.toString(), waveFields);
+
+            this.waves.add(wave);
+        }));
+
+        FileUtils.warnInvalidFields(yaml, typeDesc, level.name, fields);
     }
 }
 

@@ -172,6 +172,6 @@ class Game extends Engine {
 
         // load the wave file and pass it to the WaveManager to parse
         final YamlMap wavesFile = await levelArchive.getYamlFile(Engine.wavesFilePath);
-        waveManager.load(wavesFile);
+        waveManager.load(wavesFile, level);
     }
 }

@@ -5,14 +5,14 @@ import 'package:yaml/yaml.dart';
 
 import "../engine/engine.dart";
 
-typedef DataSetter = bool Function<T>(String, void Function(T), [String?]);
+typedef DataSetter = bool Function<T>(String, void Function(T), {String? nameOverride, bool required});
 
 abstract class FileUtils {
     static final RegExp invalidFilePattern = new RegExp(r'^(con|prn|aux|nul|com[0-9]|lpt[0-9])$|([<>:"/\\|?*\s])|(\.|\s)$');
 
     static bool validateFilename(String filename) => !invalidFilePattern.hasMatch(filename);
 
-    static bool setFromData(YamlMap yaml, String key, String typeDesc, String name, Lambda<dynamic> setter) {
+    static bool setFromData(YamlMap yaml, String key, String typeDesc, String name, Lambda<dynamic> setter, {bool required = false}) {
         if (yaml.containsKey(key)) {
             try {
                 setter(yaml[key]);
@@ -25,6 +25,8 @@ abstract class FileUtils {
                 return false;
             }
             return true;
+        } else if (required) {
+            throw MessageOnlyException("$typeDesc '$name' missing required field '$key'");
         }
         return false;
     }
@@ -39,17 +41,17 @@ abstract class FileUtils {
         };
     }
 
-    static bool setFromDataChecked<T>(YamlMap yaml, String key, String typeDesc, String name, Lambda<T> setter) {
-        return setFromData(yaml, key, typeDesc, name, check(setter));
+    static bool setFromDataChecked<T>(YamlMap yaml, String key, String typeDesc, String name, Lambda<T> setter, {bool required = false}) {
+        return setFromData(yaml, key, typeDesc, name, check(setter), required: required);
     }
 
-    static bool Function<T>(String, Lambda<T>, [String? nameOverride]) dataSetter(YamlMap data, String typeDesc, String name, [Set<String>? fieldList]) {
+    static DataSetter dataSetter(YamlMap data, String typeDesc, String name, [Set<String>? fieldList]) {
 
-        bool subFunc<T>(String key, Lambda<T> setter, [String? nameOverride]) {
+        bool subFunc<T>(String key, Lambda<T> setter, {String? nameOverride, bool required = false}) {
             // if a field list is provided, add in the key so it can be considered valid later
             fieldList?.add(key);
 
-            return setFromDataChecked(data, key, typeDesc, nameOverride ?? name, setter);
+            return setFromDataChecked(data, key, typeDesc, nameOverride ?? name, setter, required: required);
         }
 
         return subFunc;
@@ -75,9 +77,14 @@ abstract class FileUtils {
             final U item = list[i];
 
             if (item is T) {
-                setter(item, i);
+                try {
+                    setter(item, i);
+                } on Exception catch (e) {
+                    Engine.logger.warn("Error parsing $name list entry $i: $e");
+                }
             } else {
                 Engine.logger.warn("$name list entry $i is an invalid type, skipping");
+                Engine.logger.debug("Object type: '${item.runtimeType}', object value: '$item'");
             }
         }
     }

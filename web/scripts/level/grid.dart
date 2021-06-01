@@ -89,7 +89,7 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
                 final int y1 = int.parse(match.group(2)!);
                 final int x2 = int.parse(match.group(3)!);
                 final int y2 = int.parse(match.group(4)!);
-                print("hole at $x1,$y1 -> $x2,$y2");
+
                 final List<GridCell> cells = grid.getCells(x1, y1, x2, y2);
                 for (final GridCell cell in cells) {
                     cell.state = inverted ? GridCellState.clear : GridCellState.hole;
