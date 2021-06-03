@@ -8,6 +8,7 @@ import "../level/level.dart";
 import "../level/pathnode.dart";
 import "../resources/resourcetype.dart";
 import "../utility/fileutils.dart";
+import "engine.dart";
 import "game.dart";
 
 class WaveManager {
@@ -148,6 +149,8 @@ class WaveManager {
         set("waveTimeout", (num n) => waveTimeout = n.toDouble());
         set("spawnDelay", (num n) => spawnDelay = n.toDouble());
 
+        set("startingResources", (YamlMap resourceMap) => engine.resourceStockpile.addAll(ResourceValue.fromYaml(resourceMap, engine.resourceTypeRegistry)));
+
         // list of all waves
         set("waves", (YamlList list) => FileUtils.typedList("waves", list, (YamlMap item, int index) {
             final Set<String> waveFields = <String>{};
@@ -161,10 +164,41 @@ class WaveManager {
             // list of spawn events in the wave
             waveSet("spawn", (YamlList waveList) => FileUtils.typedList("Wave $index spawn", waveList, (YamlMap waveItem, int waveIndex) {
 
+                final Set<WaveEntry> spawnStep = <WaveEntry>{};
+
                 // go through each spawner to find what gets spawned during this spawn event
-                for (final dynamic spawnerName in waveItem.keys) {
-                    print("wave $index spawn $waveIndex key: $spawnerName, ${spawnerName.runtimeType}");
-                }
+                FileUtils.typedMap("Wave $index spawn entries", waveItem, (YamlMap spawnEntry, dynamic key) {
+                    final String spawnerName = key.toString();
+
+                    // make sure the spawner exists
+                    if (!level.spawners.containsKey(spawnerName)) {
+                        Engine.logger.warn("Wave $index spawn $waveIndex references non-existent spawner '$spawnerName', skipping");
+                        return;
+                    }
+                    final SpawnNode node = level.spawners[spawnerName]!;
+
+                    final Set<String> entryFields = <String>{};
+                    final DataSetter entrySet = FileUtils.dataSetter(spawnEntry, "$typeDesc wave spawn entry", waveIndex.toString(), entryFields);
+
+                    String? enemyName;
+                    EnemyType? enemyType;
+                    entrySet("type", (String s) {
+                        enemyType = engine.enemyTypeRegistry.get(s);
+                        enemyName = s;
+                    }, required: true);
+
+                    ResourceValue? bounty;
+                    entrySet("bounty", (YamlMap bountyYaml) => bounty = new ResourceValue.fromYaml(bountyYaml, engine.resourceTypeRegistry));
+
+                    FileUtils.warnInvalidFields(spawnEntry, "$typeDesc wave spawn entry", waveIndex.toString(), entryFields);
+
+                    final WaveEntry waveEntry = new WaveEntry(enemyType!, node, bounty);
+                    spawnStep.add(waveEntry);
+
+                    Engine.logger.debug("wave $index spawn $waveIndex key: $enemyName at $spawnerName with bounty $bounty");
+                });
+
+                wave.entries.add(spawnStep);
 
             }), required: true);
 
@@ -191,9 +225,9 @@ class Wave {
 class WaveEntry {
     final EnemyType type;
     final SpawnNode spawner;
-    final ResourceValue bounty;
+    final ResourceValue? bounty;
 
-    WaveEntry(EnemyType this.type, SpawnNode this.spawner, ResourceValue this.bounty);
+    WaveEntry(EnemyType this.type, SpawnNode this.spawner, ResourceValue? this.bounty);
 }
 
 class WaveItemDescriptor {

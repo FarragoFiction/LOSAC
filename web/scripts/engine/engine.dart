@@ -39,7 +39,7 @@ abstract class Engine {
     static const String wavesFilePath = "${archivePath}waves.yaml";
 
     static final YAMLFormat yamlFormat = new YAMLFormat();
-    static final Logger logger = new Logger("Engine", true);
+    static final Logger logger = new Logger("Engine", false);
 
     DataPack? overrideDataPack;
     late Renderer3D renderer;
@@ -99,6 +99,8 @@ abstract class Engine {
             final String name = type.getRegistrationKey();
             await localisation.formatting.registerIcon("resource.$name", "assets/icons/resources/$name.png");
         }));
+
+        await level?.postLoad();
     }
 
     void start() {

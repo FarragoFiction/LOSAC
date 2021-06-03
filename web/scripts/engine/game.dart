@@ -170,6 +170,16 @@ class Game extends Engine {
         // make sure all the common level loading steps are completed first
         await super.loadLevelArchive(levelArchive, level);
 
+        // we need the path nodes for the next part, to get spawners
+        level.derivePathNodes();
+
+        // load the game rules
+        try {
+            rules.load(await FileUtils.loadYamlFile("${Engine.dataPath}/rules.yaml"));
+        } on Exception catch (e) {
+            Engine.logger.warn("Could not load game rules file: $e");
+        }
+
         // load the wave file and pass it to the WaveManager to parse
         final YamlMap wavesFile = await levelArchive.getYamlFile(Engine.wavesFilePath);
         waveManager.load(wavesFile, level);

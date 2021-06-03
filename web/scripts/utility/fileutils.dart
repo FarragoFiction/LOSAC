@@ -1,6 +1,7 @@
 
 import "package:CommonLib/Utility.dart";
 import 'package:LoaderLib/Archive.dart';
+import "package:LoaderLib/Loader.dart";
 import 'package:yaml/yaml.dart';
 
 import "../engine/engine.dart";
@@ -87,6 +88,33 @@ abstract class FileUtils {
                 Engine.logger.debug("Object type: '${item.runtimeType}', object value: '$item'");
             }
         }
+    }
+
+    static void typedMap<K,T extends U,U>(String name, Map<K,U> map, void Function(T item, K key) setter) {
+        for (final K key in map.keys) {
+            final U item = map[key]!;
+
+            if (item is T) {
+                try {
+                    setter(item, key);
+                } on Exception catch (e) {
+                    Engine.logger.warn("Error parsing $name map entry $key: $e");
+                }
+            } else {
+                Engine.logger.warn("$name map entry $key is an invalid type, skipping");
+                Engine.logger.debug("Object type: '${item.runtimeType}', object value: '$item'");
+            }
+        }
+    }
+
+    static Future<YamlMap> loadYamlFile(String name) async {
+        final YamlDocument doc = await Loader.getResource(name, format: Engine.yamlFormat);
+
+        if (doc.contents.value is! YamlMap) {
+            throw Exception("File '$name' is malformed, contents should be a YAML map");
+        }
+
+        return doc.contents.value;
     }
 
 }

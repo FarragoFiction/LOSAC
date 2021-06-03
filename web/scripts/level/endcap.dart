@@ -65,6 +65,8 @@ abstract class EndCap<TNode extends PathNode> extends LevelObject with HasMatrix
         set("z", (num n) => cap.zPosition = n.toDouble());
         set("rotation", (num n) => cap.rot_angle = n.toDouble());
 
+        set("affectLevelHeight", (bool b) => cap.generateLevelHeightData = b);
+
         FileUtils.warnInvalidFields(yaml, type, name, fields);
     }
 }
@@ -113,7 +115,7 @@ class ExitObject extends EndCap<ExitNode> {
 
     factory ExitObject.fromYaml(YamlMap yaml) {
         final ExitObject obj = new ExitObject();
-        EndCap._load(obj, yaml, "Spawner");
+        EndCap._load(obj, yaml, "Exit", "exit");
         return obj;
     }
 

@@ -43,4 +43,7 @@ class ResourceType with Registerable {
 
         return object;
     }
+
+    @override
+    String toString() => name;
 }

@@ -1,11 +1,19 @@
+startingResources:
+  default: 10
+
 waves:
-  - spawn:
+  - &gruntWave
+    spawn:
       - &grunt@spawner1
-        spawner1:
+        spawner:
           type: grunt
           bounty:
-            default1: 1
+            default: 1
       - *grunt@spawner1
       - *grunt@spawner1
       - *grunt@spawner1
       - *grunt@spawner1
+  - *gruntWave
+  - *gruntWave
+  - *gruntWave
+  - *gruntWave

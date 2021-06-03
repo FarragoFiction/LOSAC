@@ -6,6 +6,8 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "package:yaml/yaml.dart";
 
 import "../engine/engine.dart";
+import "../entities/tower.dart";
+import '../entities/towertype.dart';
 import "../renderer/3d/renderable3d.dart";
 import "../utility/fileutils.dart";
 import "connectible.dart";
@@ -130,6 +132,13 @@ class Level3D extends Level with Renderable3D {
 
         ctx.restore();
     }
+
+    //##############################################################################################################################################
+    // Level Loading
+    //##############################################################################################################################################
+
+    /// temporary map for placing towers defined in the level, since they need to be after the game kicks off
+    Map<GridCell, TowerType>? prePlacedTowers = <GridCell, TowerType>{};
 
     @override
     Future<void> load(YamlMap yaml, String levelName) async {
@@ -256,12 +265,16 @@ class Level3D extends Level with Renderable3D {
                     logger.warn("${Level.typeDesc} '$levelName' grid definition $index is missing a 'name' field, skipping");
                     return;
                 }
-                if (!isNameLegal(entry["name"])){ return; }
+
+                final String name = entry["name"];
+                if (!isNameLegal(name)){
+                    logger.warn("${Level.typeDesc} '$levelName' grid definition $index has a conflicting name '$name', skipping");
+                    return;
+                }
 
                 final Grid grid = new Grid.fromYaml(entry);
                 setMeshProvider(grid, entry);
 
-                final String name = entry["name"];
                 loadingObjects[name] = new Tuple<YamlMap,SimpleLevelObject>(entry, grid);
                 levelGrids[name] = grid;
             });
@@ -274,12 +287,16 @@ class Level3D extends Level with Renderable3D {
                     logger.warn("${Level.typeDesc} '$levelName' curve definition $index is missing a 'name' field, skipping");
                     return;
                 }
-                if (!isNameLegal(entry["name"])){ return; }
+
+                final String name = entry["name"];
+                if (!isNameLegal(name)){
+                    logger.warn("${Level.typeDesc} '$levelName' curve definition $index has a conflicting name '$name', skipping");
+                    return;
+                }
 
                 final Curve curve = new Curve.fromYaml(entry);
                 setMeshProvider(curve, entry);
 
-                final String name = entry["name"];
                 loadingObjects[name] = new Tuple<YamlMap,SimpleLevelObject>(entry, curve);
                 levelCurves[name] = curve;
             });
@@ -301,15 +318,20 @@ class Level3D extends Level with Renderable3D {
                     logger.warn("${Level.typeDesc} '$levelName' spawner definition $index is missing a 'name' field, skipping");
                     return;
                 }
-                if (!isNameLegal(entry["name"])){ return; }
 
                 final String name = entry["name"];
+                if (!isNameLegal(name)){
+                    logger.warn("${Level.typeDesc} '$levelName' spawner definition $index has a conflicting name '$name', skipping");
+                    return;
+                }
 
                 final SpawnerObject spawner = new SpawnerObject.fromYaml(entry)..name = name;
                 setMeshProvider(spawner, entry);
 
                 loadingObjects[name] = new Tuple<YamlMap,SimpleLevelObject>(entry, spawner);
                 levelSpawners[name] = spawner;
+
+                logger.debug("Added spawner '$name'");
             });
         });
 
@@ -333,6 +355,45 @@ class Level3D extends Level with Renderable3D {
             });
         });
 
+        // pre-placed towers
+        levelData("towers", (YamlList towers) {
+            FileUtils.typedList("${Level.typeDesc} '$levelName' pre-placed towers", towers, (YamlMap entry, int index) {
+                final Set<String> fields = <String>{};
+                final DataSetter set = FileUtils.dataSetter(entry, "${Level.typeDesc} '$levelName' pre-placed towers", index.toString(), fields);
+
+                TowerType? type;
+                Grid? grid;
+                int x = 0;
+                int y = 0;
+
+                set("type", (String s) => type = engine.towerTypeRegistry.get(s), required: true);
+                set("grid", (String s) => grid = levelGrids[s], required: true);
+                set("x", (num n) => x = n.toInt(), required: true);
+                set("y", (num n) => y = n.toInt(), required: true);
+
+                if(type == null || grid == null) {
+                    Engine.logger.warn("${Level.typeDesc} '$levelName' pre-placed tower entry $index requires 'name', 'grid', 'x' and 'y' fields");
+                    return;
+                }
+
+                if (x < 0 || x >= grid!.xSize || y < 0 || y >= grid!.ySize) {
+                    Engine.logger.warn("${Level.typeDesc} '$levelName' pre-placed tower entry $index coordinates are out of range. Allowed values: x between 0 and ${grid!.xSize-1}, y between 0 and ${grid!.ySize-1}");
+                    return;
+                }
+
+                final GridCell? cell = grid!.getCell(x, y);
+
+                if (cell == null || cell.state != GridCellState.clear) {
+                    Engine.logger.warn("${Level.typeDesc} '$levelName' pre-placed tower entry $index placement is invalid, skipping");
+                    return;
+                }
+
+                prePlacedTowers![cell] = type!;
+
+                FileUtils.warnInvalidFields(entry, "${Level.typeDesc} '$levelName' pre-placed towers", index.toString(), fields);
+            });
+        });
+
         // cleanup
         FileUtils.warnInvalidFields(yaml, "Level", levelName, fields);
 
@@ -344,12 +405,12 @@ class Level3D extends Level with Renderable3D {
 
         // level validity checks
         //TODO: hook this up when hardcoded is gone
-        /*if (exit == null) {
+        if (levelExit == null) {
             throw Exception("${Level.typeDesc} '$levelName' is missing an exit");
         }
-        if (spawners.isEmpty) {
+        if (levelSpawners.isEmpty) {
             throw Exception("${Level.typeDesc} '$levelName' requires at least one spawner");
-        }*/
+        }
 
         // set things up
         for(final String key in loadingObjects.keys) {
@@ -361,5 +422,16 @@ class Level3D extends Level with Renderable3D {
         //final Set<PathNode> unreachables = new Set<PathNode>.from(await engine.pathfinder.connectivityCheck(this));
 
 
+    }
+
+    @override
+    Future<void> postLoad() async {
+        if (prePlacedTowers == null) { return; }
+        final Map<GridCell, TowerType> towers = prePlacedTowers!;
+
+        for(final GridCell cell in towers.keys) {
+            await cell.placeTower(new Tower(towers[cell]!));
+        }
+        prePlacedTowers = null;
     }
 }

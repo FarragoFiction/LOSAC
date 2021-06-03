@@ -73,6 +73,8 @@ class Curve extends LevelObject with Connectible {
 
         set("width", (num n) => curve.width = n.toDouble());
 
+        set("affectLevelHeight", (bool b) => curve.generateLevelHeightData = b);
+
         FileUtils.warnInvalidFields(yaml, typeDesc, name, fields);
 
         curve.updateConnectors();

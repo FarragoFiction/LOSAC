@@ -6,9 +6,7 @@
 # minimum (number, default 0): Minimum stockpile count for this resource. Not sure why you'd need this but it's available.
 # maximum (number): Maximum stockpile size, beyond which resources are discarded. Maybe handy for some special cases.
 
-- name: default1
+- name: default
 
-- name: default2
+- name: second
   maximum: 5
-
-- name: default3

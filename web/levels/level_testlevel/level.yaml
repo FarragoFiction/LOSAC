@@ -1,86 +1,86 @@
 
 grids:
   - name: grid1
-    width: 5
-    height: 5
-    x: 100
-    y: 500
-    z: 60
-    rotation: 0.2
+    width: 6
+    height: 10
+    x: 500
+    y: 400
+    z: 50
+    rotation: 0.1
+
+    affectLevelHeight: false
 
     model:
       type: debugGrid
 
-    invertHoles: true
     holes:
-      - 1,0 1,1
-      - 3,0 3,1
-      - 0,3
-      - 1,4 3,4
-      - 4,3
+      - 0,4 1,5
+      - 4,4 5,5
 
   - name: grid2
-    width: 3
-    height: 3
-    x: -200
-    y: 520
+    width: 4
+    height: 1
+    x: 200
+    y: 160
     z: 50
+    rotation: 0.75
 
     model: debugGrid
-
-    holes:
-      - 0,0
-      - 2,0
-      - 0,2
-      - 2,2
-
-  - name: L
-    width: 2
-    height: 3
-    z: 100
-    model: debugGrid
-    holes:
-      - 1,0 1,1
 
 curves:
   - name: curve1
     model: debugCurve
 
     points:
-      - handle2: 100
+      - x: 50
+        y: 30
+        z: 50
+        rotation: -0.3
+        handle2: 60
 
-      - x: -100
-        y: 200
-        z: 70
-        handle1: 100
-        handle2: 100
-        rotation: 2.2
+      - x: 220
+        y: 40
+        z: 100
+        handle1: 60
+        handle2: 60
+        rotation: 0.9
 
-      - handle1: 100
+      - x: 280
+        y: 180
+        handle1: 50
 
 spawners:
-  - name: spawner1
-    x: -400
-    y: -100
-    z: 80
+  - name: spawner
     model: debugEndCap
+
+exit:
+  model: debugEndCap
 
 connections:
   - connect:
       name: curve1
-      connector: start
-    to:
-      name: grid1
-      connector: 1,0 up
-
-  - connect:
-      name: curve1
       connector: end
     to:
-      name: grid2
-      connector: 1,0 up
+      name: grid1
+      connector: 0,0 left
 
-  - connect:
-      name: L
-      connector: 0,2 down
-    to: spawner1
+  - connect: exit
+    to:
+      name: curve1
+      connector: start
+
+  - connect: spawner
+    to:
+      name: grid1
+      connector: 0,9 down
+
+towers:
+  - type: default
+    grid: grid1
+    x: 3
+    y: 8
+
+  - type: default
+    grid: grid2
+    x: 3
+    y: 0

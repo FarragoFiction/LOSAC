@@ -131,7 +131,9 @@ class Level {
         return null;
     }
 
+
     Future<void> load(YamlMap yaml, String levelName) async {}
+    Future<void> postLoad() async {}
 }
 
 class LevelInfo {

@@ -65,6 +65,8 @@ class Grid extends LevelObject with HasMatrix, Connectible, Selectable {
 
         set("rotation", (num n) => grid.rot_angle = n.toDouble());
 
+        set("affectLevelHeight", (bool b) => grid.generateLevelHeightData = b);
+
         bool inverted = false;
         set("invertHoles", (bool b) => inverted = b);
         if (inverted) {

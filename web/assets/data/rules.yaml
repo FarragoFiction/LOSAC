@@ -1,0 +1,12 @@
+# Do enemies loop around to their spawn location when reaching the exit?
+enemiesLoop: true
+
+# Fraction of total cost to return when selling a tower
+sellReturn: 0.75
+
+# Gravity value, used for arcing projectiles
+gravity: 300
+
+# Maximum and starting health value
+maxLife: 100
+

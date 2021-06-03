@@ -4,20 +4,24 @@
 #
 # name (text, unique, required): The registration key of the tower, used in references and localisation. Must be unique.
 
-- name: basic
+- name: default
 
-  #buildCost:
-    #default1: 5.5
-    #fart: 3
-    #default2: boot
+  buildCost:
+    default: 10
 
   upgradeList:
-    - basic2
-
-  cheese: poot
+    - upgradetest
 
   weapon:
-    #type: chaser
-    gravityMode: poot
+    type: default
+    projectileSpeed: 350
 
-- name: basic2
+- name: upgradetest
+
+  buildCost:
+    default: 25
+    second: 1
+
+  weapon:
+    type: chaser
+    damage: 3

@@ -238,7 +238,7 @@ abstract class WeaponType {
             final WeaponType weapon = _loadingTypeMap[type]!()..towerType = towerType;
 
             // set up the data setter
-            final Set<String> fields = <String>{};
+            final Set<String> fields = <String>{"type"};
             final DataSetter setter = FileUtils.dataSetter(yaml, typeDesc, towerType.name, fields);
 
             // pass it to the weapon to set

@@ -133,7 +133,7 @@ class TowerType with Registerable, MeshProviderProxy<Tower> {
         set("blocksPath", (bool b) => object.blocksPath = b);
 
         set("buildTIme", (num n) => object.buildTime = n.toDouble().max(0));
-        set("buildable", (bool b) => object.buildable = b);
+        set("buildable", (bool b) => object.buildableField = b);
         set("buildCost", (YamlMap d) => object.buildCost = new ResourceValue.fromYaml(d, resourceRegistry));
 
         set("upgradeList", (YamlList list) { object.loadingUpgradeList?.addAll(list.map((dynamic element) => element?.toString()).notNull());});
@@ -159,6 +159,14 @@ class TowerType with Registerable, MeshProviderProxy<Tower> {
                 type.processLoadedData(registry);
             }
         }
+
+        // if another tower upgrades to a type, then mark that type unbuildable unless explicitly set to buildable in the definition
+        for (final TowerType type in registry.mapping.values) {
+            if (type is _LoadedTowerType) {
+                type.buildable = type.buildableField ?? !type.isUpgradedTo;
+                type.buildableField = null;
+            }
+        }
     }
 
 }
@@ -166,6 +174,8 @@ class TowerType with Registerable, MeshProviderProxy<Tower> {
 /// subclass for keeping the loading stuff out of the way
 class _LoadedTowerType extends TowerType {
     Set<String>? loadingUpgradeList = <String>{};
+    bool? buildableField;
+    bool isUpgradedTo = false;
 
     void processLoadedData(Registry<TowerType> registry) {
         if (loadingUpgradeList == null) { return; }
@@ -174,6 +184,9 @@ class _LoadedTowerType extends TowerType {
             final TowerType? type = registry.get(key);
             if (type != null) {
                 upgradeList.add(type);
+                if (type is _LoadedTowerType) {
+                    type.isUpgradedTo = true;
+                }
             } else {
                 Engine.logger.warn("Missing ${TowerType.typeDesc} upgrade for '$name': $key");
             }
