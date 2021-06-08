@@ -76,6 +76,7 @@
   weapon:
     type: default
     projectileSpeed: 350
+    burst: 5
 
 - name: upgradetest
 
