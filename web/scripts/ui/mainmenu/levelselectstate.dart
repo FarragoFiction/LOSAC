@@ -74,7 +74,7 @@ class LevelSelectState extends MenuState {
 
     Future<void> populateList() async {
         final Map<String,dynamic> fileListFile = await Loader.getResource("levels/files.json", format: Formats.json);
-        final Iterable<String> fileList = fileListFile["files"].whereType<String>();
+        final List<String> fileList = (fileListFile["files"] as List<dynamic>).whereType<String>().toList()..sort();
 
         for (final String filename in fileList) {
             late Element box;
