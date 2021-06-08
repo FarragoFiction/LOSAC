@@ -24,28 +24,53 @@
             <h1>Land of Smoke and Chariots</h1>
             <div class="note">
                 <div>
-                    <h1>A note from PL:</h1>
-                    <p>This is it, folks, the first playable release of LOSAC. There's some important things that you should know about the game before jumping into things:</p>
-                    <p>Firstly, just because the game is playable doesn't mean it's even remotely near being finished. It is UGLY, unbalanced, and extremely limited right now. More will come later, but in its current state it is a pretty bare gameplay prototype. Please do not base assumptions of its final visual state on what you can see here.</p>
-                    <p>Second, several currently usable parts of game interaction are working *just enough* to be usable, but aren't as polished as they will be in future. Camera dragging and zoom are wonky, and playing on mobile is possible but not currently supported (no special control scheme for touch screens yet! you can't really see tooltips without being able to hover over them)</p>
-                    <h2>Controls:</h2>
-                    <ul>
-                        <li>Left-click drag to move the camera</li>
-                        <li>Right-click drag to rotate the camera</li>
-                        <li>Mouse wheel zooms the camera, but be aware that it can currently go negative (inverts the view) if you zoom in too far</li>
-                        <li>Left-click selects grid spaces, towers, enemies (not much point selecting enemies yet). Click an empty space or right click to deselect</li>
-                    </ul>
-                    <h2>Gameplay and Known Issues</h2>
-                    <p>Winning and losing are both implemented, and it's possible to beat the game, but not without leaking - again, the game isn't even remotely balanced yet - and there's only a single usable type of tower. The upgrade tower is unobtainable right now as none of the enemies are rigged to drop the second currency type.</p>
-                    <p>The second resource and the enemies are missing names and such, this is currently intended.</p>
-                    <br>
-                    <p>Aaaand that's pretty much it... go forth and do some testing!</p>
+                    <h1>2021/06/07 - Level Loading:</h1>
+                    <p>It took a while, but all the hardcoded content from the previous version has been replaced with a system for loading game data and levels from files! For people who are only interested in playing, not a lot has changed - the main thing would be that the placeholder terrain is gone because it's not properly implemented yet.</p>
+                    <p>For those who are interested in making maps themselves, however, that functionality is now available.</p>
+                    <p>Aspiring wastes will find everything they need to create a level inside the test level png file, should they be savvy enough to know how to get at the stuff inside it. If you are lacking tools but understand how to set up a Dart environment, the examples folder of ImageLib may be of help.</p>
+                    <p>Hang in there, players, things should get more interesting "soon".</p>
+                    <p>-PL</p>
+
+                    <h3 id="oldnewstoggle">[Show Older News]</h3>
+                    <div id="oldnews" class="hidden">
+                        <h1>2021/01/13 - First Playable Version</h1>
+                        <p>This is it, folks, the first playable release of LOSAC. There's some important things that you should know about the game before jumping into things:</p>
+                        <p>Firstly, just because the game is playable doesn't mean it's even remotely near being finished. It is UGLY, unbalanced, and extremely limited right now. More will come later, but in its current state it is a pretty bare gameplay prototype. Please do not base assumptions of its final visual state on what you can see here.</p>
+                        <p>Second, several currently usable parts of game interaction are working *just enough* to be usable, but aren't as polished as they will be in future. Camera dragging and zoom are wonky, and playing on mobile is possible but not currently supported (no special control scheme for touch screens yet! you can't really see tooltips without being able to hover over them)</p>
+                        <h2>Controls:</h2>
+                        <ul>
+                            <li>Left-click drag to move the camera</li>
+                            <li>Right-click drag to rotate the camera</li>
+                            <li>Mouse wheel zooms the camera, but be aware that it can currently go negative (inverts the view) if you zoom in too far</li>
+                            <li>Left-click selects grid spaces, towers, enemies (not much point selecting enemies yet). Click an empty space or right click to deselect</li>
+                        </ul>
+                        <h2>Gameplay and Known Issues</h2>
+                        <p>Winning and losing are both implemented, and it's possible to beat the game, but not without leaking - again, the game isn't even remotely balanced yet - and there's only a single usable type of tower. The upgrade tower is unobtainable right now as none of the enemies are rigged to drop the second currency type.</p>
+                        <p>The second resource and the enemies are missing names and such, this is currently intended.</p>
+                        <br>
+                        <p>Aaaand that's pretty much it... go forth and do some testing!</p>
+                    </div>
                 </div>
             </div>
-            <button id="startgame">Ok! Let's go!</button>
+            <button id="newgame">Ok! Let's go!</button>
         </div>
 
-        <div id="loadscreen" class="fullscreen hidden LoadScreen"></div>
+        <div id="levelselect" class="fullscreen hidden MainMenu">
+            <h1>Select Level</h1>
+            <div class="menu">
+                <div class="LevelSelect">
+                    <div id="levellist" class="LevelList"></div>
+                    <div id="levellistoverlay" class="LevelListOverlay LevelListLoadOverlay hidden"><div><img id="levellistuploadpreview" class="LevelListPreview" src="levels/testlevel.png"><br>Level loaded from file<br><button id="levelselectclear">Clear selection</button></div></div>
+                    <div id="levelinfo" class="LevelInfo"></div>
+                    <div id="levelinfoerror" class="LevelListOverlay LevelListErrorOverlay hidden"><div>Invalid level file</div></div>
+                </div>
+                <button id="levelselectback">Back</button>
+                <button id="levelselectstart">Start</button>
+                <button id="levelselectupload">Load from file</button>
+            </div>
+        </div>
+
+        <div id="loadscreen" class="fullscreen LoadScreen"></div>
 
         <div class="hidden" id="stylecontainer">
             <!-- This div contains elements used by the code to extract style info for canvas use -->

@@ -3,6 +3,67 @@
 # Available properties:
 #
 # name (text, unique, required): The registration key of the tower, used in references and localisation. Must be unique.
+# blocksPath (bool, default true): Does this tower block enemy movement across a grid? False may be useful for "trap" type towers which sit in the lane.
+#
+# buildable (bool, default true): Whether the tower shows up in the main build menu. Unless explicitly set to true, if this tower appears in another tower's upgradeList, this will be implicitly set to false.
+# buildTime (number, default 5): Time in seconds for this tower to construct.
+# buildCost (map of text:number): Mapping of resource names to amounts, names defined in the resource type files.
+#
+# upgradeList (list of text): Tower types which this tower can upgrade to. Towers in this list will have buildable set to false unless they explicitly set it to true.
+#
+# turreted (bool, default false): Whether this tower type has a rotating turret which needs to point at enemies to fire.
+# leadTargets (bool, default false): Whether this tower calculates intercepts for firing projectiles at targets. Computationally expensive but required for some weapon setups to look right, especially with slow turrets.
+# leadingRangeGraceFactor (number, default 1.1): When leading targets, allow lead target locations this many times further away than range if the enemy is within range.
+# turnRate (number, default ~1.57 (pi/2)): Turret turn rate per second, in radians.
+# fireAngle (number, default 0.01): A turret will be considered pointed at a target if the angle difference is less than this number, in radians.
+# weaponHeight (number, default 0): Z offset from tower base for projectiles.
+# weapon (Weapon): The tower's weapon.
+
+# Weapon
+#
+# Available properties:
+#
+# type (text, default 'default'): Which type of weapon is this? Current types: default, chaser
+#
+# maxTargets (number, default 1): The acquires weapon can fire at this many targets at once. Numbers above 1 may not interact well with turrets.
+# cooldown (number, default 0.2): Average time in seconds between shots.
+# damage (number, default 1): Damage dealt per hit by this weapon.
+#
+# targetingStrategy (specially formatted text, default 'progress + sticky * 0.1'): A description of how this tower type evaluates targets, composed of a simple mathematical expression made up of basic strategy names, numbers, and the operators +, -, * and /.
+#
+# range (number, default 200): Range in which this weapon can acquire targets. Actual projectile range may vary with leading.
+# projectileSpeed (number, default 100): Speed in units per second for projectiles from this weapon.
+#
+# burst (number, default 1): Size of weapon burst. This many projectiles will be fired with cooldown * burstTime seconds between them, followed by burst * cooldown * (1-burstTime) seconds until the next burst. Average projectiles per second remains the same.
+# burstTime (number, default 0.2): Fire a number of projectiles equal to burst with this multiple of the normal time between them. Smaller numbers mean more closely spaced bursts. 0 fires all projectiles in the burst at once.
+#
+# aoeRadius (number, default 0): If above 0, enemies within this radius of the main target will take damage.
+# aoeHotspot (number, default 0.2): Within this portion of the radius, enemies take full damage.
+# aoeFalloff (number, default 0.0): At the edge of the radius, enemies take this portion of the damage.
+# aoeSecondary (number, default 1.0): Targets which are not the primary have their damage taken multiplied by this.
+#
+# In addition each weapon type has properties specific to it:
+#
+#### default - a dumb-fire projectile weapon which can be affected by gravity:
+#
+# gravityMode (text, default 'simpleBallistic'): How should gravity affect this weapon's projectiles? none = no gravity, simpleBallistic = cheap ballistic calculation, fine for fast projectiles but not for artillery, ballistic = accurate ballistic calculation, taking the low arc result, ballisticHigh = as ballistic, but taking the high arc result
+#
+#### chaser - a seeking weapon such as a missile launcher, with powered projectiles
+#
+# lockOn (bool, default true): Does this weapon lock on to targets and track them?
+#
+# turnRate (number, default 0.15): Turn rate of projectiles, in radians per second.
+# thrustPower (number, default 100): Force with which projectiles thrust in the direction they are facing.
+# initialThrust (number, default 150): Initial launch speed.
+#
+# friction (number, default 0.95): Per step multiplier to speed in the facing direction.
+# lateralFriction (number, default 0.15): Per step multiplier to speed perpendicular to facing direction.
+# angularFriction (number, default 0.99): Per step multiplier to rotational speed.
+#
+# spread (number, default 1.0): Firing spread of projectiles: 0 = straight forward, 1 = full circle.
+#
+# velocityAngleTransfer (number, default 0.75): Portion of damage which is re-angled towards facing direction each step.
+# velocityAngleTransferLateral (number, default 1.0): Multiplier for velocityAngleTransfer when the dot product of velocity and facing direction is 0, interpolating smoothly.
 
 - name: default
 

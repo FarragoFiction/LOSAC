@@ -1,82 +1,35 @@
 import "dart:async";
 import 'dart:html';
-import "dart:math" as Math;
 
 import "package:CubeLib/CubeLib.dart" as B;
-import "package:ImageLib/Encoding.dart";
+import "package:LoaderLib/Archive.dart";
 import "package:LoaderLib/Loader.dart";
 
 import "engine/engine.dart";
 import "engine/game.dart";
-import "engine/wavemanager.dart";
-import "entities/enemytype.dart";
-import 'entities/projectiles/chaserprojectile.dart';
-import 'entities/projectiles/interpolatorprojectile.dart';
-import "entities/tower.dart";
-import "entities/towertype.dart";
-import "level/curve.dart";
-import "level/endcap.dart";
-import "level/grid.dart";
 import "level/level.dart";
 import "level/level3d.dart";
 import "level/terrain.dart";
 import "pathfinder/pathfinder.dart";
-import 'renderer/3d/models/curvemeshprovider.dart';
-import 'renderer/3d/models/gridmeshprovider.dart';
 import "renderer/3d/renderer3d.dart";
-import "renderer/renderer.dart";
-import "resources/resourcetype.dart";
+import "ui/mainmenu/mainmenu.dart";
+import "utility/extensions.dart";
 import "utility/levelutils.dart";
 import "utility/mathutils.dart";
 
-import "targeting/targetingparser.dart";
-
 Future<void> main() async {
     Formats.addMapping(Engine.yamlFormat, "yaml");
-    //testProjectileArc();
-    //losac();
 
-    //print(TowerUtils.ballisticArc(300, 0, 350, 300, false));
-    //print(TowerUtils.ballisticArc(300, 0, 350, 300, true));
+    querySelector("#oldnewstoggle")!.onClick.listen((Event e) {
+        querySelector("#oldnews")!.toggle();
+    });
 
-    //print(MathUtils.quartic(2, -7, 5, 31, -30).toList());
-    //print(MathUtils.cubic(1.5, 3, 1.5, 1.5).toList()); // this gives 3 NaNs
-    //print(MathUtils.cubic(2, 3, 1.5, 1.5).toList());
-    //testMathSolvers();
-
-    //TargetingParser.test();
-
-    MainMenu.connectStartButton();
+    await MainMenu.init();
 }
 
-abstract class MainMenu {
+abstract class GameInit {
 
-    static void connectStartButton() {
-        querySelector("#startgame")!.onClick.first.then((MouseEvent e) async {
-            querySelector("#loadscreen")!.classes.remove("hidden");
-            querySelector("#menu")!.classes.add("hidden");
-
-            await losac();
-
-            querySelector("#loadscreen")!.classes.add("hidden");
-        });
-    }
-
-    static Future<void> exitToMenu(Future<void> Function() cleanup) async {
-        querySelector("#loadscreen")!.classes.remove("hidden");
-
-        await cleanup();
-        
-        final Element container = querySelector("#container")!;
-        final Element newContainer = container.clone(true) as Element;
-        container.replaceWith(newContainer);
-
-        querySelector("#menu")!.classes.remove("hidden");
-        connectStartButton();
-        querySelector("#loadscreen")!.classes.add("hidden");
-    }
-
-    static Future<void> losac() async {
+    static Future<Game> losac(Archive levelArchive) async {
         print("LOSAC yo");
 
         final CanvasElement testCanvas = new CanvasElement(width: 800, height: 600);
@@ -99,13 +52,14 @@ abstract class MainMenu {
         testLevel.engine = game;
 
         // LOADING TEST ####################################
-        final ArchivePng levelImage = await Loader.getResource("levels/testlevel.png", format: ArchivePng.format);
-        await game.loadLevelArchive(levelImage.archive!, testLevel);
+        //final ArchivePng levelImage = await Loader.getResource("levels/testlevel.png", format: ArchivePng.format);
+        //await game.loadLevelArchive(levelImage.archive!, testLevel);
+        await game.loadLevelArchive(levelArchive, testLevel);
         // LOADING TEST ####################################
 
-        final Terrain terrain = new Terrain();
+        /*final Terrain terrain = new Terrain();
         renderer.addRenderable(terrain);
-        testLevel.terrain = terrain;
+        testLevel.terrain = terrain;*/
 
         // send node data, evaluate connectivity
         await pathfinder.transferNodeData(testLevel);
@@ -136,6 +90,8 @@ abstract class MainMenu {
 
         renderer.centreOnObject(testLevel);
         r3d.initCameraBounds(testLevel);
+
+        return game;
     }
 
 

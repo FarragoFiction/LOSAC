@@ -50,7 +50,7 @@ class TowerType with Registerable, MeshProviderProxy<Tower> {
     double turnRate = Math.pi * 0.5;
     /// How close the turret angle needs to be to fire, in radians.
     /// This might be greater than 0 for something like a missile launcher which doesn't require precise aim
-    double fireAngle = 1.5;
+    double fireAngle = 0.01;
     /// Added to the z position of the tower to get the spawn height of projectiles
     double weaponHeight = 0.0;
 
@@ -132,7 +132,7 @@ class TowerType with Registerable, MeshProviderProxy<Tower> {
 
         set("blocksPath", (bool b) => object.blocksPath = b);
 
-        set("buildTIme", (num n) => object.buildTime = n.toDouble().max(0));
+        set("buildTime", (num n) => object.buildTime = n.toDouble().max(0));
         set("buildable", (bool b) => object.buildableField = b);
         set("buildCost", (YamlMap d) => object.buildCost = new ResourceValue.fromYaml(d, resourceRegistry));
 

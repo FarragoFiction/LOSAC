@@ -105,6 +105,11 @@ extension ElementExtras on Element {
 
         return this.offsetHeight + top + bottom;
     }
+
+    void hide() => this.classes.add("hidden");
+    void show() => this.classes.remove("hidden");
+    void toggle() => this.classes.contains("hidden") ? show() : hide();
+    void clear() => this.children.clear();
 }
 
 extension IterableExtras<T> on Iterable<T?> {

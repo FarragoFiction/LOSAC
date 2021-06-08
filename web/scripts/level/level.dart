@@ -140,6 +140,7 @@ class LevelInfo {
     static const String typeDesc = "Level Info";
     String name = "Unnamed Level";
     String? author;
+    String? description;
     bool hasModdedContent = false;
 
     int? waveCount;
@@ -155,6 +156,7 @@ class LevelInfo {
         final DataSetter set = FileUtils.dataSetter(yaml, typeDesc, this.name, fields);
 
         set("author", (String s) => this.author = s);
+        set("description", (String s) => this.description = s);
         set("waveCount", (num n) => this.waveCount = n.toInt());
 
         set("gravity", (num n) => this.gravityOverride = n.toDouble());

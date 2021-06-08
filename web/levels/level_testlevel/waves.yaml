@@ -1,18 +1,43 @@
+# Wave definition file
+#
+# Available properties:
+#
+# timeBetweenWaves (number, default 5): Minimum time in seconds between waves. If all enemies in a wave are killed and there is more than this much time until the next wave, that time is skipped.
+# waveTimeout (number, default 60): Maximum time after a wave finishes spawning before the next wave will begin, in seconds.
+# spawnDelay (number, default 1.5): Delay in seconds between spawns of enemies within a wave. Can be overridden by individual waves.
+# startingResources (map of text:number): A map of resource names to numbers, where the keys are names of resources defined in the resource type files.
+# waves (list of Wave, required): A list where each entry represents a wave of enemies. The game is won when all waves are spawned and all enemies are dead.
+
+# Wave
+#
+# Available properties:
+#
+# spawnDelay (number): Override for global spawnDelay, for this wave only.
+# spawn (list of maps of text:SpawnEntry, required): A list of sequential spawns in the wave. Each entry is itself a map of names to SpawnEntry objects. The names are the names of spawners as defined in level.yaml file.
+
+# SpawnEntry:
+#
+# Available properties:
+#
+# type (text, required): The name of the enemy type which will be spawned at this spawner during this spawn step.
+# bounty (map of text:number): The resources dropped by the enemy when killed. Names are defined in the resource types data file.
+
+
 startingResources:
   default: 10
 
 waves:
   - &gruntWave
     spawn:
-      - &grunt@spawner1
+      - &grunt@spawner
         spawner:
           type: grunt
           bounty:
             default: 1
-      - *grunt@spawner1
-      - *grunt@spawner1
-      - *grunt@spawner1
-      - *grunt@spawner1
+      - *grunt@spawner
+      - *grunt@spawner
+      - *grunt@spawner
+      - *grunt@spawner
   - *gruntWave
   - *gruntWave
   - *gruntWave

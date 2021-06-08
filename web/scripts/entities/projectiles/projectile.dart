@@ -198,11 +198,11 @@ abstract class WeaponType {
     /// Number of projectiles in a single burst.
     /// The burst is made of this many projectiles with burstTime times the normal delay between,
     /// followed by this many times 1-burstTime delay before the next burst
-    int burst = 5;
+    int burst = 1;
     double burstTime = 0.2;
 
     bool hasAreaOfEffect = false;
-    double areaOfEffectRadius = 60;
+    double areaOfEffectRadius = 0;
     /// Fraction of [areaOfEffectRadius] in which targets take full damage
     double areaOfEffectHotspot = 0.2;
     /// Fraction of damage taken by enemies at the edge of [areaOfEffectRadius]

@@ -1,2 +1,12 @@
+# Level Info
+#
+# Available properties:
+#
+# name (text, required): The name of the level as it appears on the level selection screen.
+# author (text): Author name on the level select screen. If omitted will display "UNKNOWN".
+# description (text): Level description for the level select screen. If omitted will display "No description provided."
+# waveCount (number): Currently unused, might be removed
+
 name: Test Level
 author: paradoxLands
+description: The original hardcoded test level, remade as a level file.\nExtra test description text!

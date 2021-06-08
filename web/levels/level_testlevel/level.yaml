@@ -1,3 +1,86 @@
+# Level definition file
+#
+# Available properties:
+#
+# grids (List of Grid): A list of all grids in the level.
+# curves (List of Curve): A list of all curved paths in the level.
+# spawners (List of EndCap, at least one required): A list of all spawners in the level.
+# exit (EndCap, required): The level exit
+# connections (List of Connection): Connections between the other parts of the level listed above. Grids cannot connect to other grids, curves cannot connect to other curves.
+# towers (List of TowerPlacement): Pre-placed towers which exist at game start. Towers placed this way will only refund a portion of the cost of that specific construction step.
+
+# Model
+# Can be replaced with just the value of the 'type' property if no other properties are needed
+#
+# Available properties:
+#
+# type (Text, required): Model type. At the current time, the only available models are default, debugGrid, debugCurve and debugEndCap. Default just gives a cube so use the right one!
+# [no more properties for now, but that will change later]
+
+# Grid
+#
+# Available properties:
+#
+# name (text, unique, required): Unique identifier for this grid within the level. Used to cross-reference in connections and towers.
+# width (number, default 1): Horizontal cell count.
+# height (number, default 1): Vertical cell count.
+# x (number, default 0): X position of this grid within the world.
+# y (number, default 0): Y position of this grid within the world.
+# z (number, default 0): Z position (height) of this grid within the world.
+# rotation (number, default 0): Placement angle of this grid, in radians.
+# model (Model): Type of model used for this grid.
+# affectLevelHeight (bool, default true): Does this grid impose its height on the level height field? If true, enemies will move along its surface. If false, enemies will move along any terrain under the grid.
+# invertHoles (bool, default false): Inverts the behaviour of holes, so that they define filled cells instead of holes in the grid.
+# holes (list of specially formatted text): Each entry takes the form of either a single coordinate pair, representing a single cell, or two coordinate pairs, representing two opposite corners of a rectangular area. These areas will be holes in the grid, or the only filled cells if ivnertHoles is true.
+
+# Curve
+#
+# Available properties:
+#
+# name (text, unique, required): Unique identifier for this curve within the level. Used to cross-reference in connections.
+# width (number, default 25):
+# affectLevelHeight (bool, default true): Does this curve impose its height on the level height field? If true, enemies will move along its surface. If false, enemies will move along any terrain under the curve.
+# model (Model): Type of model used for this curve.
+# points (list of Point, at least two are required): The points which make up this path. They are the points of a Bézier curve, with handles defined by distance and rotation.
+
+# Point
+#
+# Available properties:
+#
+# x (number, default 0): X position of this point within the world.
+# y (number, default 0): Y position of this point within the world.
+# z (number, default 0): Z position (height) of this point within the world.
+# rotation (number, default 0): Placement angle of this point, in radians. Directly affects the derived position of the handles.
+# handle1 (number, default 10): Distance of the trailing handle of this point, which affects the connection to the previous point in the list. The first point can ignore this value.
+# handle2 (number, default 10): Distance of the leading handle of this point, which affects the connection to the next point in the list. The last point can ignore this value.
+
+# EndCap
+#
+# Available properties:
+#
+# name (text, unique, required except for exit): Unique identifier for this spawner within the level. Used to cross-reference in connections and the wave definition file.
+# x (number, default 0): X position of this spawner within the world.
+# y (number, default 0): Y position of this spawner within the world.
+# z (number, default 0): Z position (height) of this spawner within the world.
+# rotation (number, default 0): Placement angle of this spawner, in radians.
+# model (Model): Type of model used for this spawner.
+# affectLevelHeight (bool, default true): Does this spawner impose its height on the level height field? If true, enemies will move along its surface. If false, enemies will move along any terrain under the grid.
+
+# Connection
+#
+# Available properties
+#
+# connect (text or map, required): Either the name of an EndCap, or a map containing the properties 'name' and 'connector' referencing the name of a Grid or Curve and a special descriptor of which connector the connection should use. For curves this is 'start' or 'end', for grids it is a coordinate pair and left/right/up/down.
+# to (text or map, required): Same as connect but for a different object. Grids cannot connect to other grids, curves cannot connect to other curves. Both can connect to EndCaps.
+
+# Tower
+#
+# Available properties:
+#
+# type (text, required): Which kind of tower this should be. References names in the tower type definition files.
+# grid (text, required): The name of the grid the tower should be placed on.
+# x (number, required): X coordinate of the cell this tower should occupy within the grid.
+# y (number, required): Y coordinate of the cell this tower should occupy within the grid.
 
 grids:
   - name: grid1
@@ -8,7 +91,7 @@ grids:
     z: 50
     rotation: 0.1
 
-    affectLevelHeight: false
+    #affectLevelHeight: false # commented out until terrain is properly implemented
 
     model:
       type: debugGrid

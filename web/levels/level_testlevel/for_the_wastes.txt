@@ -1,0 +1,14 @@
+Hey there, if you're reading this you've shown you are enough of a waste to know how the level file works, so here's some info.
+3 files are required within the level archive, all within the losac subfolder:
+
+- info.yaml contains the level name, author and description information which appears when you select the level in the levels selection screen.
+
+- level.yaml contains the structure of the level and is pretty complicated. Make sure you read the docs in there and look at the examples.
+
+- waves.yaml contains the starting resources and enemy waves for the level. The structure can be pretty confusing, and may be especially so in this case because I'm making use of YAML's reference system to avoid rewriting stuff. You should look up how that works!
+
+As well as these three required files, you can also provide a datapack.zip file, which will be mounted as a DataPack when the level is loaded. Any files inside it will *replace default files* such as data, image or localisation files. With this, your level can contain mods and could have entirely different resources, towers, or enemies.
+
+Best of luck! I'll be around on discord to answer any questions you might have. Don't be afraid to ping me if you want to know more!
+
+-PL

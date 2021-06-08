@@ -73,6 +73,11 @@ button:hover {
 button:active {
     border: 1px solid #FFFFFF;
 }
+button:disabled {
+    color: #505050;
+    border-color: #404040;
+    cursor: default;
+}
 
 /* ######################################################################## */
 
@@ -508,7 +513,7 @@ button:active {
     margin: 0 auto 0 auto;
     box-shadow: 5px 8px 10px rgba(0,0,0,0.4);
 }
-.note div {
+.note>div {
     position:relative;
     top:0;
     left:0;
@@ -526,6 +531,107 @@ button:active {
     background-image: url("assets/images/pl.png");
     top:0px;
     left: -245px;
+}
+
+#oldnewstoggle {
+    color: #503010;
+    cursor:pointer;
+}
+#oldnewstoggle:hover {
+    color: white;
+    text-shadow:0 0 3px black, 0 0 3px black;
+}
+
+.LevelSelect {
+    position:relative;
+    width:1500px;
+    max-width: calc(100vw - 40px);
+    height:760px;
+    max-height: calc(100vh - 200px);
+    margin: 0 auto 0 auto;
+}
+
+.LevelList {
+    position: relative;
+    display: flex;
+    flex-wrap:wrap;
+    justify-content: space-evenly;
+
+    background-color: rgba(0,0,0,0.3);
+    width: calc(100% - 320px);
+    height: 100%;
+
+    text-align:left;
+
+    padding: 10px 0 10px 0;
+
+    font-weight: bold;
+    box-shadow: 3px 4px 10px rgba(0,0,0,0.15) inset, 0 0 50px rgba(0,0,0,0.1) inset;
+
+    overflow-y:scroll;
+}
+.LevelList>div.level {
+    width: 300px;
+    height: 250px;
+    margin: 3px;
+
+    cursor: pointer;
+}
+.LevelList>div.level.selected {
+    background-color:red;
+    box-shadow:0 0 6px red, 0 0 3px red;
+
+    cursor: default;
+}
+div.level>img, .LevelListPreview {
+    width: 300px;
+    height: 225px;
+    background-color: rgba(0,0,0,0.5);
+    object-fit: scale-down;
+}
+div.level>span {
+    display:block;
+    width:100%;
+    text-align:center;
+}
+
+.LevelInfo {
+    width: 320px;
+    height:100%;
+    background-color:rgba(255,255,255,0.05);
+    position:absolute;
+    top:0;
+    right:0;
+    padding: 15px 5px 15px 5px;
+}
+.LevelListOverlay {
+    position:absolute;
+    top:0;
+    /*left:0;*/
+    width:100%;
+    height:100%;
+    background:rgba(30,10,10,0.8);
+    box-shadow:0 0 50px rgba(0,0,0,0.4) inset;
+
+    font-size: 24px;
+    font-weight: bold;
+
+    box-sizing: border-box;
+    vertical-align: middle;
+}
+.LevelListOverlay>div {
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+}
+.LevelListLoadOverlay {
+    width: calc(100% - 320px);
+    left: 0;
+}
+.LevelListErrorOverlay {
+    width: 320px;
+    right: 0;
 }
 
 /* ######################################################################## */
