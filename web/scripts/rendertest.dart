@@ -88,7 +88,7 @@ Future<void> complexityTest() async {
 
     final B.Camera camera = new B.FreeCamera("camera", B.Vector3(0,50,00), scene)
     ..maxZ = 500
-    ..attachControl(canvas);
+    ..attachControl();
 
     final B.Texture depth = scene.enableDepthRenderer(camera, false).getDepthMap();
     //final B.Light light = new B.HemisphericLight("light1", new B.Vector3(0,1,0), scene);
@@ -158,12 +158,12 @@ Future<void> complexityTest() async {
                     ..scaling.set(scale, scale, scale)
                 );
             } else {
-                trees.add(tree.clone("tree${i}_$j")
+                trees.add(tree.clone("tree${i}_$j")!
                     ..position.set(x, y + 2.5 * scale, z)
                     ..scaling.set(scale, scale, scale));
             }
         }
-        final B.Mesh merged = B.Mesh.MergeMeshes(trees)
+        final B.Mesh merged = B.Mesh.MergeMeshes(trees)!
             ..alwaysSelectAsActiveMesh = true
             ..doNotSyncBoundingInfo = true
             ..freezeWorldMatrix();
@@ -383,7 +383,7 @@ Future<void> portalTest() async {
     final B.Scene scene = new B.Scene(engine);
 
     final B.Camera camera = new B.ArcRotateCamera("camera", 0, 0, 5, B.Vector3.Zero(), scene)
-        ..attachControl(canvas, false)
+        ..attachControl(false)
         ..allowUpsideDown = false
     //..upperBetaLimit = Math.pi * 0.5
         ..lowerRadiusLimit = 2.5 //5.0

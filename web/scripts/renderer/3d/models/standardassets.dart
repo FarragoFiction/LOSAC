@@ -99,7 +99,7 @@ class Renderer3DStandardAssets {
             ..isVisible = false
             ..material = rangeMaterial
         ;
-        final B.Mesh rangeCircle2 = rangeCircle.clone("rangeIndicator");
+        final B.Mesh rangeCircle2 = rangeCircle.clone("rangeIndicator")!;
 
         this.rangePreview = rangeCircle..onBeforeDrawObservable.add(JS.allowInterop((B.Mesh mesh, B.EventState eventState) {
             rangeMaterial.setColor4("colour", rangePreviewColour);

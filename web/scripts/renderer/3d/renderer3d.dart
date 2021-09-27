@@ -97,9 +97,13 @@ class Renderer3D extends Renderer {
 
         this.pointerElement = engine!.uiController.container.parent!; // we know by the page structure that this is not null
 
+        print("input manager: $manager, element: $pointerElement");
+        print(manager);
+        print(pointerElement);
+
         manager.detachControl();
         manager.attachControl(false,false,true, pointerElement);
-        manager.attachControl(true,true,false);
+        //manager.attachControl(true,true,false);
     }
 
     void updatePointer() {
@@ -332,22 +336,22 @@ class Renderer3D extends Renderer {
         y ??= this.scene.pointerY.toInt();
 
         final B.Ray ray = scene.createPickingRay(x, y, B.Matrix.IdentityReadOnly, camera);
-        final B.PickingInfo pick = scene.pickWithRay(ray, standardAssets.pickerPredicateInterop, true);
+        final B.PickingInfo? pick = scene.pickWithRay(ray, standardAssets.pickerPredicateInterop, true);
 
-        if (pick.pickedMesh == null) {
-            final B.PickingInfo gridPick = scene.pickWithRay(ray, standardAssets.gridPickerPredicateInterop, true);
-            if (gridPick.pickedMesh == null) {
+        if (pick?.pickedMesh == null) {
+            final B.PickingInfo? gridPick = scene.pickWithRay(ray, standardAssets.gridPickerPredicateInterop, true);
+            if (gridPick?.pickedMesh == null) {
                 return null;
-            } else if (gridPick.pickedMesh?.metadata?.owner is Grid) {
-                final Grid grid = gridPick.pickedMesh!.metadata.owner;
+            } else if (gridPick?.pickedMesh?.metadata?.owner is Grid) {
+                final Grid grid = gridPick!.pickedMesh!.metadata.owner;
                 final B.Vector2 world = gridPick.pickedPoint!.toGameCoords();
                 final Selectable? sel = grid.getSelectable(world);
                 if (sel != null) {
                     return new SelectionInfo(sel, world.toPoint());
                 }
             }
-        } else if (pick.pickedMesh?.metadata?.owner is Selectable) {
-            final Selectable selectable = pick.pickedMesh!.metadata.owner;
+        } else if (pick?.pickedMesh?.metadata?.owner is Selectable) {
+            final Selectable selectable = pick!.pickedMesh!.metadata.owner;
             final B.Vector2 world = pick.pickedPoint!.toGameCoords();
             final Selectable? sel = selectable.getSelectable(world);
             if (sel != null) {
