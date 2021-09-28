@@ -140,7 +140,6 @@ class TooltipComponent extends UIComponent {
     }
 
     void onMouseEvents(MouseEvent e) {
-        print("tooltip mouse event");
         mousePos = e.page;
         updateTooltipObject();
         updateTooltipPosition();
