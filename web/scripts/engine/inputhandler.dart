@@ -5,6 +5,7 @@ import "package:CubeLib/CubeLib.dart" as B;
 import "package:js/js.dart" as JS;
 
 import "../renderer/3d/renderer3d.dart";
+import "../utility/extensions.dart";
 import "engine.dart";
 
 enum ModifierKeyState {
@@ -97,6 +98,7 @@ abstract class InputHandler {
     // #######################################################################################
 
     void _onMouseDown(MouseEvent e) {
+        //print("down ${e.button}");
         mouseStates[e.button] = true;
         if (dragButton == null) {
             dragButton = e.button;
@@ -110,6 +112,7 @@ abstract class InputHandler {
         if (dragging){
             //print("undrag $dragButton");
             dragging = false;
+            engine.container.releasePointerCapture(e.pointerId);
         } else {
             _click(e);
         }
@@ -128,6 +131,7 @@ abstract class InputHandler {
             if (len >= InputHandler.dragDistanceSquared) {
                 //print("start drag $dragButton");
                 dragging = true;
+                engine.container.setPointerCapture(e.pointerId);
             }
         }
 

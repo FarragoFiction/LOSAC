@@ -1,5 +1,6 @@
 import "dart:html";
 import "dart:math" as Math;
+import "dart:js_util" as JsUtil;
 
 import "package:CubeLib/CubeLib.dart" as B;
 
@@ -128,4 +129,8 @@ extension DoubleExtras on double {
 extension IntExtras on int {
     int min(int limit) => Math.min(this, limit);
     int max(int limit) => Math.max(this, limit);
+}
+
+extension MouseEventPointerId on MouseEvent {
+    int get pointerId => JsUtil.getProperty(this, "pointerId");
 }

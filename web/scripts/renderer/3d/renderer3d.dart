@@ -92,18 +92,7 @@ class Renderer3D extends Renderer {
 
     @override
     void initUiEventHandlers() {
-        final dynamic manager = JsUtil.getProperty(this.scene, "_inputManager");
-        //window.console.log(manager);
-
         this.pointerElement = engine!.uiController.container.parent!; // we know by the page structure that this is not null
-
-        print("input manager: $manager, element: $pointerElement");
-        print(manager);
-        print(pointerElement);
-
-        manager.detachControl();
-        manager.attachControl(false,false,true, pointerElement);
-        //manager.attachControl(true,true,false);
     }
 
     void updatePointer() {

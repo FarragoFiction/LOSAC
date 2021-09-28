@@ -10,6 +10,7 @@ class TooltipComponent extends UIComponent {
     static const int paddingDistance = 4;
     static const int mouseSize = 16;
     int updateStep = 0;
+    Point<num> mousePos = const Point<num>(0,0);
 
     HasTooltip? currentObject;
     Element? contentElement;
@@ -60,13 +61,14 @@ class TooltipComponent extends UIComponent {
 
         if (engine.input.mousePos == null) { return false; }
 
-        final Point<num> pos = engine.input.mousePos!;
+        final Point<num> pos = mousePos; //engine.input.mousePos!;
+
         if (pos.x < 0 || pos.x >= window.innerWidth! || pos.y < 0 || pos.y >= window.innerHeight!) {
             currentObject = null;
             return true;
         }
 
-        final UIComponent? comp = controller.queryComponentAtCoords(engine.input.mousePos, (UIComponent c) => c is HasTooltip);
+        final UIComponent? comp = controller.queryComponentAtCoords(pos, (UIComponent c) => c is HasTooltip);
         final HasTooltip? object = comp == null ? null : comp as HasTooltip;
 
         if (currentObject != object) {
@@ -96,7 +98,7 @@ class TooltipComponent extends UIComponent {
         final int width = this.element!.offsetWidth;
         final int height = this.element!.offsetHeight;
 
-        final Point<num>? mousePos = engine.input.mousePos;
+        final Point<num>? mousePos = this.mousePos; //engine.input.mousePos;
         if (mousePos == null) { return; }
         final int windowWidth = window.innerWidth!;
         final int windowHeight = window.innerHeight!;
@@ -138,6 +140,8 @@ class TooltipComponent extends UIComponent {
     }
 
     void onMouseEvents(MouseEvent e) {
+        print("tooltip mouse event");
+        mousePos = e.page;
         updateTooltipObject();
         updateTooltipPosition();
     }
